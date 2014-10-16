@@ -101,7 +101,7 @@ bool GrEngineConnector::add(ObjectBase* obj){
 		vBuffer.length = vertices.size();
 		
 		glBindBuffer(GL_ARRAY_BUFFER, vBuffer.id);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(unsigned int) * vBuffer.length, &vertices[0], GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex3d) * vBuffer.length, &vertices[0], GL_STATIC_DRAW);
 		
 		glGenBuffers(1, &iBuffer.id);
 
@@ -187,11 +187,13 @@ bool GrEngineConnector::draw()
 			glBindBuffer(GL_ARRAY_BUFFER, buffers.first.id);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.second.id);
 
+			uint8_t offset = 0;
 			glEnableVertexAttribArray(posLoc);
-			glVertexAttribPointer(posLoc, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+			glVertexAttribPointer(posLoc, Mesh3d::VERTEX3D_POSITION, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
 
+			offset += Mesh3d::VERTEX3D_POSITION * sizeof(float);
 			glEnableVertexAttribArray(texPosLoc);
-			glVertexAttribPointer(texPosLoc, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float) * 3));
+			glVertexAttribPointer(texPosLoc, Mesh3d::VERTEX3D_TEXTURE, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, meshToMaterial[meshName]);

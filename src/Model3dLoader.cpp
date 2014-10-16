@@ -53,7 +53,7 @@ void loadMeshes(const aiScene* model, aiNode* node, std::vector<Mesh3d>& outMesh
 	if (nMeshes == 0)
 		return;
 
-	vector<float> myVertices;
+	vector<Vertex3d> myVertices;
 	vector<unsigned short> myIndices;
 	unsigned int* meshIds = node->mMeshes;
 	for (int j = 0; j < nMeshes; j++) {
@@ -64,14 +64,9 @@ void loadMeshes(const aiScene* model, aiNode* node, std::vector<Mesh3d>& outMesh
 		aiVector3D* texCoords = mesh->mTextureCoords[0];
 		uint32_t nVertices = mesh->mNumVertices;
 		for (int l = 0; l < nVertices; l++) {
-			aiVector3D& vertex = vertices[l];
-			myVertices.push_back(vertex.x);
-			myVertices.push_back(vertex.y);
-			myVertices.push_back(vertex.z);
-
-			aiVector3D& tex = texCoords[l];
-			myVertices.push_back(tex.x);
-			myVertices.push_back(tex.y);
+			aiVector3D& v = vertices[l];
+			aiVector3D& t = texCoords[l];
+			myVertices.push_back({ v.x, v.y, v.z, t.x, t.y });
 		}
 
 		for (int k = 0; k < nFaces; k++) {

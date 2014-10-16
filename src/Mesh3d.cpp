@@ -9,7 +9,7 @@ Mesh3d::Mesh3d() {
 
 }
 
-Mesh3d::Mesh3d(string name, const vector<float>& vertices, const vector<unsigned short>& indices, uint32_t textureId) {
+Mesh3d::Mesh3d(string name, const vector<Vertex3d>& vertices, const vector<uint16_t>& indices, uint32_t textureId) {
 	this->name = name;
 
 	this->vertices = vertices;
