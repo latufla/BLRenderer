@@ -9,7 +9,10 @@
 
 #include <stdio.h>
 #include <tchar.h>
+#include <stdint.h>
+#include <string>
 
-
+#define WINDOWS_PLATFORM
+//#define ANDROID_PLATFORM
 
 // TODO: reference additional headers your program requires here
