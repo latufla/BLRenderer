@@ -5,6 +5,7 @@
 #include <glm.hpp>
 #include "Material3d.h"
 #include "tree\Node.h"
+#include <assimp/Importer.hpp>;
 
 class Utils
 {
@@ -19,5 +20,7 @@ public:
 	static bool loadTexture(std::string, Material3d&);
 
 	static void testNodeTree();
+
+	static glm::mat4 Utils::assimpToGlmMatrix(const aiMatrix4x4& m);
 };
 

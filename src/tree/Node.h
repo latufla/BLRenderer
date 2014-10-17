@@ -4,7 +4,7 @@
 #include "NodeData.h"
 
 // TODO: this code is VERYx5 slow
-class Node {
+class Node : public std::enable_shared_from_this<Node>{
 public:
 	Node();
 	Node(uint32_t, std::string, std::shared_ptr<NodeData>);
@@ -18,6 +18,9 @@ public:
 	
 	bool addChild(NodePtr);
 	
+	uint32_t getId() const { return id; }
+	void setId(uint32_t val) { id = val; }
+
 	ChildrenList& getChildren() { return children; }
 	void setChildren(const ChildrenList& val) { children = val; }
 
@@ -25,7 +28,8 @@ public:
 
 	static NodePtr createNode(uint32_t, std::string, NodeDataPtr);
 	
-	static void forEachNode(NodePtr node, void(*)(NodePtr, uint32_t), uint32_t = 0);
+	static void forEachNode(NodePtr, void(*)(NodePtr, uint32_t), uint32_t = 0);
+	static void arrangeIds(NodePtr, uint32_t&);
 
 private:
 	uint32_t id;

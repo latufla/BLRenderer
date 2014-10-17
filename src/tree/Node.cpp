@@ -43,6 +43,19 @@ void Node::forEachNode(NodePtr node, void(*eacher)(NodePtr, uint32_t), uint32_t 
 	}
 }
 
+void Node::arrangeIds(NodePtr node, uint32_t& idHelper) {
+	node->setId(idHelper);
+	
+	uint32_t nNodes = node->children.size();
+	if (nNodes == 0)
+		return;
+
+	for (int i = 0; i < nNodes; ++i) {
+		arrangeIds(node->children[i], ++idHelper);
+	}
+}
+
+
 Node::NodePtr Node::createNode(uint32_t id, string name, shared_ptr<NodeData> data) {
 	return make_shared<Node>(id, name, data);
 }

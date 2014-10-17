@@ -9,6 +9,7 @@
 #include <assimp/postprocess.h>
 
 #include "Model3d.h"
+#include "tree/Node.h"
 
 class Model3dLoader {
 public:
@@ -22,11 +23,11 @@ public:
 private:
 	std::map<std::string, std::shared_ptr<Model3d>> models;
 
-
-	void loadAnimations(const aiScene*);
-
 	void forEachNode(aiNode*, void(*)(aiNode*, int), int = 0);
 	void forEachNode(const aiScene*, aiNode*, void(*)(const aiScene*, aiNode*, std::vector<Mesh3d>&), std::vector<Mesh3d>&);
+	
+	Node::NodePtr collectBones(const aiScene*, std::string = "Armature");
+	Node::NodePtr parseBones(const aiNode*);
 };
 
 void loadMeshes(const aiScene*, aiNode*, std::vector<Mesh3d>&);

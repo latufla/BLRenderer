@@ -5,6 +5,8 @@
 using namespace std;
 using namespace glm;
 
+using std::shared_ptr;
+
 void Utils::print(mat4 m)
 {
 	for (int i = 0; i < 4; ++i){
@@ -588,26 +590,54 @@ bool Utils::loadTexture(string path, Material3d& outTexture){
 	return true;
 }
 
+glm::mat4 Utils::assimpToGlmMatrix(const aiMatrix4x4& m) {
+	return glm::mat4{
+		m.a1, m.a2, m.a3, m.a4,
+		m.b1, m.b2, m.b3, m.b4,
+		m.c1, m.c2, m.c3, m.c4,
+		m.d1, m.d2, m.d3, m.d4
+	};
+}
+
 void Utils::testNodeTree() {
 	auto parentData = make_shared<BoneNodeData>();
 	auto parentNode = Node::createNode(0, "root", parentData);
 
 	auto ch1Data = make_shared<BoneNodeData>();
-	auto ch1 = Node::createNode(1, "c1", ch1Data);
+	auto ch1 = Node::createNode(0, "c1", ch1Data);
 	parentNode->addChild(ch1);
 
+	auto ch11Data = make_shared<BoneNodeData>();
+	auto ch11 = Node::createNode(0, "c11", ch11Data);
+	ch1->addChild(ch11);
+
+	auto ch111Data = make_shared<BoneNodeData>();
+	auto ch111 = Node::createNode(0, "c111", ch111Data);
+	ch11->addChild(ch111);
+
+
 	auto ch2Data = make_shared<BoneNodeData>();
-	auto ch2 = Node::createNode(2, "c2", ch2Data);
+	auto ch2 = Node::createNode(0, "c2", ch2Data);
 	parentNode->addChild(ch2);
 
+
 	auto ch3Data = make_shared<BoneNodeData>();
-	auto ch3 = Node::createNode(3, "c3", ch3Data);
+	auto ch3 = Node::createNode(0, "c3", ch3Data);
 	parentNode->addChild(ch3);
 
-	auto ch33Data = make_shared<BoneNodeData>();
-	auto ch33 = Node::createNode(4, "c33", ch33Data);
-	ch3->addChild(ch33);
+	auto ch31Data = make_shared<BoneNodeData>();
+	auto ch31 = Node::createNode(0, "c31", ch31Data);
+	ch3->addChild(ch31);
+	
+	auto ch32Data = make_shared<BoneNodeData>();
+	auto ch32 = Node::createNode(0, "c32", ch32Data);
+	ch3->addChild(ch32);
 
+
+	std::uint32_t firstId = 0;
+	Node::arrangeIds(parentNode, firstId);
+
+	
 	Node::forEachNode(parentNode, [](Node::NodePtr node, std::uint32_t level){
 		string spacing(level, ' ');
 		cout << spacing << static_cast<string>(*(node.get())) << endl;

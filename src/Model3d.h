@@ -2,11 +2,12 @@
 #include <vector>
 #include "Mesh3d.h"
 #include "Material3d.h"
+#include "tree\Node.h"
 
 class Model3d {
 public:
 	Model3d();
-	Model3d(std::string, const std::vector<Mesh3d>&, const std::vector<std::string>& materials);
+	Model3d(std::string, const std::vector<Mesh3d>&, const std::vector<std::string>&, std::shared_ptr<Node>);
 
 	~Model3d();
 
@@ -23,5 +24,7 @@ private:
 	
 	std::vector<Mesh3d> meshes;
 	std::vector<Material3d> materials;
+
+	std::shared_ptr<Node> boneTree;
 };
 

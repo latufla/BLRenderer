@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "Model3dLoader.h"
+#include "tree\BoneNodeData.h"
+#include "Utils.h"
 
 using std::string;
 using std::to_string;
@@ -7,6 +9,7 @@ using std::map;
 using std::vector;
 
 using std::shared_ptr;
+using std::make_shared;
 
 using std::cout;
 using std::endl;
@@ -30,6 +33,12 @@ bool Model3dLoader::load(string dir, string name) {
 	aiNode* root = model3D->mRootNode;
 	forEachNode(model3D, root, loadMeshes, myMeshes);
 	forEachNode(root, printNode);
+
+	shared_ptr<Node> boneTree = collectBones(model3D);
+//	Node::forEachNode(boneTree, [](Node::NodePtr node, std::uint32_t level){
+//		string spacing(level, ' ');
+//		cout << spacing << static_cast<string>(*(node.get())) << endl;
+//	});
 	
 	uint32_t nAllTextures = model3D->mNumMaterials;
 	vector<string> myTextures;
@@ -41,7 +50,7 @@ bool Model3dLoader::load(string dir, string name) {
 
 	//loadAnimations(model3D);
 
-	shared_ptr<Model3d> myModel = std::make_shared<Model3d>(path, myMeshes, myTextures);
+	shared_ptr<Model3d> myModel = std::make_shared<Model3d>(path, myMeshes, myTextures, boneTree);
 	models[path] = myModel;
 
 	return true;
@@ -91,76 +100,36 @@ shared_ptr<Model3d> Model3dLoader::getModel3d(string name) {
 	return models[name];
 }
 
-void Model3dLoader::loadAnimations(const aiScene* model) {
-	aiNode* root = model->mRootNode;
-	uint32_t nNodes = root->mNumChildren;
-	for (uint32_t i = 0; i < nNodes; ++i) {
-		aiNode* node = root->mChildren[i];
-		cout << "nodes: ";
-		cout << endl << "name: " << node->mName.C_Str() << endl;
 
-		uint32_t nMeshes = node->mNumMeshes;
-		if (nMeshes == 0)
-			continue;
+Node::NodePtr Model3dLoader::collectBones(const aiScene* scene, string bonesRoot) {
+	aiNode* root = scene->mRootNode;
+	aiNode* armature = root->FindNode(bonesRoot.c_str());
+	if (!armature || !armature->mNumChildren)
+		return nullptr;
 
-		cout << "meshes: " << endl;
-		for (uint32_t j = 0; j < nMeshes; ++j) {
-			uint32_t meshId = node->mMeshes[j];
-			aiMesh* mesh = model->mMeshes[meshId];
-			cout << mesh->mName.C_Str() << endl;
-			
-			uint32_t nBones = mesh->mNumBones;
-			if (nBones == 0)
-				continue;
+	aiNode* rootBone = armature->mChildren[0];	
+	Node::NodePtr boneTree = parseBones(rootBone);
 
-			cout << "bones: " << endl;
-			for (uint32_t k = 0; k < nBones; ++k) {
-				aiBone* bone = mesh->mBones[k];
-				cout << bone->mName.C_Str() << endl;
-				
-// 				uint32_t nWeights = bone->mNumWeights;
-// 				if (nWeights == 0)
-// 					continue;
-// 
-// 				cout << "weights: " << endl;
-// 				for (uint32_t s = 0; s < nWeights; ++s) {
-// 					aiVertexWeight& vWeight = bone->mWeights[s];
-// 					cout << vWeight.mVertexId << " -> " << vWeight.mWeight << endl;
-// 				}
-			}
-		}
-
-
-	}
-
-	cout << endl;
-
-	uint32_t nAnimations = model->mNumAnimations;
-	if (nAnimations == 0)
-		return;
+	uint32_t firstId = 0; 
+	Node::arrangeIds(boneTree, firstId);
 	
-	cout << "animations: " << endl;
-	for (uint32_t q = 0; q < nAnimations; ++q) {
-		aiAnimation* animation = model->mAnimations[q];
-		cout << "name:" << animation->mName.C_Str() << endl;
-		cout << "duration:" << animation->mDuration << endl;
-		cout << "tps:" << animation->mTicksPerSecond << endl; // WAT
-		uint32_t nBones = animation->mNumChannels;
-		if (nBones == 0)
-			continue;
-
-		cout << "bones: " << endl;
-		for (uint32_t w = 0; w < nBones; ++w) {
-			aiNodeAnim* bone = animation->mChannels[w];
-			cout << bone->mNodeName.C_Str() << " key frames: "
-				<< bone->mNumPositionKeys << " "
-				<< bone->mNumRotationKeys << " "
-				<< bone->mNumScalingKeys << endl;
-		}
-	}
-
-	cout << endl;
+	return boneTree;
 }
+
+Node::NodePtr Model3dLoader::parseBones(const aiNode* node) {
+	glm::mat4 transform = Utils::assimpToGlmMatrix(node->mTransformation);
+	Node::NodePtr bones = Node::createNode(0, node->mName.C_Str(), make_shared<BoneNodeData>(transform));
+	
+	uint32_t nNodes = node->mNumChildren;
+	if (nNodes == 0)
+		return bones;
+
+	for (int i = 0; i < nNodes; ++i) {
+		bones->addChild(parseBones(node->mChildren[i]));
+	}
+	return bones;
+}
+
 
 void Model3dLoader::forEachNode(aiNode* node, void(*eacher)(aiNode*, int), int level) {
 	uint32_t nNodes = node->mNumChildren;
@@ -188,6 +157,22 @@ void Model3dLoader::forEachNode(const aiScene* scene, aiNode* node, void(*eacher
 		forEachNode(scene, node->mChildren[i], eacher, outMeshes);
 	}
 }
+
+
+// shared_ptr<Node> Model3dLoader::forEachNode(const aiNode* node, void(*eacher)(const aiNode*, shared_ptr<Node>, int), int level) {
+// 	uint32_t nNodes = node->mNumChildren;
+// 
+// 	eacher(node, level + 1);
+// 	cout << endl;
+// 
+// 	if (nNodes == 0)
+// 		return;
+// 
+// 	for (int i = 0; i < nNodes; ++i) {
+// 		forEachNode(node->mChildren[i], eacher, level + 1);
+// 	}
+// 
+// }
 
 void printNode(aiNode* node, int level) {
 	for (int i = 0; i < level; ++i) {

@@ -9,9 +9,10 @@ using std::exception;
 Model3d::Model3d() {
 }
 
-Model3d::Model3d(string name, const vector<Mesh3d>& meshes, const vector<string>& materials) {
+Model3d::Model3d(string name, const vector<Mesh3d>& meshes, const vector<string>& materials, std::shared_ptr<Node> boneTree) {
 	this->name = name;
 	this->meshes = meshes;
+	this->boneTree = boneTree;
 
 	for (auto& i : materials) {
 		Material3d m;

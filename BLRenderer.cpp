@@ -10,6 +10,7 @@
 #include "src\ObjectBase.h"
 #include "src\GrEngineConnector.h"
 #include "src\Infos.h"
+#include "src\Utils.h"
 
 using namespace std;
 
