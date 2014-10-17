@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Utils.h"
+#include "tree\BoneNodeData.h"
 
 using namespace std;
 using namespace glm;
@@ -585,4 +586,30 @@ bool Utils::loadTexture(string path, Material3d& outTexture){
 	outTexture.setWidth(static_cast<std::int16_t>(w));
 	outTexture.setHeight(static_cast<std::int16_t>(h));
 	return true;
+}
+
+void Utils::testNodeTree() {
+	auto parentData = make_shared<BoneNodeData>();
+	auto parentNode = Node::createNode(0, "root", parentData);
+
+	auto ch1Data = make_shared<BoneNodeData>();
+	auto ch1 = Node::createNode(1, "c1", ch1Data);
+	parentNode->addChild(ch1);
+
+	auto ch2Data = make_shared<BoneNodeData>();
+	auto ch2 = Node::createNode(2, "c2", ch2Data);
+	parentNode->addChild(ch2);
+
+	auto ch3Data = make_shared<BoneNodeData>();
+	auto ch3 = Node::createNode(3, "c3", ch3Data);
+	parentNode->addChild(ch3);
+
+	auto ch33Data = make_shared<BoneNodeData>();
+	auto ch33 = Node::createNode(4, "c33", ch33Data);
+	ch3->addChild(ch33);
+
+	Node::forEachNode(parentNode, [](Node::NodePtr node, std::uint32_t level){
+		string spacing(level, ' ');
+		cout << spacing << static_cast<string>(*(node.get())) << endl;
+	});
 }
