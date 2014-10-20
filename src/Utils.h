@@ -21,6 +21,10 @@ public:
 
 	static void testNodeTree();
 
-	static glm::mat4 Utils::assimpToGlmMatrix(const aiMatrix4x4& m);
+	static glm::mat4 Utils::assimpToGlmMatrix(const aiMatrix4x4&);
+	static glm::vec3 Utils::assimpToGlmVector3d(const aiVector3D&);
+
+	static std::string Utils::glmToString(const glm::mat4&);
+	static std::string Utils::glmToString(const glm::vec3&);
 };
 

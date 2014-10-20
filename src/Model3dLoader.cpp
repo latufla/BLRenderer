@@ -10,6 +10,7 @@ using std::vector;
 
 using std::shared_ptr;
 using std::make_shared;
+using std::move;
 
 using std::cout;
 using std::endl;
@@ -39,7 +40,10 @@ bool Model3dLoader::load(string dir, string name) {
 //		string spacing(level, ' ');
 //		cout << spacing << static_cast<string>(*(node.get())) << endl;
 //	});
-	
+
+	shared_ptr<Animation3d> animation = collectAnimations(model3D, boneTree);
+//	cout << static_cast<string>(*(animation.get()));
+
 	uint32_t nAllTextures = model3D->mNumMaterials;
 	vector<string> myTextures;
 	for (int32_t i = 0; i < nAllTextures; i++) {
@@ -156,6 +160,63 @@ void Model3dLoader::forEachNode(const aiScene* scene, aiNode* node, void(*eacher
 	for (int i = 0; i < nNodes; ++i) {
 		forEachNode(scene, node->mChildren[i], eacher, outMeshes);
 	}
+}
+
+shared_ptr<Animation3d> Model3dLoader::collectAnimations(const aiScene* scene, Node::NodePtr allBones) {
+	uint32_t nAnims = scene->mNumAnimations;
+	if (!nAnims)
+		return nullptr;
+
+	aiAnimation* anim = scene->mAnimations[0];
+
+	uint32_t nChannels = anim->mNumChannels;
+	if (!nChannels)
+		return nullptr;
+		
+	// TODO: drop not bones, wonder am i right
+	vector<BoneAnimation> boneAnimations;
+	for (uint32_t i = 0; i < nChannels; ++i) {
+		aiNodeAnim* animNode = anim->mChannels[i];
+		string nName = animNode->mNodeName.C_Str();
+		
+		bool found = false;
+		Node::NodePtr myBone = Node::findNode(allBones, nName, found);
+		if (!myBone)
+			continue;
+
+		vector<Vec3Key> positions;
+		uint32_t nPositions = animNode->mNumPositionKeys;
+		for (uint32_t j = 0; j < nPositions; ++j) {
+			aiVectorKey& posKey = animNode->mPositionKeys[j];
+			Vec3Key myPosKey{ posKey.mTime, Utils::assimpToGlmVector3d(posKey.mValue) };
+			positions.push_back(move(myPosKey));			
+		}
+
+		vector<Mat4Key> rotations;
+		uint32_t nRotations = animNode->mNumRotationKeys;
+		for (uint32_t j = 0; j < nRotations; ++j) {
+			aiQuatKey& rotKey = animNode->mRotationKeys[j];
+			aiMatrix4x4 rotMtx(rotKey.mValue.GetMatrix());
+			Mat4Key myRotKey{ rotKey.mTime, Utils::assimpToGlmMatrix(rotMtx) };
+			rotations.push_back(move(myRotKey));
+		}
+
+		vector<Vec3Key> scalings;
+		uint32_t nScalings = animNode->mNumScalingKeys;
+		for (uint32_t j = 0; j < nScalings; ++j) {
+			aiVectorKey& scaleKey = animNode->mScalingKeys[j];
+			Vec3Key myScaleKey{ scaleKey.mTime, Utils::assimpToGlmVector3d(scaleKey.mValue) };
+			scalings.push_back(move(myScaleKey));
+		}
+		BoneAnimation myBoneAnimation{ myBone->getId(), myBone->getName(), move(positions), move(rotations), move(scalings) };
+		boneAnimations.push_back(move(myBoneAnimation));
+	}
+
+	string aName = anim->mName.C_Str();
+	double duration = anim->mDuration;
+	double ticksPerSecond = anim->mTicksPerSecond;
+	shared_ptr<Animation3d> myAnimation = make_shared<Animation3d>(aName, duration, ticksPerSecond, boneAnimations);
+	return myAnimation;
 }
 
 

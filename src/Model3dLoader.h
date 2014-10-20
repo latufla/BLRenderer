@@ -26,9 +26,11 @@ private:
 	void forEachNode(aiNode*, void(*)(aiNode*, int), int = 0);
 	void forEachNode(const aiScene*, aiNode*, void(*)(const aiScene*, aiNode*, std::vector<Mesh3d>&), std::vector<Mesh3d>&);
 	
-	
 	Node::NodePtr collectBones(const aiScene*, std::string = "Armature");
 	Node::NodePtr parseBones(const aiNode*);
+
+	// TODO: collect all 
+	std::shared_ptr<Animation3d> collectAnimations(const aiScene*, Node::NodePtr);
 };
 
 void loadMeshes(const aiScene*, aiNode*, std::vector<Mesh3d>&);

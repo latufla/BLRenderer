@@ -599,6 +599,11 @@ glm::mat4 Utils::assimpToGlmMatrix(const aiMatrix4x4& m) {
 	};
 }
 
+glm::vec3 Utils::assimpToGlmVector3d(const aiVector3D& v) {
+	return glm::vec3{ v.x, v.y, v.z };
+}
+
+
 void Utils::testNodeTree() {
 	auto parentData = make_shared<BoneNodeData>();
 	auto parentNode = Node::createNode(0, "root", parentData);
@@ -647,4 +652,21 @@ void Utils::testNodeTree() {
 	string nName = "c32";
 	cout << endl << nName + ": " << endl << static_cast<string>(*(Node::findNode(parentNode, nName, found)));
 
+}
+
+string Utils::glmToString(const glm::mat4& m) {
+	string res = "{";
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			res += to_string(m[j][i]) + " ";
+		}
+		if(i!= 3)
+			res += "\n ";
+	}
+	res += "}";
+	return res;
+}
+
+string Utils::glmToString(const glm::vec3& v) {
+	return "{x: " + to_string(v.x) + " y:" + to_string(v.y) + " z: " + to_string(v.z) + "}";
 }

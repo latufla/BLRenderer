@@ -1,16 +1,25 @@
 #pragma once
 #include <vector>
-#include <map>
 #include <glm.hpp>
+
+struct Vec3Key {
+	double time;
+	glm::vec3 value;
+};
+
+struct Mat4Key {
+	double time;
+	glm::mat4 value;
+};
 
 struct BoneAnimation {
 	// from our bone tree
 	uint32_t boneId; // id in tree
 	std::string boneName; // natural born name
 
-	std::map<double, glm::vec3> timeToPosition;
-	std::map<double, glm::mat4> timeToRotation;
-	std::map<double, glm::vec3> timeToScale;
+	std::vector<Vec3Key> positions;
+	std::vector<Mat4Key> rotations;
+	std::vector<Vec3Key> scalings;
 };
 
 class Animation3d {
@@ -20,6 +29,7 @@ public:
 
 	~Animation3d();
 
+	operator std::string() const;
 private:
 	std::string name;
 
