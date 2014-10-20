@@ -12,5 +12,7 @@ public:
 	static std::string defaultFragmentShader;
 	static std::string texVertexShader;
 	static std::string texFragmentShader;
+
+	static std::string animVertexShader;
 };
 

@@ -31,6 +31,8 @@ private:
 
 	// TODO: collect all 
 	std::shared_ptr<Animation3d> collectAnimations(const aiScene*, Node::NodePtr);
+
+	void collectBoneWeights(const aiScene*, Node::NodePtr, std::vector<Mesh3d>&);
 };
 
 void loadMeshes(const aiScene*, aiNode*, std::vector<Mesh3d>&);

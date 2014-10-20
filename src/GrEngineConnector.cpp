@@ -67,7 +67,7 @@ int GrEngineConnector::init()
 	if (eglFail)
 		return eglFail;
 
-	int shadersFail = initShaders(ShaderHelper::texVertexShader, ShaderHelper::texFragmentShader);
+	int shadersFail = initShaders(ShaderHelper::animVertexShader, ShaderHelper::texFragmentShader);
 	if (shadersFail)
 		return shadersFail;
 	
@@ -170,6 +170,10 @@ bool GrEngineConnector::draw()
 
 	GLuint posLoc = glGetAttribLocation(defaultProgram, "aPosition");
 	GLuint texPosLoc = glGetAttribLocation(defaultProgram, "aTexCoord");
+	
+	GLuint boneIdLoc = glGetAttribLocation(defaultProgram, "boneIds");
+	GLuint weightsLoc = glGetAttribLocation(defaultProgram, "weights");
+	
 	GLuint samplerLoc = glGetUniformLocation(defaultProgram, "sTexture");
 	GLuint mvpMatrixLoc = glGetUniformLocation(defaultProgram, "mvpMatrix");
 	
@@ -195,6 +199,14 @@ bool GrEngineConnector::draw()
 			glEnableVertexAttribArray(texPosLoc);
 			glVertexAttribPointer(texPosLoc, Mesh3d::VERTEX3D_TEXTURE, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
 
+			offset += Mesh3d::VERTEX3D_TEXTURE * sizeof(float);
+			glEnableVertexAttribArray(boneIdLoc);
+			glVertexAttribPointer(boneIdLoc, Mesh3d::VERTEX3D_BONEIDS, GL_UNSIGNED_SHORT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
+
+			offset += Mesh3d::VERTEX3D_BONEIDS * sizeof(float);
+			glEnableVertexAttribArray(weightsLoc);
+			glVertexAttribPointer(weightsLoc, Mesh3d::VERTEX3D_WEIGHTS, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
+			
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, meshToMaterial[meshName]);
 			glUniform1i(samplerLoc, 0);
@@ -206,7 +218,12 @@ bool GrEngineConnector::draw()
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	
 	glDisableVertexAttribArray(posLoc);
+	glDisableVertexAttribArray(texPosLoc);
+	glDisableVertexAttribArray(boneIdLoc);
+	glDisableVertexAttribArray(samplerLoc);
+
 	glUseProgram(0);
 
 	eglSwapBuffers(display, surface);

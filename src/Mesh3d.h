@@ -28,6 +28,8 @@ public:
 	uint32_t getTextureId() const { return textureId; }
 
 	operator std::string() const;
+	
+	void setVertexBoneInfo(uint32_t, uint32_t, float);
 
 	static const uint8_t VERTEX3D_POSITION = 3;
 	static const uint8_t VERTEX3D_TEXTURE = 2;
@@ -37,6 +39,7 @@ public:
 		+ VERTEX3D_TEXTURE * sizeof(float) 
 		+ VERTEX3D_BONEIDS * sizeof(uint16_t) 
 		+ VERTEX3D_WEIGHTS * sizeof(float);
+
 private:
 	std::string name;	
 	

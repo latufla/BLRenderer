@@ -41,8 +41,13 @@ bool Model3dLoader::load(string dir, string name) {
 //		cout << spacing << static_cast<string>(*(node.get())) << endl;
 //	});
 
+
+	collectBoneWeights(model3D, boneTree, myMeshes);
+
 	shared_ptr<Animation3d> animation = collectAnimations(model3D, boneTree);
 //	cout << static_cast<string>(*(animation.get()));
+
+
 
 	uint32_t nAllTextures = model3D->mNumMaterials;
 	vector<string> myTextures;
@@ -54,7 +59,7 @@ bool Model3dLoader::load(string dir, string name) {
 
 	//loadAnimations(model3D);
 
-	shared_ptr<Model3d> myModel = std::make_shared<Model3d>(path, myMeshes, myTextures, boneTree, nullptr);
+	shared_ptr<Model3d> myModel = std::make_shared<Model3d>(path, myMeshes, myTextures, boneTree, animation);
 	models[path] = myModel;
 
 	return true;
@@ -69,28 +74,33 @@ void loadMeshes(const aiScene* model, aiNode* node, std::vector<Mesh3d>& outMesh
 	vector<Vertex3d> myVertices;
 	vector<unsigned short> myIndices;
 	unsigned int* meshIds = node->mMeshes;
-	for (uint32_t j = 0; j < nMeshes; j++) {
-		unsigned int meshId = meshIds[j];
+	for (uint32_t i = 0; i < nMeshes; i++) {
+		unsigned int meshId = meshIds[i];
 		aiMesh* mesh = meshes[meshId];
 		uint32_t nFaces = mesh->mNumFaces;
 		aiVector3D* vertices = mesh->mVertices;
 		aiVector3D* texCoords = mesh->mTextureCoords[0];
 		uint32_t nVertices = mesh->mNumVertices;
-		for (uint32_t l = 0; l < nVertices; l++) {
-			aiVector3D& v = vertices[l];
-			aiVector3D& t = texCoords[l];
-			myVertices.push_back({ v.x, v.y, v.z, t.x, t.y });
+		for (uint32_t j = 0; j < nVertices; j++) {
+			aiVector3D& v = vertices[j];
+			aiVector3D& t = texCoords[j];
+			myVertices.push_back({ 
+				v.x, v.y, v.z, 
+				t.x, t.y,
+				{ 0, 0, 0, 0 },
+				{0.0, 0.0, 0.0, 0.0}
+			});
 		}
 
-		for (uint32_t k = 0; k < nFaces; k++) {
-			aiFace& face = mesh->mFaces[k];
+		for (uint32_t j = 0; j < nFaces; j++) {
+			aiFace& face = mesh->mFaces[j];
 			if (face.mNumIndices != 3)
 				continue;
 
 			unsigned int* indices = face.mIndices;
 			uint32_t nIndices = face.mNumIndices;
-			for (uint32_t s = 0; s < nIndices; s++) {
-				uint32_t vertexId = indices[s];
+			for (uint32_t k = 0; k < nIndices; k++) {
+				uint32_t vertexId = indices[k];
 				myIndices.push_back(vertexId);
 			}
 		}
@@ -217,6 +227,36 @@ shared_ptr<Animation3d> Model3dLoader::collectAnimations(const aiScene* scene, N
 	double ticksPerSecond = anim->mTicksPerSecond;
 	shared_ptr<Animation3d> myAnimation = make_shared<Animation3d>(aName, duration, ticksPerSecond, boneAnimations);
 	return myAnimation;
+}
+
+void Model3dLoader::collectBoneWeights(const aiScene* scene, Node::NodePtr boneTree, vector<Mesh3d>& meshes) {
+	std::map<string, aiMesh*> nameToMeshAi;
+	uint32_t nMeshAi = scene->mNumMeshes;
+	for (uint32_t i = 0; i < nMeshAi; ++i) {
+		aiMesh* meshAi = scene->mMeshes[i];
+		nameToMeshAi[meshAi->mName.C_Str()] = meshAi;
+	}
+
+	uint32_t cnt = 0;
+	uint32_t nMesh = meshes.size();
+	for (uint32_t i = 0; i < nMesh; ++i) {
+		Mesh3d& myMesh = meshes[i];
+		aiMesh* meshAi = nameToMeshAi[myMesh.getName()];
+
+		vector<Vertex3d>& myVertices = myMesh.getVertices();
+		uint32_t nBonesAi = meshAi->mNumBones;
+		for (uint32_t j = 0; j < nBonesAi; ++j) {
+			aiBone* boneAi = meshAi->mBones[j];
+			bool found = false;
+			Node::NodePtr myBone = Node::findNode(boneTree, boneAi->mName.C_Str(), found);
+			uint32_t myBoneId = myBone->getId();
+			uint32_t nNumWeightsAi = boneAi->mNumWeights;
+			for (uint32_t k = 0; k < nNumWeightsAi; ++k) {
+				aiVertexWeight& weightAi = boneAi->mWeights[k];
+				myMesh.setVertexBoneInfo(weightAi.mVertexId, myBoneId, weightAi.mWeight);
+			}
+		}
+	}
 }
 
 

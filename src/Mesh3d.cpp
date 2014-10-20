@@ -38,3 +38,14 @@ Mesh3d::operator string() const {
 	return res;
 }
 
+void Mesh3d::setVertexBoneInfo(uint32_t vId, uint32_t boneId, float weight) {
+	Vertex3d& v = vertices[vId];
+	for (uint32_t i = 0; i < 4; ++i) {
+		if (v.weigths[i] == 0.0) { // TODO: wonder can we compare doubles
+			v.boneIds[i] = boneId;
+			v.weigths[i] = weight;
+			break;
+		}
+	}
+}
+
