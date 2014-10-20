@@ -46,7 +46,7 @@ bool Model3dLoader::load(string dir, string name) {
 
 	uint32_t nAllTextures = model3D->mNumMaterials;
 	vector<string> myTextures;
-	for (int32_t i = 0; i < nAllTextures; i++) {
+	for (uint32_t i = 0; i < nAllTextures; i++) {
 		aiString texPath;
 		model3D->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &texPath);
 		myTextures.push_back(dir + texPath.C_Str());
@@ -69,27 +69,27 @@ void loadMeshes(const aiScene* model, aiNode* node, std::vector<Mesh3d>& outMesh
 	vector<Vertex3d> myVertices;
 	vector<unsigned short> myIndices;
 	unsigned int* meshIds = node->mMeshes;
-	for (int j = 0; j < nMeshes; j++) {
+	for (uint32_t j = 0; j < nMeshes; j++) {
 		unsigned int meshId = meshIds[j];
 		aiMesh* mesh = meshes[meshId];
 		uint32_t nFaces = mesh->mNumFaces;
 		aiVector3D* vertices = mesh->mVertices;
 		aiVector3D* texCoords = mesh->mTextureCoords[0];
 		uint32_t nVertices = mesh->mNumVertices;
-		for (int l = 0; l < nVertices; l++) {
+		for (uint32_t l = 0; l < nVertices; l++) {
 			aiVector3D& v = vertices[l];
 			aiVector3D& t = texCoords[l];
 			myVertices.push_back({ v.x, v.y, v.z, t.x, t.y });
 		}
 
-		for (int k = 0; k < nFaces; k++) {
+		for (uint32_t k = 0; k < nFaces; k++) {
 			aiFace& face = mesh->mFaces[k];
 			if (face.mNumIndices != 3)
 				continue;
 
 			unsigned int* indices = face.mIndices;
 			uint32_t nIndices = face.mNumIndices;
-			for (int s = 0; s < nIndices; s++) {
+			for (uint32_t s = 0; s < nIndices; s++) {
 				uint32_t vertexId = indices[s];
 				myIndices.push_back(vertexId);
 			}
@@ -128,7 +128,7 @@ Node::NodePtr Model3dLoader::parseBones(const aiNode* node) {
 	if (nNodes == 0)
 		return bones;
 
-	for (int i = 0; i < nNodes; ++i) {
+	for (uint32_t i = 0; i < nNodes; ++i) {
 		bones->addChild(parseBones(node->mChildren[i]));
 	}
 	return bones;
@@ -144,7 +144,7 @@ void Model3dLoader::forEachNode(aiNode* node, void(*eacher)(aiNode*, int), int l
 	if (nNodes == 0)
 		return;
 
-	for (int i = 0; i < nNodes; ++i) {
+	for (uint32_t i = 0; i < nNodes; ++i) {
 		forEachNode(node->mChildren[i], eacher, level + 1);
 	}
 }
@@ -157,7 +157,7 @@ void Model3dLoader::forEachNode(const aiScene* scene, aiNode* node, void(*eacher
 	if (nNodes == 0)
 		return;
 
-	for (int i = 0; i < nNodes; ++i) {
+	for (uint32_t i = 0; i < nNodes; ++i) {
 		forEachNode(scene, node->mChildren[i], eacher, outMeshes);
 	}
 }

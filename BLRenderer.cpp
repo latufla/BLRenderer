@@ -48,7 +48,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
 
 		done = !mainWindow->doStep();
 
-		Sleep(fps * 1000); // TODO: shirt WND 
+		Sleep((unsigned long)(fps * 1000)); // TODO: shirt WND 
 	}
 
 	return 0;
