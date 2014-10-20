@@ -642,4 +642,9 @@ void Utils::testNodeTree() {
 		string spacing(level, ' ');
 		cout << spacing << static_cast<string>(*(node.get())) << endl;
 	});
+
+	bool found = false;
+	string nName = "c32";
+	cout << endl << nName + ": " << endl << static_cast<string>(*(Node::findNode(parentNode, nName, found)));
+
 }

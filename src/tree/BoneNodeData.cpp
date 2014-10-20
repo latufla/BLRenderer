@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "BoneNodeData.h"
 
-#define FULL_REPORT
-
 using std::string;
 using std::to_string;
 

@@ -21,6 +21,9 @@ public:
 	uint32_t getId() const { return id; }
 	void setId(uint32_t val) { id = val; }
 
+	std::string getName() const { return name; }
+	void setName(std::string val) { name = val; }
+
 	ChildrenList& getChildren() { return children; }
 	void setChildren(const ChildrenList& val) { children = val; }
 
@@ -30,6 +33,8 @@ public:
 	
 	static void forEachNode(NodePtr, void(*)(NodePtr, uint32_t), uint32_t = 0);
 	static void arrangeIds(NodePtr, uint32_t&);
+
+	static NodePtr findNode(NodePtr, std::string, bool&); // hash em maybe
 
 private:
 	uint32_t id;

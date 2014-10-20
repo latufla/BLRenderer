@@ -19,7 +19,7 @@ Node::Node(uint32_t id, string name, shared_ptr<NodeData> data) {
 Node::~Node() {
 }
 
-bool Node::addChild(std::shared_ptr<Node> node) {
+bool Node::addChild(NodePtr node) {
 	children.push_back(node);
 	return true;
 }
@@ -50,7 +50,7 @@ void Node::arrangeIds(NodePtr node, uint32_t& idHelper) {
 	if (nNodes == 0)
 		return;
 
-	for (int i = 0; i < nNodes; ++i) {
+	for (uint32_t i = 0; i < nNodes; ++i) {
 		arrangeIds(node->children[i], ++idHelper);
 	}
 }
@@ -58,4 +58,25 @@ void Node::arrangeIds(NodePtr node, uint32_t& idHelper) {
 
 Node::NodePtr Node::createNode(uint32_t id, string name, shared_ptr<NodeData> data) {
 	return make_shared<Node>(id, name, data);
+}
+
+Node::NodePtr Node::findNode(NodePtr inTree, string withName, bool& found) {
+	if (found)
+		return nullptr;
+
+	if (inTree->getName() == withName) {
+		found = true;
+		return inTree;
+	}
+	
+	uint32_t nNodes = inTree->children.size();
+	if (nNodes == 0)
+		return nullptr;
+
+	for (uint32_t i = 0; i < nNodes; ++i) {
+		NodePtr res = findNode(inTree->children[i], withName, found);
+		if (res)
+			return res;
+	}
+	return nullptr;
 }
