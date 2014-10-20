@@ -50,7 +50,7 @@ bool Model3dLoader::load(string dir, string name) {
 
 	//loadAnimations(model3D);
 
-	shared_ptr<Model3d> myModel = std::make_shared<Model3d>(path, myMeshes, myTextures, boneTree);
+	shared_ptr<Model3d> myModel = std::make_shared<Model3d>(path, myMeshes, myTextures, boneTree, nullptr);
 	models[path] = myModel;
 
 	return true;

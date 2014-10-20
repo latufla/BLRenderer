@@ -5,7 +5,7 @@
 #include <glm.hpp>
 #include "Material3d.h"
 #include "tree\Node.h"
-#include <assimp/Importer.hpp>;
+#include <assimp/Importer.hpp>
 
 class Utils
 {

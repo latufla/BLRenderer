@@ -5,14 +5,16 @@
 using std::vector;
 using std::string;
 using std::exception;
+using std::shared_ptr;
 
 Model3d::Model3d() {
 }
 
-Model3d::Model3d(string name, const vector<Mesh3d>& meshes, const vector<string>& materials, std::shared_ptr<Node> boneTree) {
+Model3d::Model3d(string name, const vector<Mesh3d>& meshes, const vector<string>& materials, shared_ptr<Node> boneTree, shared_ptr<Animation3d> animation) {
 	this->name = name;
 	this->meshes = meshes;
 	this->boneTree = boneTree;
+	this->animation = animation;
 
 	for (auto& i : materials) {
 		Material3d m;
