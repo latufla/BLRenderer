@@ -203,7 +203,7 @@ bool GrEngineConnector::draw()
 			glEnableVertexAttribArray(boneIdLoc);
 			glVertexAttribPointer(boneIdLoc, Mesh3d::VERTEX3D_BONEIDS, GL_UNSIGNED_SHORT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
 
-			offset += Mesh3d::VERTEX3D_BONEIDS * sizeof(float);
+			offset += Mesh3d::VERTEX3D_BONEIDS * sizeof(uint16_t);
 			glEnableVertexAttribArray(weightsLoc);
 			glVertexAttribPointer(weightsLoc, Mesh3d::VERTEX3D_WEIGHTS, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
 			
