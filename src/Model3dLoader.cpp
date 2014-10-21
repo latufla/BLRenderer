@@ -41,13 +41,10 @@ bool Model3dLoader::load(string dir, string name) {
 //		cout << spacing << static_cast<string>(*(node.get())) << endl;
 //	});
 
-
-	collectBoneWeights(model3D, boneTree, myMeshes);
+	collectBoneWeightsAndOffsets(model3D, boneTree, myMeshes);
 
 	shared_ptr<Animation3d> animation = collectAnimations(model3D, boneTree);
 //	cout << static_cast<string>(*(animation.get()));
-
-
 
 	uint32_t nAllTextures = model3D->mNumMaterials;
 	vector<string> myTextures;
@@ -56,8 +53,6 @@ bool Model3dLoader::load(string dir, string name) {
 		model3D->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &texPath);
 		myTextures.push_back(dir + texPath.C_Str());
 	}
-
-	//loadAnimations(model3D);
 
 	shared_ptr<Model3d> myModel = std::make_shared<Model3d>(path, myMeshes, myTextures, boneTree, animation);
 	models[path] = myModel;
@@ -229,7 +224,7 @@ shared_ptr<Animation3d> Model3dLoader::collectAnimations(const aiScene* scene, N
 	return myAnimation;
 }
 
-void Model3dLoader::collectBoneWeights(const aiScene* scene, Node::NodePtr boneTree, vector<Mesh3d>& meshes) {
+void Model3dLoader::collectBoneWeightsAndOffsets(const aiScene* scene, Node::NodePtr boneTree, vector<Mesh3d>& meshes) {
 	std::map<string, aiMesh*> nameToMeshAi;
 	uint32_t nMeshAi = scene->mNumMeshes;
 	for (uint32_t i = 0; i < nMeshAi; ++i) {
@@ -237,7 +232,6 @@ void Model3dLoader::collectBoneWeights(const aiScene* scene, Node::NodePtr boneT
 		nameToMeshAi[meshAi->mName.C_Str()] = meshAi;
 	}
 
-	uint32_t cnt = 0;
 	uint32_t nMesh = meshes.size();
 	for (uint32_t i = 0; i < nMesh; ++i) {
 		Mesh3d& myMesh = meshes[i];
@@ -250,6 +244,8 @@ void Model3dLoader::collectBoneWeights(const aiScene* scene, Node::NodePtr boneT
 			bool found = false;
 			Node::NodePtr myBone = Node::findNode(boneTree, boneAi->mName.C_Str(), found);
 			uint32_t myBoneId = myBone->getId();
+			myMesh.setBoneOffset(myBoneId, Utils::assimpToGlmMatrix(boneAi->mOffsetMatrix));
+			
 			uint32_t nNumWeightsAi = boneAi->mNumWeights;
 			for (uint32_t k = 0; k < nNumWeightsAi; ++k) {
 				aiVertexWeight& weightAi = boneAi->mWeights[k];
@@ -257,23 +253,8 @@ void Model3dLoader::collectBoneWeights(const aiScene* scene, Node::NodePtr boneT
 			}
 		}
 	}
+	int i = 0;
 }
-
-
-// shared_ptr<Node> Model3dLoader::forEachNode(const aiNode* node, void(*eacher)(const aiNode*, shared_ptr<Node>, int), int level) {
-// 	uint32_t nNodes = node->mNumChildren;
-// 
-// 	eacher(node, level + 1);
-// 	cout << endl;
-// 
-// 	if (nNodes == 0)
-// 		return;
-// 
-// 	for (int i = 0; i < nNodes; ++i) {
-// 		forEachNode(node->mChildren[i], eacher, level + 1);
-// 	}
-// 
-// }
 
 void printNode(aiNode* node, int level) {
 	for (int i = 0; i < level; ++i) {
