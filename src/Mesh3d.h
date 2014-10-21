@@ -33,9 +33,9 @@ public:
 	operator std::string() const;
 	
 	void setVertexBoneInfo(uint32_t, uint32_t, float);
-	
 	void setBoneOffset(uint32_t, glm::mat4);
-	glm::mat4& getBoneOffset(uint32_t);
+
+	std::map<uint32_t, glm::mat4>& getBoneIdToOffset() { return boneIdToOffset; }
 
 	static const uint8_t VERTEX3D_POSITION = 3;
 	static const uint8_t VERTEX3D_TEXTURE = 2;

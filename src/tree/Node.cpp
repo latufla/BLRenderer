@@ -43,6 +43,18 @@ void Node::forEachNode(NodePtr node, void(*eacher)(NodePtr, uint32_t), uint32_t 
 	}
 }
 
+void Node::forEachNode(NodePtr node, void* inData, void(*eacher)(NodePtr, void*, void*), void* outData) {
+	eacher(node, inData, outData);
+
+	ChildrenList& chList = node->children;
+	if (!chList.size())
+		return;
+
+	for (auto& i : chList) {
+		forEachNode(i, inData, eacher, outData);
+	}
+}
+
 void Node::arrangeIds(NodePtr node, uint32_t& idHelper) {
 	node->setId(idHelper);
 	

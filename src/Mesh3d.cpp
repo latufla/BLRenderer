@@ -53,7 +53,4 @@ void Mesh3d::setBoneOffset(uint32_t id, glm::mat4 offset) {
 	boneIdToOffset[id] = offset;
 }
 
-glm::mat4& Mesh3d::getBoneOffset(uint32_t id) {
-	return boneIdToOffset[id];
-}
 

@@ -42,7 +42,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
 	const float fps = 1 / 60;
 	bool done = false;
 	while (!done) {
-		objects[0].get()->rotateY(0.05f);
+		//objects[0].get()->rotateY(0.05f);
 
 		renderer.draw();
 

@@ -16,9 +16,16 @@ public:
 	std::vector<Mesh3d>& getMeshes() { return meshes; }
 	std::vector<Material3d>& getMaterials() { return materials; }
 
+	std::shared_ptr<Animation3d> getAnimation() const { return animation; }
+
+	Node::NodePtr getBoneTree() const { return boneTree; }
+
 	operator std::string() const;
 
 	std::string getUniqueMeshName(const Mesh3d&);
+
+	glm::mat4& getGlobalInverseTransform() { return globalInverseTransform; }
+	void setGlobalInverseTransform(glm::mat4 val) { globalInverseTransform = val; }
 
 private:
 	std::string name;
@@ -27,7 +34,8 @@ private:
 	std::vector<Material3d> materials;
 
 	std::shared_ptr<Node> boneTree;
-
 	std::shared_ptr<Animation3d> animation;
+
+	glm::mat4 globalInverseTransform;
 };
 

@@ -30,6 +30,9 @@ public:
 	~Animation3d();
 
 	operator std::string() const;
+
+	BoneAnimation* getBoneAnimation(uint32_t); // TODO: fix this dirt
+
 private:
 	std::string name;
 

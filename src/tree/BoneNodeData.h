@@ -10,6 +10,8 @@ public:
 
 	operator std::string() const override;
 
+	glm::mat4& getTransform() { return transform; }
+
 private:
 	glm::mat4 transform;
 };

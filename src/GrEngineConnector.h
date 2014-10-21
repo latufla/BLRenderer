@@ -7,9 +7,14 @@
 #include "ObjectBase.h"
 #include "Utils.h"
 
-#include <map>
+#include <array>
 #include <utility>
 #include "Model3dLoader.h"
+
+struct BoneData {
+	glm::mat4 offset;
+	glm::mat4 finalTransform;
+};
 
 struct BufferInfo {
 	uint32_t id;
@@ -72,5 +77,9 @@ private:
 
 	unsigned int loadShader(unsigned int, const char*);
 	unsigned int loadTexture(std::vector<unsigned char>&, int16_t, int16_t);
+
+	std::array<BoneData, 100> createBonesData(Mesh3d&);
+	void transformBonesData(std::shared_ptr<Model3d>, std::array<BoneData, 100>&);
+	void transformEachBoneData(const glm::mat4&, Node::NodePtr, std::shared_ptr<Animation3d>, glm::mat4, std::array<BoneData, 100>&);
 };
 

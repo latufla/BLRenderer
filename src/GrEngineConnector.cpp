@@ -11,6 +11,7 @@
 #include "ObjectInfo.h"
 #include "Material3d.h"
 #include "Infos.h"
+#include "tree/BoneNodeData.h"
 
 using namespace std;
 
@@ -171,6 +172,7 @@ bool GrEngineConnector::draw()
 	GLuint posLoc = glGetAttribLocation(defaultProgram, "aPosition");
 	GLuint texPosLoc = glGetAttribLocation(defaultProgram, "aTexCoord");
 	
+	GLuint bonesLoc = glGetUniformLocation(defaultProgram, "bones");
 	GLuint boneIdLoc = glGetAttribLocation(defaultProgram, "boneIds");
 	GLuint weightsLoc = glGetAttribLocation(defaultProgram, "weights");
 	
@@ -185,7 +187,16 @@ bool GrEngineConnector::draw()
 		ObjectInfo info = Infos::getInfo(obj->getInfo());
 		shared_ptr<Model3d> model = loader.getModel3d(info.getModelPath());
 		vector<Mesh3d>& meshes = model->getMeshes();
-		for (auto& s : meshes) {		
+		for (auto& s : meshes) {
+
+			// performance
+			array<BoneData, 100> bonesData = createBonesData(s);
+			transformBonesData(model, bonesData);
+			for (uint32_t i = 0; i < bonesData.size(); ++i) {
+				glUniformMatrix4fv(bonesLoc + i, 1, GL_FALSE, &(bonesData[i].finalTransform[0][0]));
+			}
+			//
+
 			string meshName = model->getUniqueMeshName(s);
 			buffer_pair& buffers = meshToBuffer[meshName];
 			glBindBuffer(GL_ARRAY_BUFFER, buffers.first.id);
@@ -369,4 +380,53 @@ void GrEngineConnector::setCamera(float x, float y, float z) {
 	camera.y = y;
 	camera.z = z;
 }
+
+
+array<BoneData, 100> GrEngineConnector::createBonesData(Mesh3d& m) {
+	array<BoneData, 100> res;
+	for (auto& i : m.getBoneIdToOffset()) {
+		BoneData& bData = res[i.first];
+		bData.offset = i.second;
+	}
+	return res;
+}
+
+void GrEngineConnector::transformBonesData(shared_ptr<Model3d> model, array<BoneData, 100>& outBonesData) {
+	glm::mat4 parentTransform;
+	transformEachBoneData(model->getGlobalInverseTransform(), model->getBoneTree(), model->getAnimation(), parentTransform, outBonesData);
+}
+
+void GrEngineConnector::transformEachBoneData(const glm::mat4& globalInverseTransform, Node::NodePtr boneTree, shared_ptr<Animation3d> animation, glm::mat4 parentTransform, array<BoneData, 100>& outBonesData) {
+	const uint32_t key = 1;
+	uint32_t boneId = boneTree->getId();
+	BoneNodeData* bNData = (BoneNodeData*)boneTree->getData().get();
+	glm::mat4 nodeTransform = bNData->getTransform();
+	
+	BoneAnimation* bAnim = animation->getBoneAnimation(boneId);
+	if (bAnim) {
+		glm::vec3 scalingV = bAnim->scalings[key].value;
+		glm::mat4 scalingM;
+		scalingM = glm::scale(scalingM, scalingV);
+
+		glm::mat4 rotationM = bAnim->rotations[key].value;
+
+		glm::vec3 translationV = bAnim->positions[key].value;
+		glm::mat4 translationM;
+		translationM = glm::translate(translationM, translationV);
+
+		nodeTransform = translationM * rotationM * scalingM;
+	}
+	
+	glm::mat4 globalTransform = parentTransform * nodeTransform;
+	BoneData& outBData = outBonesData[boneId];
+	outBData.finalTransform = globalInverseTransform * globalTransform * outBData.offset;
+
+	vector<Node::NodePtr> children = boneTree->getChildren();
+	uint32_t nChildren = children.size();
+	for (uint32_t i = 0; i < nChildren; ++i) {
+		transformEachBoneData(globalInverseTransform, children[i], animation, globalTransform, outBonesData);
+	}
+}
+
+
 

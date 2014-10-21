@@ -44,8 +44,8 @@ std::string ShaderHelper::texFragmentShader =
 
 
 std::string ShaderHelper::animVertexShader =
-"uniform mat4 mvpMatrix;	  \n"
-
+"uniform mat4 mvpMatrix;	 \n"
+"uniform mat4 bones[100];	 \n"
 "attribute vec4 aPosition;   \n"
 
 "attribute vec2 aTexCoord;   \n"
@@ -56,13 +56,10 @@ std::string ShaderHelper::animVertexShader =
 "varying vec2 vTexCoord;     \n"
 "void main()                  \n"
 "{                            \n"
-"	mat4 boneTransform = mat4(1.0);			\n"
-"boneIds; \n"
-"	boneTransform += boneTransform * weights.x;			\n"
-"	boneTransform += boneTransform * weights.y;			\n"
-"	boneTransform += boneTransform * weights.z;			\n"
-"	boneTransform += boneTransform * weights.w;			\n"
-
+"	mat4 boneTransform = bones[int(boneIds.x)] * weights.x;			\n"
+"	boneTransform += bones[int(boneIds.y)] * weights.y;			\n"
+"	boneTransform += bones[int(boneIds.z)] * weights.z;			\n"
+"	boneTransform += bones[int(boneIds.w)] * weights.w;			\n"
 "   vec4 pos = boneTransform * aPosition;	\n"
 "   gl_Position = mvpMatrix * pos;			\n"
 "   vTexCoord = aTexCoord;  \n"

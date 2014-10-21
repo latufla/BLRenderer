@@ -55,6 +55,7 @@ bool Model3dLoader::load(string dir, string name) {
 	}
 
 	shared_ptr<Model3d> myModel = std::make_shared<Model3d>(path, myMeshes, myTextures, boneTree, animation);
+	myModel->setGlobalInverseTransform(Utils::assimpToGlmMatrix(root->mTransformation));
 	models[path] = myModel;
 
 	return true;

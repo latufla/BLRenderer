@@ -61,3 +61,11 @@ Animation3d::operator string() const {
 	res += "}}";
 	return res;
 }
+
+BoneAnimation* Animation3d::getBoneAnimation(uint32_t id) {
+	for (auto& i : boneAnimations) {
+		if (i.boneId == id)
+			return &i;
+	}
+	return nullptr;
+}
