@@ -55,14 +55,14 @@ private:
 	std::map<uint32_t, View> idToObject;
 	
 	
-	struct MeshBufferData {
+	struct GpuBufferData {
 		uint32_t vBuffer;
 		uint32_t iBuffer;
 		uint32_t iBufferLenght;
 
 		uint32_t texture;
 	};
-	std::map<std::string, MeshBufferData> meshToBuffer;
+	std::map<std::string, GpuBufferData> meshToBuffer;
 
 
 	// gl loading, sync
