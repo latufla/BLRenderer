@@ -188,8 +188,7 @@ bool GrEngineConnector::draw()
 		shared_ptr<Model3d> model = loader.getModel3d(info.getModelPath());
 		vector<Mesh3d>& meshes = model->getMeshes();
 		for (auto& s : meshes) {
-			BonesDataMap bonesData = createBonesData(s);
-			transformBonesData(model, bonesData);
+			BonesDataMap bonesData = createBonesData(model, model->getAnimation(), s); // concrete animation label from object base
 			for (auto& i : bonesData) {
 				glUniformMatrix4fv(bonesLoc + i.first, 1, GL_FALSE, &(i.second.finalTransform[0][0]));
 			}
@@ -379,21 +378,18 @@ void GrEngineConnector::setCamera(float x, float y, float z) {
 }
 
 
-GrEngineConnector::BonesDataMap GrEngineConnector::createBonesData(Mesh3d& m) {
+GrEngineConnector::BonesDataMap GrEngineConnector::createBonesData(shared_ptr<Model3d> model, shared_ptr<Animation3d> a, Mesh3d& m) {
 	BonesDataMap res;
 	auto& boneIdToOffset = m.getBoneIdToOffset();
 	for (auto& i : boneIdToOffset) {
 		res[i.first].offset = i.second;
 	}
+	
+	transformBonesData(model->getGlobalInverseTransform(), model->getBoneTree(), a, glm::mat4(), res);
 	return res;
 }
 
-void GrEngineConnector::transformBonesData(shared_ptr<Model3d> model, BonesDataMap& outBonesData) {
-	glm::mat4 parentTransform;
-	transformEachBoneData(model->getGlobalInverseTransform(), model->getBoneTree(), model->getAnimation(), parentTransform, outBonesData);
-}
-
-void GrEngineConnector::transformEachBoneData(const glm::mat4& globalInverseTransform, Node::NodePtr boneTree, shared_ptr<Animation3d> animation, glm::mat4 parentTransform, BonesDataMap& outBonesData) {
+void GrEngineConnector::transformBonesData(const glm::mat4& globalInverseTransform, Node::NodePtr boneTree, shared_ptr<Animation3d> animation, glm::mat4 parentTransform, BonesDataMap& outBonesData) {
 	const uint32_t key = 1;
 	uint32_t boneId = boneTree->getId();
 	BoneNodeData* bNData = (BoneNodeData*)boneTree->getData().get();
@@ -424,7 +420,7 @@ void GrEngineConnector::transformEachBoneData(const glm::mat4& globalInverseTran
 	vector<Node::NodePtr> children = boneTree->getChildren();
 	uint32_t nChildren = children.size();
 	for (uint32_t i = 0; i < nChildren; ++i) {
-		transformEachBoneData(globalInverseTransform, children[i], animation, globalTransform, outBonesData);
+		transformBonesData(globalInverseTransform, children[i], animation, globalTransform, outBonesData);
 	}
 }
 
