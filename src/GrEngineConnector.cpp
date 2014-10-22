@@ -6,7 +6,7 @@
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
-#include "Model3D.h"
+#include "Model3d.h"
 #include "Model3dLoader.h"
 #include "Material3d.h"
 #include "tree/BoneNodeData.h"
@@ -46,9 +46,9 @@ GrEngineConnector::~GrEngineConnector()
 {
 	glDeleteProgram(defaultProgram);
 
-	vector<uint32_t> allObjects = objects;
+	auto allObjects = idToObject;
 	for (auto& i : allObjects) {
-		remove(i);
+		removeObject(i.first);
 	}
 	int i = 0;
 }
@@ -80,14 +80,22 @@ int32_t GrEngineConnector::init()
 	return 0;
 }
 
+
+bool GrEngineConnector::registerModel3d(string dir, string name) {
+	return loader.load(dir, name);
+}
+
+bool GrEngineConnector::transform(uint32_t id, const glm::mat4& t) {
+	idToObject[id].setTransform(t);
+	return true;
+}
+
+
 // TODO: check errors
-bool GrEngineConnector::add(uint32_t id, const ObjectInfo& info){
-	objects.push_back(id);
-	objectToInfo[id] = info;
-
-	loader.load(info.getModelDir(), info.getName());
-
-	shared_ptr<Model3d> model = loader.getModel3d(info.getModelPath());
+bool GrEngineConnector::addObject(uint32_t id, std::string path){
+	idToObject[id] = { id, "", path };
+	
+	shared_ptr<Model3d> model = loader.getModel3d(path);
 	vector<Mesh3d>& meshes = model->getMeshes();
 	for (auto& s : meshes) {
 		uint32_t vBuffer;
@@ -119,18 +127,12 @@ bool GrEngineConnector::add(uint32_t id, const ObjectInfo& info){
 	return true;
 }
 
-bool GrEngineConnector::remove(uint32_t id)
+bool GrEngineConnector::removeObject(uint32_t id)
 {
-	auto b = cbegin(objects);
-	auto e = cend(objects);
-	auto idx = find(b, e, id);
-	if (idx == e)
-		return false;
+	View& view = idToObject[id];
 
-	objects.erase(idx);
-
-	ObjectInfo& info = objectToInfo[id];
-	shared_ptr<Model3d> model = loader.getModel3d(info.getModelPath());
+	// TODO: fix, deletes data even other view`s with such data still exists
+	shared_ptr<Model3d> model = loader.getModel3d(view.getPath());
 	vector<Mesh3d>& meshes = model->getMeshes();
 	for (auto& s : meshes) {
 		string mName = model->getUniqueMeshName(s);
@@ -152,9 +154,9 @@ bool GrEngineConnector::remove(uint32_t id)
 			meshToMaterial.erase(tIt);
 	}
 
-	auto& it = objectToInfo.find(id);
-	if (it != end(objectToInfo))
-		objectToInfo.erase(it);
+	auto& it = idToObject.find(id);
+	if (it != end(idToObject))
+		idToObject.erase(it);
 
 	return true;
 }
@@ -187,13 +189,13 @@ bool GrEngineConnector::doStep(uint32_t  stepMSec)
 	GLuint samplerLoc = glGetUniformLocation(defaultProgram, "sTexture");
 	GLuint mvpMatrixLoc = glGetUniformLocation(defaultProgram, "mvpMatrix");
 	
-	for (uint32_t& id : objects){
-		const glm::mat4& modelMtx = objectToTransform[id];
+	for (auto& i : idToObject){
+		View& view = i.second;
+		const glm::mat4& modelMtx = view.getTransform();
 		glm::mat4 mvpMtx = pvMatrix * modelMtx;
 		glUniformMatrix4fv(mvpMatrixLoc, 1, GL_FALSE, &mvpMtx[0][0]);
 
-		const ObjectInfo& info = objectToInfo[id];
-		shared_ptr<Model3d> model = loader.getModel3d(info.getModelPath());
+		shared_ptr<Model3d> model = loader.getModel3d(view.getPath());
 		vector<Mesh3d>& meshes = model->getMeshes();
 		for (auto& s : meshes) {
 			BonesDataMap bonesData = createBonesData(model, model->getAnimation(), s); // concrete animation label from object base
@@ -430,11 +432,6 @@ void GrEngineConnector::transformBonesData(const glm::mat4& globalInverseTransfo
 	for (uint32_t i = 0; i < nChildren; ++i) {
 		transformBonesData(globalInverseTransform, children[i], animation, globalTransform, outBonesData);
 	}
-}
-
-bool GrEngineConnector::transform(uint32_t id, const glm::mat4& t) {
-	objectToTransform[id] = t;
-	return true;
 }
 
 

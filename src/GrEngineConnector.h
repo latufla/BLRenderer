@@ -11,7 +11,7 @@
 #include "Model3dLoader.h"
 #include <unordered_map>
 #include <glm.hpp>
-#include "ObjectInfo.h"
+#include "View.h"
 
 class GrEngineConnector
 {
@@ -24,8 +24,11 @@ public:
 	}
 
 	int32_t init();
-	bool add(uint32_t, const ObjectInfo&);
-	bool remove(uint32_t);
+	
+	bool registerModel3d(std::string, std::string);
+	
+	bool addObject(uint32_t, std::string);
+	bool removeObject(uint32_t);
 	bool doStep(uint32_t);
 
 	bool transform(uint32_t, const glm::mat4&);
@@ -49,9 +52,7 @@ private:
 	Model3dLoader loader;
 	Camera camera;
 
-	std::vector<uint32_t> objects;
-	std::map<uint32_t, ObjectInfo> objectToInfo;
-	std::map<uint32_t, glm::mat4> objectToTransform;
+	std::map<uint32_t, View> idToObject;
 
 	// VBO
 	struct BufferData {

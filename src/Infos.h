@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <memory>
-#include "ObjectInfo.h"
+#include "Model3dInfo.h"
 #include <map>
 
 static const std::string CUBE = "Cube";
@@ -17,10 +17,10 @@ public:
 	~Infos() = delete;
 
 	
-	static ObjectInfo getInfo(std::string name = "") {
+	static Model3dInfo getInfo(std::string name = "") {
 		return infos[name];
 	}
 private:
-	static std::map < std::string, ObjectInfo > infos;
+	static std::map < std::string, Model3dInfo > infos;
 };
 

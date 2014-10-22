@@ -4,7 +4,7 @@
 using std::map;
 using std::string;
 
-std::map < std::string, ObjectInfo > Infos::infos = {
+std::map < std::string, Model3dInfo > Infos::infos = {
 		{ CUBE, {
 			CUBE
 		}},

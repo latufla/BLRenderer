@@ -7,7 +7,7 @@
 
 #include "src\WindowVendor.h"
 
-#include "src\ObjectBase.h"
+#include "ObjectBase.h"
 #include "src\GrEngineConnector.h"
 #include "src\Infos.h"
 #include "src\Utils.h"
@@ -32,11 +32,15 @@ int _tmain(int argc, _TCHAR* argv[]) {
 		return rendererFail;
 
 	renderer.setCamera(0.0f, 0.0f, 1.0f);
+	
+
+	const Model3dInfo& info = Infos::getInfo(GUN);
+	renderer.registerModel3d(info.getModelDir(), info.getName());
 
 	for (shared_ptr<ObjectBase> s : objects) {
 		uint32_t id = s->getId();
-		const ObjectInfo& info = Infos::getInfo(s->getInfo());
-		renderer.add(id, info);
+		const Model3dInfo& info = Infos::getInfo(s->getInfo());
+		renderer.addObject(id, info.getModelPath());
 		renderer.transform(id, s->getOrientation());
 	}
 

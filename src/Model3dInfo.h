@@ -1,12 +1,12 @@
 #pragma once
 #include <string>
 
-class ObjectInfo {
+class Model3dInfo {
 public:
-	ObjectInfo();
-	ObjectInfo(std::string);
+	Model3dInfo();
+	Model3dInfo(std::string);
 	
-	~ObjectInfo();
+	~Model3dInfo();
 
 	std::string getName() const { return name; }
 	
