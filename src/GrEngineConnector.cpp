@@ -42,25 +42,11 @@ GrEngineConnector::~GrEngineConnector()
 {
 	glDeleteProgram(defaultProgram);
 
-	// remove buffers
-// 	GLsizei sz;
-// 	GLuint buffer;
-// 	for (auto& i : buffers) {
-// 		sz = sizeof(float) * i.first->getVertices().size();
-// 		buffer = i.second.first;
-// 		glDeleteBuffers(sz, &buffer);
-// 
-// 		sz = sizeof(float) * i.first->getIndices().size();
-// 		buffer = i.second.second;
-// 		glDeleteBuffers(sz, &buffer);
-// 	}
-
-	// remove materials
-
-	
-// 	for (auto i : textures){
-// 		glDeleteTextures(1, &i.second);
-// 	}
+	vector<ObjectBase*> allObjects = objects;
+	for (auto& i : allObjects) {
+		remove(i);
+	}
+	int i = 0;
 }
 
 int32_t GrEngineConnector::init()
