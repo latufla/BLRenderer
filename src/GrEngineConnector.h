@@ -50,11 +50,11 @@ private:
 
 	// VBO
 	struct BufferData {
-		uint32_t id;
-		uint32_t length; // not size in bytes
+		uint32_t vBuffer;
+		uint32_t iBuffer;
+		uint32_t iBufferLenght;
 	};
-	typedef std::pair<BufferData, BufferData> BufferPair;
-	std::map<std::string, BufferPair> meshToBuffer;
+	std::map<std::string, BufferData> meshToBuffer;
 	// ---
 
 	// textures

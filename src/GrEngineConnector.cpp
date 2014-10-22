@@ -41,10 +41,11 @@ enum ImporterError{
 GrEngineConnector::~GrEngineConnector()
 {
 	glDeleteProgram(defaultProgram);
-	
+
+	// remove buffers
 // 	GLsizei sz;
 // 	GLuint buffer;
-// 	for (auto i : buffers){
+// 	for (auto& i : buffers) {
 // 		sz = sizeof(float) * i.first->getVertices().size();
 // 		buffer = i.second.first;
 // 		glDeleteBuffers(sz, &buffer);
@@ -53,6 +54,10 @@ GrEngineConnector::~GrEngineConnector()
 // 		buffer = i.second.second;
 // 		glDeleteBuffers(sz, &buffer);
 // 	}
+
+	// remove materials
+
+	
 // 	for (auto i : textures){
 // 		glDeleteTextures(1, &i.second);
 // 	}
@@ -89,31 +94,29 @@ int32_t GrEngineConnector::init()
 bool GrEngineConnector::add(ObjectBase* obj){
 	objects.push_back(obj);
 	
-	ObjectInfo info = Infos::getInfo(obj->getInfo());
+	ObjectInfo& info = Infos::getInfo(obj->getInfo());
 	loader.load(info.getModelDir(), info.getName());
 
 	shared_ptr<Model3d> model = loader.getModel3d(info.getModelPath());
 	vector<Mesh3d>& meshes = model->getMeshes();
 	for (auto& s : meshes) {
-		BufferInfo vBuffer, iBuffer;
-		glGenBuffers(1, &vBuffer.id);
+		uint32_t vBuffer;
+		glGenBuffers(1, &vBuffer);
 
 		auto vertices = s.getVertices();
-		vBuffer.length = vertices.size();
+		glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex3d) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
 		
-		glBindBuffer(GL_ARRAY_BUFFER, vBuffer.id);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex3d) * vBuffer.length, &vertices[0], GL_STATIC_DRAW);
-		
-		glGenBuffers(1, &iBuffer.id);
+		uint32_t iBuffer;
+		glGenBuffers(1, &iBuffer);
 
 		auto indices = s.getIndices();
-		iBuffer.length = indices.size();
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer.id);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * iBuffer.length, &indices[0], GL_STATIC_DRAW);
+		uint32_t iBufferLength = indices.size();
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * iBufferLength, &indices[0], GL_STATIC_DRAW);
 		
 		string meshName = model->getUniqueMeshName(s);
-		meshToBuffer[meshName] = buffer_pair(vBuffer, iBuffer);
+		meshToBuffer[meshName] = { vBuffer, iBuffer, iBufferLength };
 	
 		Material3d& mt = model->getMaterials()[s.getTextureId()];
 		meshToMaterial[meshName] = loadTexture(mt.getData(), mt.getWidth(), mt.getHeight());
@@ -126,28 +129,38 @@ bool GrEngineConnector::add(ObjectBase* obj){
 	return true;
 }
 
-bool GrEngineConnector::remove(ObjectBase* s)
+bool GrEngineConnector::remove(ObjectBase* obj)
 {
 	auto b = cbegin(objects);
 	auto e = cend(objects);
-	auto idx = find(b, e, s);
+	auto idx = find(b, e, obj);
 	if (idx == e)
 		return false;
 
 	objects.erase(idx);
 
-	// TODO: check buffer deletion
-// 	GLsizei sz = sizeof(float) * s->getVertices().size();
-// 	GLuint buffer = buffers[s].first;
-// 	glDeleteBuffers(sz, &buffer);
-// 
-// 	sz = sizeof(float) * s->getIndices().size();
-// 	buffer = buffers[s].second;
-// 	glDeleteBuffers(sz, &buffer);
+	ObjectInfo& info = Infos::getInfo(obj->getInfo());
+	shared_ptr<Model3d> model = loader.getModel3d(info.getModelPath());
+	vector<Mesh3d>& meshes = model->getMeshes();
+	for (auto& s : meshes) {
+		string mName = model->getUniqueMeshName(s);
+		BufferData& buffers = meshToBuffer[mName];
 
-	// check texture deletion
-//	glDeleteTextures(1, &textures[s]);
 
+		glDeleteBuffers(1, &buffers.vBuffer);
+		glDeleteBuffers(1, &buffers.iBuffer);
+		
+		auto& bIt = meshToBuffer.find(mName);
+		if (bIt != end(meshToBuffer))
+			meshToBuffer.erase(bIt);
+		
+
+		glDeleteTextures(1, &meshToMaterial[mName]);
+		
+		auto& tIt = meshToMaterial.find(mName);
+		if (tIt != end(meshToMaterial))
+			meshToMaterial.erase(tIt);
+	}
 	return true;
 }
 
@@ -194,9 +207,9 @@ bool GrEngineConnector::draw()
 			}
 
 			string meshName = model->getUniqueMeshName(s);
-			buffer_pair& buffers = meshToBuffer[meshName];
-			glBindBuffer(GL_ARRAY_BUFFER, buffers.first.id);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.second.id);
+			BufferData& buffers = meshToBuffer[meshName];
+			glBindBuffer(GL_ARRAY_BUFFER, buffers.vBuffer);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.iBuffer);
 
 			uint8_t offset = 0;
 			glEnableVertexAttribArray(posLoc);
@@ -219,7 +232,7 @@ bool GrEngineConnector::draw()
 			glUniform1i(samplerLoc, 0);
 
 			
-			glDrawElements(GL_TRIANGLES, buffers.second.length, GL_UNSIGNED_SHORT, (void*)0);
+			glDrawElements(GL_TRIANGLES, buffers.iBufferLenght, GL_UNSIGNED_SHORT, (void*)0);
 		}
 	}
 
