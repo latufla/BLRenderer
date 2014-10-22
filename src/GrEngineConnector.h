@@ -25,7 +25,7 @@ public:
 
 	int32_t init();
 	
-	bool registerModel3d(std::string, std::string);
+	bool loadModel(std::string, std::string);
 	
 	bool addObject(uint32_t, std::string);
 	bool removeObject(uint32_t);
@@ -53,18 +53,17 @@ private:
 	Camera camera;
 
 	std::map<uint32_t, View> idToObject;
-
-	// VBO
-	struct BufferData {
+	
+	
+	struct MeshBufferData {
 		uint32_t vBuffer;
 		uint32_t iBuffer;
 		uint32_t iBufferLenght;
-	};
-	std::map<std::string, BufferData> meshToBuffer;
-	// ---
 
-	// textures
-	std::map<std::string, uint32_t> meshToMaterial;
+		uint32_t texture;
+	};
+	std::map<std::string, MeshBufferData> meshToBuffer;
+
 
 	// gl loading, sync
 	void* display;

@@ -81,7 +81,7 @@ int32_t GrEngineConnector::init()
 }
 
 
-bool GrEngineConnector::registerModel3d(string dir, string name) {
+bool GrEngineConnector::loadModel(string dir, string name) {
 	return loader.load(dir, name);
 }
 
@@ -113,11 +113,11 @@ bool GrEngineConnector::addObject(uint32_t id, std::string path){
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * iBufferLength, &indices[0], GL_STATIC_DRAW);
 		
-		string meshName = model->getUniqueMeshName(s);
-		meshToBuffer[meshName] = { vBuffer, iBuffer, iBufferLength };
-	
 		Material3d& mt = model->getMaterials()[s.getTextureId()];
-		meshToMaterial[meshName] = loadTexture(mt.getData(), mt.getWidth(), mt.getHeight());
+		uint32_t texture = loadTexture(mt.getData(), mt.getWidth(), mt.getHeight());
+
+		string meshName = model->getUniqueMeshName(s);
+		meshToBuffer[meshName] = { vBuffer, iBuffer, iBufferLength, texture};
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -136,22 +136,16 @@ bool GrEngineConnector::removeObject(uint32_t id)
 	vector<Mesh3d>& meshes = model->getMeshes();
 	for (auto& s : meshes) {
 		string mName = model->getUniqueMeshName(s);
-		BufferData& buffers = meshToBuffer[mName];
-
-
-		glDeleteBuffers(1, &buffers.vBuffer);
-		glDeleteBuffers(1, &buffers.iBuffer);
+		MeshBufferData& buffers = meshToBuffer[mName];
 		
+		glDeleteBuffers(1, &buffers.vBuffer);
+		glDeleteBuffers(1, &buffers.iBuffer);		
+
+		glDeleteTextures(1, &buffers.texture);
+
 		auto& bIt = meshToBuffer.find(mName);
 		if (bIt != end(meshToBuffer))
 			meshToBuffer.erase(bIt);
-		
-
-		glDeleteTextures(1, &meshToMaterial[mName]);
-		
-		auto& tIt = meshToMaterial.find(mName);
-		if (tIt != end(meshToMaterial))
-			meshToMaterial.erase(tIt);
 	}
 
 	auto& it = idToObject.find(id);
@@ -204,7 +198,7 @@ bool GrEngineConnector::doStep(uint32_t  stepMSec)
 			}
 
 			string meshName = model->getUniqueMeshName(s);
-			BufferData& buffers = meshToBuffer[meshName];
+			MeshBufferData& buffers = meshToBuffer[meshName];
 			glBindBuffer(GL_ARRAY_BUFFER, buffers.vBuffer);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.iBuffer);
 
@@ -225,10 +219,9 @@ bool GrEngineConnector::doStep(uint32_t  stepMSec)
 			glVertexAttribPointer(weightsLoc, Mesh3d::VERTEX3D_WEIGHTS, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
 			
 			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, meshToMaterial[meshName]);
+			glBindTexture(GL_TEXTURE_2D, buffers.texture);
 			glUniform1i(samplerLoc, 0);
 
-			
 			glDrawElements(GL_TRIANGLES, buffers.iBufferLenght, GL_UNSIGNED_SHORT, (void*)0);
 		}
 	}
