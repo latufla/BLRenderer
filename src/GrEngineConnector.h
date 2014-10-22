@@ -4,13 +4,14 @@
 
 #include <string>
 #include "WindowVendor.h"
-#include "ObjectBase.h"
 #include "Utils.h"
 
 #include <array>
 #include <utility>
 #include "Model3dLoader.h"
 #include <unordered_map>
+#include <glm.hpp>
+#include "ObjectInfo.h"
 
 class GrEngineConnector
 {
@@ -23,9 +24,11 @@ public:
 	}
 
 	int32_t init();
-	bool add(ObjectBase*);
-	bool remove(ObjectBase*);
-	bool draw();
+	bool add(uint32_t, const ObjectInfo&);
+	bool remove(uint32_t);
+	bool doStep(uint32_t);
+
+	bool transform(uint32_t, const glm::mat4&);
 
 	struct Camera {
 		float x;
@@ -46,7 +49,9 @@ private:
 	Model3dLoader loader;
 	Camera camera;
 
-	std::vector<ObjectBase*> objects;
+	std::vector<uint32_t> objects;
+	std::map<uint32_t, ObjectInfo> objectToInfo;
+	std::map<uint32_t, glm::mat4> objectToTransform;
 
 	// VBO
 	struct BufferData {

@@ -1,11 +1,11 @@
 #include "stdafx.h"
 #include "ObjectBase.h"
-#include "Utils.h"
 
-using namespace std;
-using namespace glm;
+using std::string;
+using glm::vec3;
 
-ObjectBase::ObjectBase(string info) {
+ObjectBase::ObjectBase(uint32_t id, string info) {
+	this->id = id;
 	this->info = info;
 }
 

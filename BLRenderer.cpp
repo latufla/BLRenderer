@@ -18,7 +18,7 @@ vector<shared_ptr<ObjectBase>> objects;
 
 int _tmain(int argc, _TCHAR* argv[]) {
 	{
-		shared_ptr<ObjectBase> obj1 = make_shared<ObjectBase>(GUN);
+		shared_ptr<ObjectBase> obj1 = make_shared<ObjectBase>(1, GUN);
 
 		obj1->scale(0.05f, 0.05f, 0.05f);
 		obj1->rotateY(90.0f);
@@ -34,7 +34,10 @@ int _tmain(int argc, _TCHAR* argv[]) {
 	renderer.setCamera(0.0f, 0.0f, 1.0f);
 
 	for (shared_ptr<ObjectBase> s : objects) {
-		renderer.add(s.get());
+		uint32_t id = s->getId();
+		const ObjectInfo& info = Infos::getInfo(s->getInfo());
+		renderer.add(id, info);
+		renderer.transform(id, s->getOrientation());
 	}
 
 	shared_ptr<WindowVendor>mainWindow = renderer.getWindow();
@@ -42,9 +45,11 @@ int _tmain(int argc, _TCHAR* argv[]) {
 	const float fps = 1 / 60;
 	bool done = false;
 	while (!done) {
-		objects[0].get()->rotateY(0.05f);
+		shared_ptr<ObjectBase> obj = objects[0];
+		obj->rotateY(0.05f);
+		renderer.transform(obj->getId(), obj->getOrientation());
 
-		renderer.draw();
+		renderer.doStep(fps * 1000);
 
 		done = !mainWindow->doStep();
 

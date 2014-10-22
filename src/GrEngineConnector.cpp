@@ -8,12 +8,16 @@
 #include <GLES2/gl2ext.h>
 #include "Model3D.h"
 #include "Model3dLoader.h"
-#include "ObjectInfo.h"
 #include "Material3d.h"
-#include "Infos.h"
 #include "tree/BoneNodeData.h"
 
-using namespace std;
+#include <gtc\matrix_transform.hpp>
+
+using std::string;
+using std::vector;
+
+using std::shared_ptr;
+using std::make_shared;
 
 enum EglError {
 	GET_DISPLAY_FAIL = 0x01,
@@ -42,7 +46,7 @@ GrEngineConnector::~GrEngineConnector()
 {
 	glDeleteProgram(defaultProgram);
 
-	vector<ObjectBase*> allObjects = objects;
+	vector<uint32_t> allObjects = objects;
 	for (auto& i : allObjects) {
 		remove(i);
 	}
@@ -77,10 +81,10 @@ int32_t GrEngineConnector::init()
 }
 
 // TODO: check errors
-bool GrEngineConnector::add(ObjectBase* obj){
-	objects.push_back(obj);
-	
-	ObjectInfo& info = Infos::getInfo(obj->getInfo());
+bool GrEngineConnector::add(uint32_t id, const ObjectInfo& info){
+	objects.push_back(id);
+	objectToInfo[id] = info;
+
 	loader.load(info.getModelDir(), info.getName());
 
 	shared_ptr<Model3d> model = loader.getModel3d(info.getModelPath());
@@ -115,17 +119,17 @@ bool GrEngineConnector::add(ObjectBase* obj){
 	return true;
 }
 
-bool GrEngineConnector::remove(ObjectBase* obj)
+bool GrEngineConnector::remove(uint32_t id)
 {
 	auto b = cbegin(objects);
 	auto e = cend(objects);
-	auto idx = find(b, e, obj);
+	auto idx = find(b, e, id);
 	if (idx == e)
 		return false;
 
 	objects.erase(idx);
 
-	ObjectInfo& info = Infos::getInfo(obj->getInfo());
+	ObjectInfo& info = objectToInfo[id];
 	shared_ptr<Model3d> model = loader.getModel3d(info.getModelPath());
 	vector<Mesh3d>& meshes = model->getMeshes();
 	for (auto& s : meshes) {
@@ -147,11 +151,16 @@ bool GrEngineConnector::remove(ObjectBase* obj)
 		if (tIt != end(meshToMaterial))
 			meshToMaterial.erase(tIt);
 	}
+
+	auto& it = objectToInfo.find(id);
+	if (it != end(objectToInfo))
+		objectToInfo.erase(it);
+
 	return true;
 }
 
 
-bool GrEngineConnector::draw()
+bool GrEngineConnector::doStep(uint32_t  stepMSec)
 {
 	vector<float> rect = window->getRect();
 	float wWidth = rect[2];
@@ -178,12 +187,12 @@ bool GrEngineConnector::draw()
 	GLuint samplerLoc = glGetUniformLocation(defaultProgram, "sTexture");
 	GLuint mvpMatrixLoc = glGetUniformLocation(defaultProgram, "mvpMatrix");
 	
-	for (ObjectBase* obj : objects){
-		glm::mat4& modelMtx = obj->getOrientation();
+	for (uint32_t& id : objects){
+		const glm::mat4& modelMtx = objectToTransform[id];
 		glm::mat4 mvpMtx = pvMatrix * modelMtx;
 		glUniformMatrix4fv(mvpMatrixLoc, 1, GL_FALSE, &mvpMtx[0][0]);
 
-		ObjectInfo info = Infos::getInfo(obj->getInfo());
+		const ObjectInfo& info = objectToInfo[id];
 		shared_ptr<Model3d> model = loader.getModel3d(info.getModelPath());
 		vector<Mesh3d>& meshes = model->getMeshes();
 		for (auto& s : meshes) {
@@ -421,6 +430,11 @@ void GrEngineConnector::transformBonesData(const glm::mat4& globalInverseTransfo
 	for (uint32_t i = 0; i < nChildren; ++i) {
 		transformBonesData(globalInverseTransform, children[i], animation, globalTransform, outBonesData);
 	}
+}
+
+bool GrEngineConnector::transform(uint32_t id, const glm::mat4& t) {
+	objectToTransform[id] = t;
+	return true;
 }
 
 
