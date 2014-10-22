@@ -47,17 +47,20 @@ private:
 	Camera camera;
 
 	std::vector<ObjectBase*> objects;
-	std::map<std::string, uint32_t> meshToMaterial; // TODO: move to Mesh3d
 
-
-	struct BufferInfo {
+	// VBO
+	struct BufferData {
 		uint32_t id;
 		uint32_t length; // not size in bytes
 	};
-	typedef std::pair<BufferInfo, BufferInfo> buffer_pair;
-	std::map<std::string, buffer_pair> meshToBuffer;
-	
+	typedef std::pair<BufferData, BufferData> BufferPair;
+	std::map<std::string, BufferPair> meshToBuffer;
+	// ---
 
+	// textures
+	std::map<std::string, uint32_t> meshToMaterial;
+
+	// gl loading, sync
 	void* display;
 	void* surface;
 	void* context;
@@ -68,8 +71,9 @@ private:
 
 	uint32_t loadShader(uint32_t, const char*);
 	uint32_t loadTexture(std::vector<unsigned char>&, int16_t, int16_t);
-	
+	// ---
 
+	// animation
 	struct BoneData {
 		glm::mat4 offset;
 		glm::mat4 finalTransform;
@@ -77,5 +81,6 @@ private:
 	typedef std::unordered_map<uint32_t, BoneData> BonesDataMap;
 	BonesDataMap createBonesData(std::shared_ptr<Model3d>, std::shared_ptr<Animation3d>, Mesh3d&);
 	void transformBonesData(const glm::mat4&, Node::NodePtr, std::shared_ptr<Animation3d>, glm::mat4, BonesDataMap&);
+	//
 };
 
