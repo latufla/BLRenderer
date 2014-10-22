@@ -58,17 +58,17 @@ GrEngineConnector::~GrEngineConnector()
 // 	}
 }
 
-int GrEngineConnector::init()
+int32_t GrEngineConnector::init()
 {
 	window = make_shared <WindowVendor>();
 	if (!window->nativeWindow)
 		return EglError::NATIVE_WINDOW_FAIL;
 
-	int eglFail = initEgl();
+	int32_t eglFail = initEgl();
 	if (eglFail)
 		return eglFail;
 
-	int shadersFail = initShaders(ShaderHelper::animVertexShader, ShaderHelper::texFragmentShader);
+	int32_t shadersFail = initShaders(ShaderHelper::animVertexShader, ShaderHelper::texFragmentShader);
 	if (shadersFail)
 		return shadersFail;
 	
@@ -110,7 +110,7 @@ bool GrEngineConnector::add(ObjectBase* obj){
 		iBuffer.length = indices.size();
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer.id);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * iBuffer.length, &indices[0], GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * iBuffer.length, &indices[0], GL_STATIC_DRAW);
 		
 		string meshName = model->getUniqueMeshName(s);
 		meshToBuffer[meshName] = buffer_pair(vBuffer, iBuffer);
@@ -157,7 +157,7 @@ bool GrEngineConnector::draw()
 	vector<float> rect = window->getRect();
 	float wWidth = rect[2];
 	float wHeight = rect[3];
-	glViewport(0, 0, (int)wWidth, (int)wHeight);
+	glViewport(0, 0, (uint32_t)wWidth, (uint32_t)wHeight);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -238,7 +238,7 @@ bool GrEngineConnector::draw()
 	return true;
 }
 
-int GrEngineConnector::initEgl(){
+int32_t GrEngineConnector::initEgl(){
 	EGLint minorVersion;
 	EGLint majorVersion;
 
@@ -298,7 +298,7 @@ int GrEngineConnector::initEgl(){
 }
 
 
-int GrEngineConnector::initShaders(string vShaderSrc, string fShaderSrc)
+int32_t GrEngineConnector::initShaders(string vShaderSrc, string fShaderSrc)
 {
 	GLuint vShader = loadShader(GL_VERTEX_SHADER, vShaderSrc.c_str());
 	GLuint fShader = loadShader(GL_FRAGMENT_SHADER, fShaderSrc.c_str());

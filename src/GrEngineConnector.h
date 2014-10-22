@@ -22,7 +22,7 @@ public:
 		return instance;
 	}
 
-	int init();
+	int32_t init();
 	bool add(ObjectBase*);
 	bool remove(ObjectBase*);
 	bool draw();
@@ -47,7 +47,7 @@ private:
 	Camera camera;
 
 	std::vector<ObjectBase*> objects;
-	std::map<std::string, unsigned int> meshToMaterial; // TODO: move to Mesh3d
+	std::map<std::string, uint32_t> meshToMaterial; // TODO: move to Mesh3d
 
 
 	struct BufferInfo {
@@ -63,11 +63,11 @@ private:
 	void* context;
 	int32_t defaultProgram;
 	
-	int initEgl();
-	int initShaders(std::string, std::string);
+	int32_t initEgl();
+	int32_t initShaders(std::string, std::string);
 
-	unsigned int loadShader(unsigned int, const char*);
-	unsigned int loadTexture(std::vector<unsigned char>&, int16_t, int16_t);
+	uint32_t loadShader(uint32_t, const char*);
+	uint32_t loadTexture(std::vector<unsigned char>&, int16_t, int16_t);
 	
 
 	struct BoneData {
