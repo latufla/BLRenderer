@@ -136,7 +136,7 @@ bool GrEngineConnector::removeObject(uint32_t id)
 	vector<Mesh3d>& meshes = model->getMeshes();
 	for (auto& s : meshes) {
 		string mName = model->getUniqueMeshName(s);
-		MeshBufferData& buffers = meshToBuffer[mName];
+		GpuBufferData& buffers = meshToBuffer[mName];
 		
 		glDeleteBuffers(1, &buffers.vBuffer);
 		glDeleteBuffers(1, &buffers.iBuffer);		
@@ -198,7 +198,7 @@ bool GrEngineConnector::doStep(uint32_t  stepMSec)
 			}
 
 			string meshName = model->getUniqueMeshName(s);
-			MeshBufferData& buffers = meshToBuffer[meshName];
+			GpuBufferData& buffers = meshToBuffer[meshName];
 			glBindBuffer(GL_ARRAY_BUFFER, buffers.vBuffer);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.iBuffer);
 
@@ -238,7 +238,7 @@ bool GrEngineConnector::doStep(uint32_t  stepMSec)
 
 	eglSwapBuffers(display, surface);
 
-	return true;
+	return window->doStep();
 }
 
 int32_t GrEngineConnector::initEgl(){

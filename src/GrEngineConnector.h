@@ -7,7 +7,6 @@
 #include "Utils.h"
 
 #include <array>
-#include <utility>
 #include "Model3dLoader.h"
 #include <unordered_map>
 #include <glm.hpp>
@@ -39,8 +38,6 @@ public:
 		float z;
 	};
 	void setCamera(float, float, float);
-	
-	std::shared_ptr<WindowVendor> getWindow(){ return window; }
 
 private:
 	GrEngineConnector(){};
@@ -52,7 +49,7 @@ private:
 	Model3dLoader loader;
 	Camera camera;
 
-	std::map<uint32_t, View> idToObject;
+	std::unordered_map<uint32_t, View> idToObject;
 	
 	
 	struct GpuBufferData {
@@ -62,8 +59,8 @@ private:
 
 		uint32_t texture;
 	};
-	std::map<std::string, GpuBufferData> meshToBuffer;
-
+	std::unordered_map<std::string, GpuBufferData> meshToBuffer;
+	
 
 	// gl loading, sync
 	void* display;

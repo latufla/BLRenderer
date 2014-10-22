@@ -44,20 +44,17 @@ int _tmain(int argc, _TCHAR* argv[]) {
 		renderer.transform(id, s->getOrientation());
 	}
 
-	shared_ptr<WindowVendor>mainWindow = renderer.getWindow();
-
 	const float fps = 1 / 60;
+	const uint32_t step = fps * 1000;
 	bool done = false;
 	while (!done) {
+		Sleep(step); // TODO: shirt WND 
+
 		shared_ptr<ObjectBase> obj = objects[0];
 		obj->rotateY(0.05f);
 		renderer.transform(obj->getId(), obj->getOrientation());
 
-		renderer.doStep(fps * 1000);
-
-		done = !mainWindow->doStep();
-
-		Sleep((unsigned long)(fps * 1000)); // TODO: shirt WND 
+		done = !renderer.doStep(step);
 	}
 
 	return 0;
