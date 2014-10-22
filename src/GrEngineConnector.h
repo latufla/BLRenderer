@@ -10,6 +10,7 @@
 #include <array>
 #include <utility>
 #include "Model3dLoader.h"
+#include <unordered_map>
 
 struct BoneData {
 	glm::mat4 offset;
@@ -78,8 +79,9 @@ private:
 	unsigned int loadShader(unsigned int, const char*);
 	unsigned int loadTexture(std::vector<unsigned char>&, int16_t, int16_t);
 
-	std::array<BoneData, 100> createBonesData(Mesh3d&);
-	void transformBonesData(std::shared_ptr<Model3d>, std::array<BoneData, 100>&);
-	void transformEachBoneData(const glm::mat4&, Node::NodePtr, std::shared_ptr<Animation3d>, glm::mat4, std::array<BoneData, 100>&);
+	typedef std::unordered_map<uint32_t, BoneData> BonesDataMap;
+	BonesDataMap createBonesData(Mesh3d&);
+	void transformBonesData(std::shared_ptr<Model3d>, BonesDataMap&);
+	void transformEachBoneData(const glm::mat4&, Node::NodePtr, std::shared_ptr<Animation3d>, glm::mat4, BonesDataMap&);
 };
 

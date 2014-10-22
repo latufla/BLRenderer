@@ -188,14 +188,11 @@ bool GrEngineConnector::draw()
 		shared_ptr<Model3d> model = loader.getModel3d(info.getModelPath());
 		vector<Mesh3d>& meshes = model->getMeshes();
 		for (auto& s : meshes) {
-
-			// performance
-			array<BoneData, 100> bonesData = createBonesData(s);
+			BonesDataMap bonesData = createBonesData(s);
 			transformBonesData(model, bonesData);
-			for (uint32_t i = 0; i < bonesData.size(); ++i) {
-				glUniformMatrix4fv(bonesLoc + i, 1, GL_FALSE, &(bonesData[i].finalTransform[0][0]));
+			for (auto& i : bonesData) {
+				glUniformMatrix4fv(bonesLoc + i.first, 1, GL_FALSE, &(i.second.finalTransform[0][0]));
 			}
-			//
 
 			string meshName = model->getUniqueMeshName(s);
 			buffer_pair& buffers = meshToBuffer[meshName];
@@ -382,21 +379,21 @@ void GrEngineConnector::setCamera(float x, float y, float z) {
 }
 
 
-array<BoneData, 100> GrEngineConnector::createBonesData(Mesh3d& m) {
-	array<BoneData, 100> res;
-	for (auto& i : m.getBoneIdToOffset()) {
-		BoneData& bData = res[i.first];
-		bData.offset = i.second;
+GrEngineConnector::BonesDataMap GrEngineConnector::createBonesData(Mesh3d& m) {
+	BonesDataMap res;
+	auto& boneIdToOffset = m.getBoneIdToOffset();
+	for (auto& i : boneIdToOffset) {
+		res[i.first].offset = i.second;
 	}
 	return res;
 }
 
-void GrEngineConnector::transformBonesData(shared_ptr<Model3d> model, array<BoneData, 100>& outBonesData) {
+void GrEngineConnector::transformBonesData(shared_ptr<Model3d> model, BonesDataMap& outBonesData) {
 	glm::mat4 parentTransform;
 	transformEachBoneData(model->getGlobalInverseTransform(), model->getBoneTree(), model->getAnimation(), parentTransform, outBonesData);
 }
 
-void GrEngineConnector::transformEachBoneData(const glm::mat4& globalInverseTransform, Node::NodePtr boneTree, shared_ptr<Animation3d> animation, glm::mat4 parentTransform, array<BoneData, 100>& outBonesData) {
+void GrEngineConnector::transformEachBoneData(const glm::mat4& globalInverseTransform, Node::NodePtr boneTree, shared_ptr<Animation3d> animation, glm::mat4 parentTransform, BonesDataMap& outBonesData) {
 	const uint32_t key = 1;
 	uint32_t boneId = boneTree->getId();
 	BoneNodeData* bNData = (BoneNodeData*)boneTree->getData().get();
@@ -418,9 +415,12 @@ void GrEngineConnector::transformEachBoneData(const glm::mat4& globalInverseTran
 	}
 	
 	glm::mat4 globalTransform = parentTransform * nodeTransform;
-	BoneData& outBData = outBonesData[boneId];
-	outBData.finalTransform = globalInverseTransform * globalTransform * outBData.offset;
 
+	if (outBonesData.find(boneId) != end(outBonesData)) {
+		BoneData& outBData = outBonesData[boneId];
+		outBData.finalTransform = globalInverseTransform * globalTransform * outBData.offset;
+	}
+	
 	vector<Node::NodePtr> children = boneTree->getChildren();
 	uint32_t nChildren = children.size();
 	for (uint32_t i = 0; i < nChildren; ++i) {
