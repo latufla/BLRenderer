@@ -16,20 +16,20 @@ View::~View() {
 }
 
 bool View::doAnimationStep(uint32_t stepMSec) {
-	animationTime += stepMSec; 
-	if (animationTime <= animationDuration)
+	animation.timeMSec += stepMSec; 
+	if (animation.timeMSec <= animation.durationMSec)
 		return true;
 
-	if (loopAnimation) {
-		animationTime = 0;
+	if (animation.loop) {
+		animation.timeMSec = 0;
 		return true;
 	}
 		
 	return false;
 }
 
-void View::setAnimation(std::string animation, uint32_t durationMSec, bool loop) {
-	this->animation = animation; 
-	animationDuration = durationMSec;
-	loopAnimation = loop;
+void View::setAnimation(std::string name, uint32_t durationMSec, bool loop) {
+	animation.name = name; 
+	animation.durationMSec = durationMSec;
+	animation.loop = loop;
 }

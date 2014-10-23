@@ -119,7 +119,8 @@ bool GrEngineConnector::playAnimation(uint32_t id, std::string label) {
 	View& object = it->second;
 	shared_ptr<Model3d> model = loader.getModel3d(object.getPath());
 	shared_ptr<Animation3d> animation = model->getAnimation();
-	it->second.setAnimation(label, animation->getDuration() * 1000, true);
+	it->second.setAnimation(label, (uint32_t)(animation->getDuration() * 1000), true);
+	return true;
 }
 
 bool GrEngineConnector::transform(uint32_t id, const array<float, 16> t) {
@@ -484,11 +485,11 @@ glm::vec3 GrEngineConnector::calcTranslation(uint32_t time, std::vector<Vec3Key>
 		}
 	}	
 
-	float delta = (positions[frame2].time - positions[frame1].time) * 1000;
-	float factor = (time - (positions[frame1].time * 1000)) / delta;
+	double delta = (positions[frame2].time - positions[frame1].time) * 1000;
+	double factor = (time - (positions[frame1].time * 1000)) / delta;
 	if (factor > 1)
 		factor = 1;
-	return Utils::interpolate(positions[frame1].value, positions[frame2].value, factor);
+	return Utils::interpolate(positions[frame1].value, positions[frame2].value, (float)factor);
 }
 
 

@@ -18,7 +18,7 @@ public:
 
 	void setAnimation(std::string, uint32_t, bool = false);
 
-	uint32_t getAnimationTime() const { return animationTime; }
+	uint32_t getAnimationTime() const { return animation.timeMSec; }
 
 	bool doAnimationStep(uint32_t);
 
@@ -29,9 +29,11 @@ private:
 	
 	glm::mat4 transform;
 
-	std::string animation;
-	bool loopAnimation = false;
-	uint32_t animationDuration = 0;
-	uint32_t animationTime = 0;
+	struct AnimationData {
+		std::string name;
+		bool loop;
+		uint32_t durationMSec = 0;
+		uint32_t timeMSec = 0;
+	} animation;
 };
 
