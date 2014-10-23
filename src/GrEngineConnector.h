@@ -28,6 +28,7 @@ public:
 	
 	bool addObject(uint32_t, std::string);
 	bool removeObject(uint32_t);
+
 	bool doStep(uint32_t);
 
 	bool transform(uint32_t, const glm::mat4&);
@@ -51,7 +52,7 @@ private:
 
 	std::unordered_map<uint32_t, View> idToObject;
 	
-	
+	// ogl
 	struct GpuBufferData {
 		uint32_t vBuffer;
 		uint32_t iBuffer;
@@ -60,9 +61,12 @@ private:
 		uint32_t texture;
 	};
 	std::unordered_map<std::string, GpuBufferData> meshToBuffer;
-	
 
-	// gl loading, sync
+	bool loadToGpu(std::string);
+	bool deleteFromGpu(std::string);
+
+	bool hasObjectWith(std::string);
+	
 	void* display;
 	void* surface;
 	void* context;
@@ -74,6 +78,7 @@ private:
 	uint32_t loadShader(uint32_t, const char*);
 	uint32_t loadTexture(std::vector<unsigned char>&, int16_t, int16_t);
 	// ---
+
 
 	// animation
 	struct BoneData {

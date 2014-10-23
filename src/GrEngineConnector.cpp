@@ -12,9 +12,11 @@
 #include "tree/BoneNodeData.h"
 
 #include <gtc\matrix_transform.hpp>
+#include <utility>
 
 using std::string;
 using std::vector;
+using std::pair;
 
 using std::shared_ptr;
 using std::make_shared;
@@ -85,76 +87,36 @@ bool GrEngineConnector::loadModel(string dir, string name) {
 	return loader.load(dir, name);
 }
 
-bool GrEngineConnector::transform(uint32_t id, const glm::mat4& t) {
-	idToObject[id].setTransform(t);
-	return true;
-}
-
-
-// TODO: check errors
-bool GrEngineConnector::addObject(uint32_t id, std::string path){
-	idToObject[id] = { id, "", path };
+bool GrEngineConnector::addObject(uint32_t id, std::string modelPath){
+	if (!hasObjectWith(modelPath)) // first in
+		loadToGpu(modelPath);
 	
-	shared_ptr<Model3d> model = loader.getModel3d(path);
-	vector<Mesh3d>& meshes = model->getMeshes();
-	for (auto& s : meshes) {
-		uint32_t vBuffer;
-		glGenBuffers(1, &vBuffer);
-
-		auto vertices = s.getVertices();
-		glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex3d) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
-		
-		uint32_t iBuffer;
-		glGenBuffers(1, &iBuffer);
-
-		auto indices = s.getIndices();
-		uint32_t iBufferLength = indices.size();
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * iBufferLength, &indices[0], GL_STATIC_DRAW);
-		
-		Material3d& mt = model->getMaterials()[s.getTextureId()];
-		uint32_t texture = loadTexture(mt.getData(), mt.getWidth(), mt.getHeight());
-
-		string meshName = model->getUniqueMeshName(s);
-		meshToBuffer[meshName] = { vBuffer, iBuffer, iBufferLength, texture};
-	}
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-	std::cout << static_cast<string>(*model.get());
+	idToObject[id] = { id, "", modelPath };
 	return true;
 }
 
-bool GrEngineConnector::removeObject(uint32_t id)
-{
+bool GrEngineConnector::removeObject(uint32_t id){
 	View& view = idToObject[id];
-
-	// TODO: fix, deletes data even other view`s with such data still exists
-	shared_ptr<Model3d> model = loader.getModel3d(view.getPath());
-	vector<Mesh3d>& meshes = model->getMeshes();
-	for (auto& s : meshes) {
-		string mName = model->getUniqueMeshName(s);
-		GpuBufferData& buffers = meshToBuffer[mName];
-		
-		glDeleteBuffers(1, &buffers.vBuffer);
-		glDeleteBuffers(1, &buffers.iBuffer);		
-
-		glDeleteTextures(1, &buffers.texture);
-
-		auto& bIt = meshToBuffer.find(mName);
-		if (bIt != end(meshToBuffer))
-			meshToBuffer.erase(bIt);
-	}
+	string modelPath = view.getPath();
 
 	auto& it = idToObject.find(id);
 	if (it != end(idToObject))
 		idToObject.erase(it);
 
+	if (!hasObjectWith(modelPath)) // last out
+		deleteFromGpu(modelPath);
+	
 	return true;
 }
 
+bool GrEngineConnector::transform(uint32_t id, const glm::mat4& t) {
+	auto& it = idToObject.find(id);
+	if (it == end(idToObject))
+		return false;
+
+	it->second.setTransform(t);
+	return true;
+}
 
 bool GrEngineConnector::doStep(uint32_t  stepMSec)
 {
@@ -240,6 +202,8 @@ bool GrEngineConnector::doStep(uint32_t  stepMSec)
 
 	return window->doStep();
 }
+
+// private
 
 int32_t GrEngineConnector::initEgl(){
 	EGLint minorVersion;
@@ -425,6 +389,65 @@ void GrEngineConnector::transformBonesData(const glm::mat4& globalInverseTransfo
 	for (uint32_t i = 0; i < nChildren; ++i) {
 		transformBonesData(globalInverseTransform, children[i], animation, globalTransform, outBonesData);
 	}
+}
+
+bool GrEngineConnector::hasObjectWith(string modelPath) {
+	auto& it = find_if(cbegin(idToObject), cend(idToObject), [&modelPath](pair<uint32_t, View> i)->bool{
+		return i.second.getPath() == modelPath;
+	});
+	return it != cend(idToObject);
+}
+
+bool GrEngineConnector::loadToGpu(string modelPath) {
+	shared_ptr<Model3d> model = loader.getModel3d(modelPath);
+	vector<Mesh3d>& meshes = model->getMeshes();
+	for (auto& s : meshes) {
+		uint32_t vBuffer;
+		glGenBuffers(1, &vBuffer);
+
+		auto vertices = s.getVertices();
+		glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex3d) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+
+		uint32_t iBuffer;
+		glGenBuffers(1, &iBuffer);
+
+		auto indices = s.getIndices();
+		uint32_t iBufferLength = indices.size();
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * iBufferLength, &indices[0], GL_STATIC_DRAW);
+
+		Material3d& mt = model->getMaterials()[s.getTextureId()];
+		uint32_t texture = loadTexture(mt.getData(), mt.getWidth(), mt.getHeight());
+
+		string meshName = model->getUniqueMeshName(s);
+		meshToBuffer[meshName] = { vBuffer, iBuffer, iBufferLength, texture };
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	std::cout << static_cast<string>(*model.get());
+	return true;
+}
+
+bool GrEngineConnector::deleteFromGpu(std::string modelPath) {
+	shared_ptr<Model3d> model = loader.getModel3d(modelPath);
+	vector<Mesh3d>& meshes = model->getMeshes();
+	for (auto& s : meshes) {
+		string mName = model->getUniqueMeshName(s);
+		GpuBufferData& buffers = meshToBuffer[mName];
+
+		glDeleteBuffers(1, &buffers.vBuffer);
+		glDeleteBuffers(1, &buffers.iBuffer);
+
+		glDeleteTextures(1, &buffers.texture);
+
+		auto& bIt = meshToBuffer.find(mName);
+		if (bIt != end(meshToBuffer))
+			meshToBuffer.erase(bIt);
+	}
+	return true;
 }
 
 

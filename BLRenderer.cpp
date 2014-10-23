@@ -23,6 +23,10 @@ int _tmain(int argc, _TCHAR* argv[]) {
 		obj1->scale(0.05f, 0.05f, 0.05f);
 		obj1->rotateY(90.0f);
 		objects.push_back(obj1);
+
+		shared_ptr<ObjectBase> obj2 = make_shared<ObjectBase>(2, GUN);
+		obj2->scale(0.05f, 0.05f, 0.05f);
+		//objects.push_back(obj2);
 	}
 
 	GrEngineConnector& renderer = GrEngineConnector::getInstance();
@@ -43,6 +47,10 @@ int _tmain(int argc, _TCHAR* argv[]) {
 		renderer.addObject(id, info.getModelPath());
 		renderer.transform(id, s->getOrientation());
 	}
+
+// 	renderer.removeObject(2);
+// 	renderer.removeObject(1);
+
 
 	const float fps = 1 / 60;
 	const uint32_t step = fps * 1000;
