@@ -1,11 +1,13 @@
 #include "stdafx.h"
 #include "Utils.h"
 #include "tree\BoneNodeData.h"
+#include <gtc\type_ptr.hpp>
 
 using namespace std;
 using namespace glm;
 
 using std::shared_ptr;
+using std::array;
 
 void Utils::print(mat4 m)
 {
@@ -669,4 +671,14 @@ string Utils::glmToString(const glm::mat4& m) {
 
 string Utils::glmToString(const glm::vec3& v) {
 	return "{x: " + to_string(v.x) + " y:" + to_string(v.y) + " z: " + to_string(v.z) + "}";
+}
+
+std::array<float, 16> Utils::glmMatrixToArray(const glm::mat4& m) {
+	array <float, 16> res;
+
+	const float *pSource = (const float*)glm::value_ptr(m);
+	for (int i = 0; i < 16; ++i)
+		res[i] = pSource[i];
+
+	return res;
 }

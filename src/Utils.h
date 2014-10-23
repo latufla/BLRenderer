@@ -6,6 +6,7 @@
 #include "Material3d.h"
 #include "tree\Node.h"
 #include <assimp/Importer.hpp>
+#include <array>
 
 class Utils
 {
@@ -23,6 +24,8 @@ public:
 
 	static glm::mat4 Utils::assimpToGlmMatrix(const aiMatrix4x4&);
 	static glm::vec3 Utils::assimpToGlmVector3d(const aiVector3D&);
+
+	static std::array<float, 16> Utils::glmMatrixToArray(const glm::mat4&);
 
 	static std::string Utils::glmToString(const glm::mat4&);
 	static std::string Utils::glmToString(const glm::vec3&);

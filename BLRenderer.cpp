@@ -11,6 +11,7 @@
 #include "src\GrEngineConnector.h"
 #include "src\Infos.h"
 #include "src\Utils.h"
+#include <gtc\type_ptr.hpp>
 
 using namespace std;
 
@@ -45,7 +46,8 @@ int _tmain(int argc, _TCHAR* argv[]) {
 		uint32_t id = s->getId();
 		const Model3dInfo& info = Infos::getInfo(s->getInfo());
 		renderer.addObject(id, info.getModelPath());
-		renderer.transform(id, s->getOrientation());
+
+		renderer.transform(id, Utils::glmMatrixToArray(s->getOrientation()));
 	}
 
 // 	renderer.removeObject(2);
@@ -53,14 +55,14 @@ int _tmain(int argc, _TCHAR* argv[]) {
 
 
 	const float fps = 1 / 60;
-	const uint32_t step = fps * 1000;
+	const uint32_t step = (uint32_t)(fps * 1000);
 	bool done = false;
 	while (!done) {
 		Sleep(step); // TODO: shirt WND 
 
 		shared_ptr<ObjectBase> obj = objects[0];
 		obj->rotateY(0.05f);
-		renderer.transform(obj->getId(), obj->getOrientation());
+		renderer.transform(obj->getId(), Utils::glmMatrixToArray(obj->getOrientation()));
 
 		done = !renderer.doStep(step);
 	}

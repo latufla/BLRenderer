@@ -13,10 +13,12 @@
 
 #include <gtc\matrix_transform.hpp>
 #include <utility>
+#include <gtc\type_ptr.hpp>
 
 using std::string;
 using std::vector;
 using std::pair;
+using std::array;
 
 using std::shared_ptr;
 using std::make_shared;
@@ -109,12 +111,13 @@ bool GrEngineConnector::removeObject(uint32_t id){
 	return true;
 }
 
-bool GrEngineConnector::transform(uint32_t id, const glm::mat4& t) {
+bool GrEngineConnector::transform(uint32_t id, const array<float, 16> t) {
 	auto& it = idToObject.find(id);
 	if (it == end(idToObject))
 		return false;
 
-	it->second.setTransform(t);
+	auto tForm = glm::make_mat4(t.data());
+	it->second.setTransform(tForm);
 	return true;
 }
 
@@ -209,7 +212,7 @@ int32_t GrEngineConnector::initEgl(){
 	EGLint minorVersion;
 	EGLint majorVersion;
 
-	void* display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	auto display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	if (display == EGL_NO_DISPLAY)
 		return EglError::GET_DISPLAY_FAIL;
 

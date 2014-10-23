@@ -1,16 +1,15 @@
 #pragma once
 #include <vector>
 #include <memory>
+#include <unordered_map>
+#include <glm.hpp>
 
-#include <string>
 #include "WindowVendor.h"
 #include "Utils.h"
 
-#include <array>
 #include "Model3dLoader.h"
-#include <unordered_map>
-#include <glm.hpp>
 #include "View.h"
+#include <array>
 
 class GrEngineConnector
 {
@@ -31,7 +30,7 @@ public:
 
 	bool doStep(uint32_t);
 
-	bool transform(uint32_t, const glm::mat4&);
+	bool transform(uint32_t, const std::array<float, 16>);
 
 	void setCamera(float, float, float);
 
