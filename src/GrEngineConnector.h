@@ -33,11 +33,6 @@ public:
 
 	bool transform(uint32_t, const glm::mat4&);
 
-	struct Camera {
-		float x;
-		float y;
-		float z;
-	};
 	void setCamera(float, float, float);
 
 private:
@@ -48,7 +43,12 @@ private:
 	std::shared_ptr<WindowVendor> window;
 	
 	Model3dLoader loader;
-	Camera camera;
+
+	struct Camera {
+		float x;
+		float y;
+		float z;
+	} camera;
 
 	std::unordered_map<uint32_t, View> idToObject;
 	
@@ -67,9 +67,12 @@ private:
 
 	bool hasObjectWith(std::string);
 	
-	void* display;
-	void* surface;
-	void* context;
+	struct EglContext {
+		void* display;
+		void* surface;
+		void* context;
+	} eglContext;
+	
 	int32_t defaultProgram;
 	
 	int32_t initEgl();

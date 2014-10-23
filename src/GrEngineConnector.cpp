@@ -198,7 +198,7 @@ bool GrEngineConnector::doStep(uint32_t  stepMSec)
 
 	glUseProgram(0);
 
-	eglSwapBuffers(display, surface);
+	eglSwapBuffers(eglContext.display, eglContext.surface);
 
 	return window->doStep();
 }
@@ -209,7 +209,7 @@ int32_t GrEngineConnector::initEgl(){
 	EGLint minorVersion;
 	EGLint majorVersion;
 
-	display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	void* display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	if (display == EGL_NO_DISPLAY)
 		return EglError::GET_DISPLAY_FAIL;
 
@@ -243,7 +243,7 @@ int32_t GrEngineConnector::initEgl(){
 		EGL_NONE
 	};
 
-	surface = eglCreateWindowSurface(display, configs[0], window->nativeWindow, srfAttribs);
+	auto surface = eglCreateWindowSurface(display, configs[0], window->nativeWindow, srfAttribs);
 	if (surface == EGL_NO_SURFACE)
 		return EglError::CREATE_SURFACE_FAIL;
 
@@ -253,7 +253,7 @@ int32_t GrEngineConnector::initEgl(){
 		EGL_NONE
 	};
 
-	context = eglCreateContext(display, configs[0], EGL_NO_CONTEXT, ctxAttribs);
+	auto context = eglCreateContext(display, configs[0], EGL_NO_CONTEXT, ctxAttribs);
 	if (context == EGL_NO_CONTEXT)
 		return EglError::CREATE_CONTEXT_FAIL;
 
@@ -261,6 +261,9 @@ int32_t GrEngineConnector::initEgl(){
 	if (!eglMakeCurrent(display, surface, surface, context))
 		return EglError::MAKE_CONTEXT_CURRENT_FAIL;
 
+	eglContext.display = display;
+	eglContext.surface = surface;
+	eglContext.context = context;
 	return 0;
 }
 
