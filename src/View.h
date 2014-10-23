@@ -16,8 +16,11 @@ public:
 	glm::mat4& getTransform() { return transform; }
 	void setTransform(const glm::mat4& val) { transform = val; }
 
-	std::string getAnimation() const { return animation; }
-	void setAnimation(std::string val) { animation = val; }
+	void setAnimation(std::string, uint32_t, bool = false);
+
+	uint32_t getAnimationTime() const { return animationTime; }
+
+	bool doAnimationStep(uint32_t);
 
 private:
 	uint32_t id;
@@ -27,5 +30,8 @@ private:
 	glm::mat4 transform;
 
 	std::string animation;
+	bool loopAnimation = false;
+	uint32_t animationDuration = 0;
+	uint32_t animationTime = 0;
 };
 

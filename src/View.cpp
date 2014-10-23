@@ -14,3 +14,22 @@ View::View(uint32_t id, string name, string path) {
 
 View::~View() {
 }
+
+bool View::doAnimationStep(uint32_t stepMSec) {
+	animationTime += stepMSec; 
+	if (animationTime <= animationDuration)
+		return true;
+
+	if (loopAnimation) {
+		animationTime = 0;
+		return true;
+	}
+		
+	return false;
+}
+
+void View::setAnimation(std::string animation, uint32_t durationMSec, bool loop) {
+	this->animation = animation; 
+	animationDuration = durationMSec;
+	loopAnimation = loop;
+}

@@ -29,7 +29,8 @@ public:
 	bool removeObject(uint32_t);
 
 	bool doStep(uint32_t);
-
+	
+	bool playAnimation(uint32_t, std::string = "default");
 	bool transform(uint32_t, const std::array<float, 16>);
 
 	void setCamera(float, float, float);
@@ -89,10 +90,10 @@ private:
 		glm::mat4 finalTransform;
 	};
 	typedef std::unordered_map<uint32_t, BoneData> BonesDataMap;
-	BonesDataMap createBonesData(std::shared_ptr<Model3d>, std::shared_ptr<Animation3d>, Mesh3d&);
-	void transformBonesData(const glm::mat4&, Node::NodePtr, std::shared_ptr<Animation3d>, glm::mat4, BonesDataMap&);
+	BonesDataMap createBonesData(View&, std::shared_ptr<Animation3d>, Mesh3d&, uint32_t);
+	void transformBonesData(Node::NodePtr, View&, const glm::mat4&, std::shared_ptr<Animation3d>, glm::mat4, BonesDataMap&);
 
-	glm::vec3 calcTranslation(std::vector<Vec3Key>);
+	glm::vec3 calcTranslation(uint32_t, std::vector<Vec3Key>);
 	//
 };
 

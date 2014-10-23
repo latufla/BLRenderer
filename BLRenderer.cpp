@@ -50,6 +50,9 @@ int _tmain(int argc, _TCHAR* argv[]) {
 		renderer.transform(id, Utils::glmMatrixToArray(s->getOrientation()));
 	}
 
+	renderer.playAnimation(1);
+
+
 // 	renderer.removeObject(2);
 // 	renderer.removeObject(1);
 
@@ -61,8 +64,8 @@ int _tmain(int argc, _TCHAR* argv[]) {
 		Sleep(step); // TODO: shirt WND 
 
 		shared_ptr<ObjectBase> obj = objects[0];
-// 		obj->rotateY(0.05f);
-// 		renderer.transform(obj->getId(), Utils::glmMatrixToArray(obj->getOrientation()));
+		obj->rotateY(3.0f);
+		renderer.transform(obj->getId(), Utils::glmMatrixToArray(obj->getOrientation()));
 
 		done = !renderer.doStep(step);
 	}

@@ -218,7 +218,7 @@ shared_ptr<Animation3d> Model3dLoader::collectAnimations(const aiScene* scene, N
 		boneAnimations.push_back(move(myBoneAnimation));
 	}
 
-	string aName = anim->mName.C_Str();
+	string aName = "default";//anim->mName.C_Str();
 	double duration = anim->mDuration;
 	double ticksPerSecond = anim->mTicksPerSecond;
 	shared_ptr<Animation3d> myAnimation = make_shared<Animation3d>(aName, duration, ticksPerSecond, boneAnimations);

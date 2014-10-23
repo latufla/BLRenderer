@@ -33,6 +33,8 @@ public:
 
 	BoneAnimation* getBoneAnimation(uint32_t); // TODO: fix this dirt
 
+	double getDuration() const { return duration; }
+
 private:
 	std::string name;
 
