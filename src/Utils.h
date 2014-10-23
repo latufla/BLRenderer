@@ -29,5 +29,6 @@ public:
 
 	static std::string Utils::glmToString(const glm::mat4&);
 	static std::string Utils::glmToString(const glm::vec3&);
+	static glm::vec3 interpolate(const glm::vec3& start, const glm::vec3& end, float alpha);
 };
 

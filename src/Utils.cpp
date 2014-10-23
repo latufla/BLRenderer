@@ -682,3 +682,15 @@ std::array<float, 16> Utils::glmMatrixToArray(const glm::mat4& m) {
 
 	return res;
 }
+
+glm::vec3 Utils::interpolate(const glm::vec3& start, const glm::vec3& end, float alpha) {
+	glm::vec3 interp;
+
+	interp.x = end.x*alpha + start.x*(1 - alpha);
+	interp.y = end.y*alpha + start.y*(1 - alpha);
+	interp.z = end.z*alpha + start.z*(1 - alpha);
+
+	return interp;
+}
+
+

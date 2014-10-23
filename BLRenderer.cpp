@@ -54,15 +54,15 @@ int _tmain(int argc, _TCHAR* argv[]) {
 // 	renderer.removeObject(1);
 
 
-	const float fps = 1 / 60;
+	const float fps = 1.0 / 60;
 	const uint32_t step = (uint32_t)(fps * 1000);
 	bool done = false;
 	while (!done) {
 		Sleep(step); // TODO: shirt WND 
 
 		shared_ptr<ObjectBase> obj = objects[0];
-		obj->rotateY(0.05f);
-		renderer.transform(obj->getId(), Utils::glmMatrixToArray(obj->getOrientation()));
+// 		obj->rotateY(0.05f);
+// 		renderer.transform(obj->getId(), Utils::glmMatrixToArray(obj->getOrientation()));
 
 		done = !renderer.doStep(step);
 	}

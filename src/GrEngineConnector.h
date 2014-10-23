@@ -40,9 +40,10 @@ private:
 	GrEngineConnector operator=(GrEngineConnector&){};
 
 	std::shared_ptr<WindowVendor> window;
-	
-	Model3dLoader loader;
+	uint32_t timeMSec = 0;
 
+	Model3dLoader loader;
+	
 	struct Camera {
 		float x;
 		float y;
@@ -90,6 +91,8 @@ private:
 	typedef std::unordered_map<uint32_t, BoneData> BonesDataMap;
 	BonesDataMap createBonesData(std::shared_ptr<Model3d>, std::shared_ptr<Animation3d>, Mesh3d&);
 	void transformBonesData(const glm::mat4&, Node::NodePtr, std::shared_ptr<Animation3d>, glm::mat4, BonesDataMap&);
+
+	glm::vec3 calcTranslation(std::vector<Vec3Key>);
 	//
 };
 

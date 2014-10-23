@@ -121,8 +121,10 @@ bool GrEngineConnector::transform(uint32_t id, const array<float, 16> t) {
 	return true;
 }
 
-bool GrEngineConnector::doStep(uint32_t  stepMSec)
+bool GrEngineConnector::doStep(uint32_t stepMSec)
 {
+	timeMSec += stepMSec;
+
 	vector<float> rect = window->getRect();
 	float wWidth = rect[2];
 	float wHeight = rect[3];
@@ -376,7 +378,7 @@ void GrEngineConnector::transformBonesData(const glm::mat4& globalInverseTransfo
 
 		glm::mat4 rotationM = bAnim->rotations[key].value;
 
-		glm::vec3 translationV = bAnim->positions[key].value;
+		glm::vec3 translationV = calcTranslation(bAnim->positions);
 		glm::mat4 translationM;
 		translationM = glm::translate(translationM, translationV);
 
@@ -454,6 +456,26 @@ bool GrEngineConnector::deleteFromGpu(std::string modelPath) {
 			meshToBuffer.erase(bIt);
 	}
 	return true;
+}
+
+glm::vec3 GrEngineConnector::calcTranslation(std::vector<Vec3Key> positions) {
+	uint32_t n = positions.size() - 1;
+	uint32_t frame1 = n;
+	uint32_t frame2 = n;
+	for (uint32_t i = 0; i < n; ++i) {
+		if (timeMSec < positions[i + 1].time * 1000) {
+			frame1 = i;
+			frame2 = i + 1;
+			break;
+		}
+	}
+	
+
+	float delta = (positions[frame2].time - positions[frame1].time) * 1000;
+	float factor = (timeMSec - (positions[frame1].time * 1000)) / delta;
+	if (factor > 1)
+		factor = 1;
+	return Utils::interpolate(positions[frame1].value, positions[frame2].value, factor);
 }
 
 
