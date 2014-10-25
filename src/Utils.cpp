@@ -4,12 +4,11 @@
 #include <gtc\type_ptr.hpp>
 
 using namespace std;
-using namespace glm;
 
 using std::shared_ptr;
 using std::array;
 
-void Utils::print(mat4 m)
+void Utils::print(glm::mat4 m)
 {
 	for (int i = 0; i < 4; ++i){
 		for (int j = 0; j < 4; ++j){
@@ -19,7 +18,7 @@ void Utils::print(mat4 m)
 	}
 }
 
-void Utils::print(vec4 v)
+void Utils::print(glm::vec4 v)
 {
 	for (int i = 0; i < 4; ++i){
 		cout << v[i] << " ";
@@ -601,6 +600,37 @@ glm::mat4 Utils::assimpToGlmMatrix(const aiMatrix4x4& m) {
 	};
 }
 
+glm::mat4 Utils::assimp3x3ToGlmMatrix(const aiMatrix3x3& m) {
+	return glm::mat4{
+		m.a1, m.b1, m.c1, 0,
+		m.a2, m.b2, m.c2, 0,
+		m.a3, m.b3, m.c3, 0,
+		0, 0, 0, 1
+	};
+}
+
+aiMatrix4x4 Utils::glmToAssimpMatrix(const glm::mat4& m) {
+	const float *ms = (const float*)glm::value_ptr(m);
+
+	return aiMatrix4x4{
+		ms[0], ms[4], ms[8], ms[12],
+		ms[1], ms[5], ms[9], ms[13],
+		ms[2], ms[6], ms[10], ms[14],
+		ms[3], ms[7], ms[11], ms[15]
+	};
+}
+
+aiMatrix3x3 Utils::glmToAssimpMatrix3x3(const glm::mat4& m) {
+	const float *ms = (const float*)glm::value_ptr(m);
+
+	return aiMatrix3x3{
+		ms[0], ms[4], ms[8],
+		ms[1], ms[5], ms[9],
+		ms[2], ms[6], ms[10]
+	};
+}
+
+
 glm::vec3 Utils::assimpToGlmVector3d(const aiVector3D& v) {
 	return glm::vec3{ v.x, v.y, v.z };
 }
@@ -691,6 +721,19 @@ glm::vec3 Utils::interpolate(const glm::vec3& start, const glm::vec3& end, float
 	interp.z = end.z*alpha + start.z*(1 - alpha);
 
 	return interp;
+}
+
+glm::mat4 Utils::interpolateQ(const glm::mat4& start, const glm::mat4& end, float alpha) {
+	aiMatrix3x3 sm = glmToAssimpMatrix3x3(start);
+	aiMatrix3x3 em = glmToAssimpMatrix3x3(end);
+	
+	aiQuaternion qs(sm);
+	aiQuaternion qe(em);
+	aiQuaternion res;
+
+	aiQuaternion::Interpolate(res, qs, qe, alpha);
+	res = res.Normalize();
+	return assimp3x3ToGlmMatrix(res.GetMatrix());
 }
 
 

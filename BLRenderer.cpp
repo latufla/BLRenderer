@@ -21,7 +21,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
 	{
 		shared_ptr<ObjectBase> obj1 = make_shared<ObjectBase>(1, GUN);
 
-		obj1->scale(0.05f, 0.05f, 0.05f);
+		obj1->scale(0.1f, 0.1f, 0.1f);
 		obj1->rotateY(90.0f);
 		objects.push_back(obj1);
 
@@ -64,8 +64,8 @@ int _tmain(int argc, _TCHAR* argv[]) {
 		Sleep(step); // TODO: shirt WND 
 
 		shared_ptr<ObjectBase> obj = objects[0];
-		obj->rotateY(3.0f);
-		renderer.transform(obj->getId(), Utils::glmMatrixToArray(obj->getOrientation()));
+// 		obj->rotateY(3.0f);
+// 		renderer.transform(obj->getId(), Utils::glmMatrixToArray(obj->getOrientation()));
 
 		done = !renderer.doStep(step);
 	}

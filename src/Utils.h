@@ -23,6 +23,10 @@ public:
 	static void testNodeTree();
 
 	static glm::mat4 Utils::assimpToGlmMatrix(const aiMatrix4x4&);
+	static glm::mat4 Utils::assimp3x3ToGlmMatrix(const aiMatrix3x3&);
+	static aiMatrix4x4 Utils::glmToAssimpMatrix(const glm::mat4&);
+	static aiMatrix3x3 Utils::glmToAssimpMatrix3x3(const glm::mat4& m);
+
 	static glm::vec3 Utils::assimpToGlmVector3d(const aiVector3D&);
 
 	static std::array<float, 16> Utils::glmMatrixToArray(const glm::mat4&);
@@ -30,5 +34,6 @@ public:
 	static std::string Utils::glmToString(const glm::mat4&);
 	static std::string Utils::glmToString(const glm::vec3&);
 	static glm::vec3 interpolate(const glm::vec3& start, const glm::vec3& end, float alpha);
+	static glm::mat4 interpolateQ(const glm::mat4& start, const glm::mat4& end, float alpha);
 };
 
