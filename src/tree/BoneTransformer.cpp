@@ -15,7 +15,7 @@ BoneTransformer::~BoneTransformer() {
 
 void BoneTransformer::transform(View& object, shared_ptr<Model3d> model, BonesDataMap& outBonesData) {
 	auto& boneTree = model->getBoneTree();
-	auto anim = model->getAnimation(); // TODO: get animation by View label
+	auto anim = model->getAnimation(); // TODO: get animation by View animation label
 	uint32_t animTime = object.getAnimationTime();
 	auto& gTrans = model->getGlobalInverseTransform();
 	glm::mat4 pTrans;
@@ -58,41 +58,46 @@ void BoneTransformer::doTransform(TNode<BoneNodeData>& boneTree, shared_ptr<Anim
 
 glm::vec3 BoneTransformer::calcTimeInterpolation(uint32_t time, std::vector<Vec3Key> vecs) {
 	uint32_t n = vecs.size() - 1;
-	uint32_t frame1 = n;
-	uint32_t frame2 = n;
+	uint32_t frame1Id = n;
+	uint32_t frame2Id = n;
 	for (uint32_t i = 0; i < n; ++i) {
 		if (time < vecs[i + 1].time * 1000) {
-			frame1 = i;
-			frame2 = i + 1;
+			frame1Id = i;
+			frame2Id = i + 1;
 			break;
 		}
 	}
 
-	double delta = (vecs[frame2].time - vecs[frame1].time) * 1000;
-	double factor = (time - (vecs[frame1].time * 1000)) / delta;
+	auto& frame1 = vecs[frame1Id];
+	auto& frame2 = vecs[frame2Id];
+
+	double delta = (frame2.time - frame1.time) * 1000;
+	double factor = (time - (frame1.time * 1000)) / delta;
 	if (factor > 1)
 		factor = 1;
 
-	return Utils::interpolate(vecs[frame1].value, vecs[frame2].value, (float)factor);
+	return Utils::interpolate(frame1.value, frame2.value, (float)factor);
 }
 
 glm::mat4 BoneTransformer::calcTimeInterpolation(uint32_t time, std::vector<Mat4Key> mats) {
 	uint32_t n = mats.size() - 1;
-	uint32_t frame1 = n;
-	uint32_t frame2 = n;
+	uint32_t frame1Id = n;
+	uint32_t frame2Id = n;
 	for (uint32_t i = 0; i < n; ++i) {
 		if (time < mats[i + 1].time * 1000) {
-			frame1 = i;
-			frame2 = i + 1;
+			frame1Id = i;
+			frame2Id = i + 1;
 			break;
 		}
 	}
 
+	auto& frame1 = mats[frame1Id];
+	auto& frame2 = mats[frame2Id];
 
-	double delta = (mats[frame2].time - mats[frame1].time) * 1000;
-	double factor = (time - (mats[frame1].time * 1000)) / delta;
+	double delta = (frame2.time - frame1.time) * 1000;
+	double factor = (time - (frame1.time * 1000)) / delta;
 	if (factor > 1)
 		factor = 1;
 
-	return Utils::interpolateQ(mats[frame1].value, mats[frame2].value, (float)factor);
+	return Utils::interpolateQ(frame1.value, frame2.value, (float)factor);
 }

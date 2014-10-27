@@ -25,6 +25,7 @@ public:
 private:
 	// only to hide useless params
 	void doTransform(TNode<BoneNodeData>&, std::shared_ptr<Animation3d>, uint32_t, const glm::mat4&, glm::mat4, BonesDataMap&);
+	
 	glm::vec3 calcTimeInterpolation(uint32_t time, std::vector<Vec3Key> vecs);
 	glm::mat4 calcTimeInterpolation(uint32_t time, std::vector<Mat4Key> mats);
 };
