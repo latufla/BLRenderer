@@ -54,7 +54,6 @@ GrEngineConnector::~GrEngineConnector()
 	for (auto& i : allObjects) {
 		removeObject(i.first);
 	}
-	int i = 0;
 }
 
 int32_t GrEngineConnector::init()
@@ -171,7 +170,7 @@ bool GrEngineConnector::doStep(uint32_t stepMSec)
 		shared_ptr<Model3d> model = loader.getModel3d(view.getPath());
 		vector<Mesh3d>& meshes = model->getMeshes();
 		for (auto& s : meshes) {
-			auto bonesData = prepareAnimationStep(view, model->getAnimation(), s, stepMSec); // concrete animation label from view
+			auto bonesData = prepareAnimationStep(view, s, stepMSec);
 			for (auto& i : bonesData) {
 				glUniformMatrix4fv(bonesLoc + i.first, 1, GL_FALSE, &(i.second.finalTransform[0][0]));
 			}
@@ -365,7 +364,7 @@ void GrEngineConnector::setCamera(float x, float y, float z) {
 }
 
 
-BoneTransformer::BonesDataMap GrEngineConnector::prepareAnimationStep(View& object, shared_ptr<Animation3d> a, Mesh3d& m, uint32_t stepMSec) {
+BoneTransformer::BonesDataMap GrEngineConnector::prepareAnimationStep(View& object, Mesh3d& m, uint32_t stepMSec) {
 	BoneTransformer::BonesDataMap res;
 	auto& boneIdToOffset = m.getBoneIdToOffset();
 	for (auto& i : boneIdToOffset) {
@@ -375,9 +374,10 @@ BoneTransformer::BonesDataMap GrEngineConnector::prepareAnimationStep(View& obje
 	object.doAnimationStep(stepMSec);
 
 	shared_ptr<Model3d> model = loader.getModel3d(object.getPath());
-	boneTransformer.transform(model->getBoneTree(), object, model->getGlobalInverseTransform(), a, glm::mat4(), res);
+	boneTransformer.transform(object, model, res);
 	return res;
 }
+
 
 bool GrEngineConnector::hasObjectWith(string modelPath) {
 	auto& it = find_if(cbegin(idToObject), cend(idToObject), [&modelPath](pair<uint32_t, View> i)->bool{

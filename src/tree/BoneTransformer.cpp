@@ -13,21 +13,29 @@ BoneTransformer::BoneTransformer() {
 BoneTransformer::~BoneTransformer() {
 }
 
-void BoneTransformer::transform(TNode<BoneNodeData>& boneTree, View& object, const glm::mat4& globalInverseTransform, shared_ptr<Animation3d> animation, glm::mat4 parentTransform, BonesDataMap& outBonesData) {
-	const uint32_t key = 1;
+void BoneTransformer::transform(View& object, shared_ptr<Model3d> model, BonesDataMap& outBonesData) {
+	auto& boneTree = model->getBoneTree();
+	auto anim = model->getAnimation(); // TODO: get animation by View label
+	uint32_t animTime = object.getAnimationTime();
+	auto& gTrans = model->getGlobalInverseTransform();
+	glm::mat4 pTrans;
+	doTransform(boneTree, anim, animTime, gTrans, pTrans, outBonesData);
+}
+
+void BoneTransformer::doTransform(TNode<BoneNodeData>& boneTree, shared_ptr<Animation3d> animation, uint32_t animationTime, const glm::mat4& globalInverseTransform, glm::mat4 parentTransform, BonesDataMap& outBonesData) {
 	uint32_t boneId = boneTree.getId();
 	BoneNodeData& bNData = boneTree.getData();
 	glm::mat4 nodeTransform = bNData.getTransform();
 
 	BoneAnimation* bAnim = animation->getBoneAnimation(boneId);
 	if (bAnim) {
-		glm::vec3 scalingV = calcTimeInterpolation(object.getAnimationTime(), bAnim->scalings);
+		glm::vec3 scalingV = calcTimeInterpolation(animationTime, bAnim->scalings);
 		glm::mat4 scalingM;
 		scalingM = glm::scale(scalingM, scalingV);
 
-		glm::mat4 rotationM = calcTimeInterpolation(object.getAnimationTime(), bAnim->rotations); //bAnim->rotations[key].value;
+		glm::mat4 rotationM = calcTimeInterpolation(animationTime, bAnim->rotations);
 
-		glm::vec3 translationV = calcTimeInterpolation(object.getAnimationTime(), bAnim->positions);
+		glm::vec3 translationV = calcTimeInterpolation(animationTime, bAnim->positions);
 		glm::mat4 translationM;
 		translationM = glm::translate(translationM, translationV);
 
@@ -44,7 +52,7 @@ void BoneTransformer::transform(TNode<BoneNodeData>& boneTree, View& object, con
 	TNode<BoneNodeData>::ChildrenList& children = boneTree.getChildren();
 	uint32_t nChildren = children.size();
 	for (uint32_t i = 0; i < nChildren; ++i) {
-		transform(children[i], object, globalInverseTransform, animation, globalTransform, outBonesData);
+		doTransform(children[i], animation, animationTime, globalInverseTransform, globalTransform, outBonesData);
 	}
 }
 

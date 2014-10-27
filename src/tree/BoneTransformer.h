@@ -7,6 +7,7 @@
 #include "BoneNodeData.h"
 #include "..\View.h"
 #include <vector>
+#include "..\Model3d.h"
 
 class BoneTransformer {
 public:
@@ -19,9 +20,11 @@ public:
 	};
 
 	typedef std::unordered_map<uint32_t, BoneData> BonesDataMap;
-	void transform(TNode<BoneNodeData>&, View&, const glm::mat4&, std::shared_ptr<Animation3d>, glm::mat4, BonesDataMap&);
+	void transform(View&, std::shared_ptr<Model3d>, BonesDataMap&);
 
 private:
+	// only to hide useless params
+	void doTransform(TNode<BoneNodeData>&, std::shared_ptr<Animation3d>, uint32_t, const glm::mat4&, glm::mat4, BonesDataMap&);
 	glm::vec3 calcTimeInterpolation(uint32_t time, std::vector<Vec3Key> vecs);
 	glm::mat4 calcTimeInterpolation(uint32_t time, std::vector<Mat4Key> mats);
 };

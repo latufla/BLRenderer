@@ -87,7 +87,7 @@ private:
 	
 	// animation
 	BoneTransformer boneTransformer;
-	BoneTransformer::BonesDataMap prepareAnimationStep(View&, std::shared_ptr<Animation3d>, Mesh3d&, uint32_t);
+	BoneTransformer::BonesDataMap prepareAnimationStep(View&, Mesh3d&, uint32_t);
 	//
 };
 
