@@ -10,6 +10,7 @@
 #include "Model3dLoader.h"
 #include "View.h"
 #include <array>
+#include "tree\TNode.h"
 
 class GrEngineConnector
 {
@@ -91,7 +92,7 @@ private:
 	};
 	typedef std::unordered_map<uint32_t, BoneData> BonesDataMap;
 	BonesDataMap createBonesData(View&, std::shared_ptr<Animation3d>, Mesh3d&, uint32_t);
-	void transformBonesData(Node::NodePtr, View&, const glm::mat4&, std::shared_ptr<Animation3d>, glm::mat4, BonesDataMap&);
+	void transformBonesData(TNode<BoneNodeData>&, View&, const glm::mat4&, std::shared_ptr<Animation3d>, glm::mat4, BonesDataMap&);
 
 	glm::vec3 calcTimeInterpolation(uint32_t, std::vector<Vec3Key>);
 	glm::mat4 calcTimeInterpolation(uint32_t, std::vector<Mat4Key>);

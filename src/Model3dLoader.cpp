@@ -35,12 +35,7 @@ bool Model3dLoader::load(string dir, string name) {
 	forEachNode(model3D, root, loadMeshes, myMeshes);
 	forEachNode(root, printNode);
 
-	shared_ptr<Node> boneTree = collectBones(model3D);
-//	Node::forEachNode(boneTree, [](Node::NodePtr node, std::uint32_t level){
-//		string spacing(level, ' ');
-//		cout << spacing << static_cast<string>(*(node.get())) << endl;
-//	});
-
+	TNode<BoneNodeData> boneTree = collectBones(model3D);
 	collectBoneWeightsAndOffsets(model3D, boneTree, myMeshes);
 
 	shared_ptr<Animation3d> animation = collectAnimations(model3D, boneTree);
@@ -111,31 +106,31 @@ shared_ptr<Model3d> Model3dLoader::getModel3d(string name) {
 }
 
 
-Node::NodePtr Model3dLoader::collectBones(const aiScene* scene, string bonesRoot) {
+TNode<BoneNodeData> Model3dLoader::collectBones(const aiScene* scene, string bonesRoot) {
 	aiNode* root = scene->mRootNode;
 	aiNode* armature = root->FindNode(bonesRoot.c_str());
 	if (!armature || !armature->mNumChildren)
-		return nullptr;
+		return TNode<BoneNodeData>();
 
 	aiNode* rootBone = armature->mChildren[0];	
-	Node::NodePtr boneTree = parseBones(rootBone);
+	TNode<BoneNodeData> boneTree = parseBones(rootBone);
 
 	uint32_t firstId = 0; 
-	Node::arrangeIds(boneTree, firstId);
+	TNode<BoneNodeData>::ArrangeIds(boneTree, firstId);
 	
 	return boneTree;
 }
 
-Node::NodePtr Model3dLoader::parseBones(const aiNode* node) {
+TNode<BoneNodeData> Model3dLoader::parseBones(const aiNode* node) {
 	glm::mat4 transform = Utils::assimpToGlmMatrix(node->mTransformation);
-	Node::NodePtr bones = Node::createNode(0, node->mName.C_Str(), make_shared<BoneNodeData>(transform));
+	TNode<BoneNodeData> bones{ 0, node->mName.C_Str(), BoneNodeData(transform) };
 	
 	uint32_t nNodes = node->mNumChildren;
 	if (nNodes == 0)
 		return bones;
 
 	for (uint32_t i = 0; i < nNodes; ++i) {
-		bones->addChild(parseBones(node->mChildren[i]));
+		bones.addChild(parseBones(node->mChildren[i]));
 	}
 	return bones;
 }
@@ -168,7 +163,7 @@ void Model3dLoader::forEachNode(const aiScene* scene, aiNode* node, void(*eacher
 	}
 }
 
-shared_ptr<Animation3d> Model3dLoader::collectAnimations(const aiScene* scene, Node::NodePtr allBones) {
+shared_ptr<Animation3d> Model3dLoader::collectAnimations(const aiScene* scene, TNode<BoneNodeData>& allBones) {
 	uint32_t nAnims = scene->mNumAnimations;
 	if (!nAnims)
 		return nullptr;
@@ -186,7 +181,7 @@ shared_ptr<Animation3d> Model3dLoader::collectAnimations(const aiScene* scene, N
 		string nName = animNode->mNodeName.C_Str();
 		
 		bool found = false;
-		Node::NodePtr myBone = Node::findNode(allBones, nName, found);
+		TNode<BoneNodeData>* myBone = TNode<BoneNodeData>::FindNode(allBones, nName, found);
 		if (!myBone)
 			continue;
 
@@ -225,7 +220,7 @@ shared_ptr<Animation3d> Model3dLoader::collectAnimations(const aiScene* scene, N
 	return myAnimation;
 }
 
-void Model3dLoader::collectBoneWeightsAndOffsets(const aiScene* scene, Node::NodePtr boneTree, vector<Mesh3d>& meshes) {
+void Model3dLoader::collectBoneWeightsAndOffsets(const aiScene* scene, TNode<BoneNodeData>& boneTree, vector<Mesh3d>& meshes) {
 	std::map<string, aiMesh*> nameToMeshAi;
 	uint32_t nMeshAi = scene->mNumMeshes;
 	for (uint32_t i = 0; i < nMeshAi; ++i) {
@@ -243,7 +238,7 @@ void Model3dLoader::collectBoneWeightsAndOffsets(const aiScene* scene, Node::Nod
 		for (uint32_t j = 0; j < nBonesAi; ++j) {
 			aiBone* boneAi = meshAi->mBones[j];
 			bool found = false;
-			Node::NodePtr myBone = Node::findNode(boneTree, boneAi->mName.C_Str(), found);
+			TNode<BoneNodeData>* myBone = TNode<BoneNodeData>::FindNode(boneTree, boneAi->mName.C_Str(), found);
 			uint32_t myBoneId = myBone->getId();
 			myMesh.setBoneOffset(myBoneId, Utils::assimpToGlmMatrix(boneAi->mOffsetMatrix));
 			

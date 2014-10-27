@@ -10,7 +10,7 @@ using std::shared_ptr;
 Model3d::Model3d() {
 }
 
-Model3d::Model3d(string name, const vector<Mesh3d>& meshes, const vector<string>& materials, shared_ptr<Node> boneTree, shared_ptr<Animation3d> animation) {
+Model3d::Model3d(string name, const vector<Mesh3d>& meshes, const vector<string>& materials, TNode<BoneNodeData>& boneTree, shared_ptr<Animation3d> animation) {
 	this->name = name;
 	this->meshes = meshes;
 	this->boneTree = boneTree;

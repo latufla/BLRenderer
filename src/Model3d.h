@@ -1,14 +1,16 @@
 #pragma once
 #include <vector>
+#include <memory>
 #include "Mesh3d.h"
 #include "Material3d.h"
-#include "tree\Node.h"
+#include "tree\TNode.h"
 #include "Animation3d.h"
+#include "tree\BoneNodeData.h"
 
 class Model3d {
 public:
 	Model3d();
-	Model3d(std::string, const std::vector<Mesh3d>&, const std::vector<std::string>&, std::shared_ptr<Node>, std::shared_ptr<Animation3d>);
+	Model3d(std::string, const std::vector<Mesh3d>&, const std::vector<std::string>&, TNode<BoneNodeData>&, std::shared_ptr<Animation3d>);
 
 	~Model3d();
 
@@ -18,7 +20,7 @@ public:
 
 	std::shared_ptr<Animation3d> getAnimation() const { return animation; }
 
-	Node::NodePtr getBoneTree() const { return boneTree; }
+	TNode<BoneNodeData>& getBoneTree(){ return boneTree; }
 
 	operator std::string() const;
 
@@ -33,7 +35,7 @@ private:
 	std::vector<Mesh3d> meshes;
 	std::vector<Material3d> materials;
 
-	std::shared_ptr<Node> boneTree;
+	TNode<BoneNodeData> boneTree;
 	std::shared_ptr<Animation3d> animation;
 
 	glm::mat4 globalInverseTransform;

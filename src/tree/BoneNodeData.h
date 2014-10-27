@@ -1,14 +1,13 @@
 #pragma once
-#include "NodeData.h"
 #include <glm.hpp>
 
-class BoneNodeData : public NodeData{
+class BoneNodeData{
 public:
 	BoneNodeData();
 	BoneNodeData(const glm::mat4&);
 	~BoneNodeData();
 
-	operator std::string() const override;
+	operator std::string() const;
 
 	glm::mat4& getTransform() { return transform; }
 

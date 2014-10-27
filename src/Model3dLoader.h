@@ -9,7 +9,7 @@
 #include <assimp/postprocess.h>
 
 #include "Model3d.h"
-#include "tree/Node.h"
+#include "tree/BoneNodeData.h"
 
 class Model3dLoader {
 public:
@@ -26,13 +26,13 @@ private:
 	void forEachNode(aiNode*, void(*)(aiNode*, int), int = 0);
 	void forEachNode(const aiScene*, aiNode*, void(*)(const aiScene*, aiNode*, std::vector<Mesh3d>&), std::vector<Mesh3d>&);
 	
-	Node::NodePtr collectBones(const aiScene*, std::string = "Armature");
-	Node::NodePtr parseBones(const aiNode*);
+	TNode<BoneNodeData> collectBones(const aiScene*, std::string = "Armature");
+	TNode<BoneNodeData> parseBones(const aiNode*);
 
-	void collectBoneWeightsAndOffsets(const aiScene*, Node::NodePtr, std::vector<Mesh3d>&);
+	void collectBoneWeightsAndOffsets(const aiScene*, TNode<BoneNodeData>&, std::vector<Mesh3d>&);
 
 	// TODO: collect all 
-	std::shared_ptr<Animation3d> collectAnimations(const aiScene*, Node::NodePtr);
+	std::shared_ptr<Animation3d> collectAnimations(const aiScene*, TNode<BoneNodeData>&);
 };
 
 void loadMeshes(const aiScene*, aiNode*, std::vector<Mesh3d>&);

@@ -379,11 +379,11 @@ GrEngineConnector::BonesDataMap GrEngineConnector::createBonesData(View& object,
 	return res;
 }
 
-void GrEngineConnector::transformBonesData(Node::NodePtr boneTree, View& object, const glm::mat4& globalInverseTransform, shared_ptr<Animation3d> animation, glm::mat4 parentTransform, BonesDataMap& outBonesData) {
+void GrEngineConnector::transformBonesData(TNode<BoneNodeData>& boneTree, View& object, const glm::mat4& globalInverseTransform, shared_ptr<Animation3d> animation, glm::mat4 parentTransform, BonesDataMap& outBonesData) {
 	const uint32_t key = 1;
-	uint32_t boneId = boneTree->getId();
-	BoneNodeData* bNData = (BoneNodeData*)boneTree->getData().get();
-	glm::mat4 nodeTransform = bNData->getTransform();
+	uint32_t boneId = boneTree.getId();
+	BoneNodeData& bNData = boneTree.getData();
+	glm::mat4 nodeTransform = bNData.getTransform();
 	
 	BoneAnimation* bAnim = animation->getBoneAnimation(boneId);
 	if (bAnim) {
@@ -407,7 +407,7 @@ void GrEngineConnector::transformBonesData(Node::NodePtr boneTree, View& object,
 		outBData.finalTransform = globalInverseTransform * globalTransform * outBData.offset;
 	}
 	
-	vector<Node::NodePtr> children = boneTree->getChildren();
+	TNode<BoneNodeData>::ChildrenList& children = boneTree.getChildren();
 	uint32_t nChildren = children.size();
 	for (uint32_t i = 0; i < nChildren; ++i) {
 		transformBonesData(children[i], object, globalInverseTransform, animation, globalTransform, outBonesData);

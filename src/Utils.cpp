@@ -5,7 +5,6 @@
 
 using namespace std;
 
-using std::shared_ptr;
 using std::array;
 
 void Utils::print(glm::mat4 m)
@@ -635,56 +634,6 @@ glm::vec3 Utils::assimpToGlmVector3d(const aiVector3D& v) {
 	return glm::vec3{ v.x, v.y, v.z };
 }
 
-
-void Utils::testNodeTree() {
-	auto parentData = make_shared<BoneNodeData>();
-	auto parentNode = Node::createNode(0, "root", parentData);
-
-	auto ch1Data = make_shared<BoneNodeData>();
-	auto ch1 = Node::createNode(0, "c1", ch1Data);
-	parentNode->addChild(ch1);
-
-	auto ch11Data = make_shared<BoneNodeData>();
-	auto ch11 = Node::createNode(0, "c11", ch11Data);
-	ch1->addChild(ch11);
-
-	auto ch111Data = make_shared<BoneNodeData>();
-	auto ch111 = Node::createNode(0, "c111", ch111Data);
-	ch11->addChild(ch111);
-
-
-	auto ch2Data = make_shared<BoneNodeData>();
-	auto ch2 = Node::createNode(0, "c2", ch2Data);
-	parentNode->addChild(ch2);
-
-
-	auto ch3Data = make_shared<BoneNodeData>();
-	auto ch3 = Node::createNode(0, "c3", ch3Data);
-	parentNode->addChild(ch3);
-
-	auto ch31Data = make_shared<BoneNodeData>();
-	auto ch31 = Node::createNode(0, "c31", ch31Data);
-	ch3->addChild(ch31);
-	
-	auto ch32Data = make_shared<BoneNodeData>();
-	auto ch32 = Node::createNode(0, "c32", ch32Data);
-	ch3->addChild(ch32);
-
-
-	std::uint32_t firstId = 0;
-	Node::arrangeIds(parentNode, firstId);
-
-	
-	Node::forEachNode(parentNode, [](Node::NodePtr node, std::uint32_t level){
-		string spacing(level, ' ');
-		cout << spacing << static_cast<string>(*(node.get())) << endl;
-	});
-
-	bool found = false;
-	string nName = "c32";
-	cout << endl << nName + ": " << endl << static_cast<string>(*(Node::findNode(parentNode, nName, found)));
-
-}
 
 string Utils::glmToString(const glm::mat4& m) {
 	string res = "{";
