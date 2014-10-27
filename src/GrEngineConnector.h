@@ -11,6 +11,7 @@
 #include "View.h"
 #include <array>
 #include "tree\TNode.h"
+#include "tree\BoneTransformer.h"
 
 class GrEngineConnector
 {
@@ -83,19 +84,10 @@ private:
 	uint32_t loadShader(uint32_t, const char*);
 	uint32_t loadTexture(std::vector<unsigned char>&, int16_t, int16_t);
 	// ---
-
-
+	
 	// animation
-	struct BoneData {
-		glm::mat4 offset;
-		glm::mat4 finalTransform;
-	};
-	typedef std::unordered_map<uint32_t, BoneData> BonesDataMap;
-	BonesDataMap createBonesData(View&, std::shared_ptr<Animation3d>, Mesh3d&, uint32_t);
-	void transformBonesData(TNode<BoneNodeData>&, View&, const glm::mat4&, std::shared_ptr<Animation3d>, glm::mat4, BonesDataMap&);
-
-	glm::vec3 calcTimeInterpolation(uint32_t, std::vector<Vec3Key>);
-	glm::mat4 calcTimeInterpolation(uint32_t, std::vector<Mat4Key>);
+	BoneTransformer boneTransformer;
+	BoneTransformer::BonesDataMap prepareAnimationStep(View&, std::shared_ptr<Animation3d>, Mesh3d&, uint32_t);
 	//
 };
 
