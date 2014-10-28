@@ -20,7 +20,6 @@ const std::string Model3dLoader::BONES_ROOT_NODE = "Armature";
 bool Model3dLoader::loadModel(string dir, string name) {
 	string path = dir + name;
 	
-	Assimp::Importer importer;
 	const aiScene* modelAi = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 	if (!modelAi)
 		throw std::exception("Model3dLoader::loadModel invalid collada model");
@@ -47,6 +46,19 @@ bool Model3dLoader::loadModel(string dir, string name) {
 	
 	return true;
 }
+
+bool Model3dLoader::attachAnimation(string modelName, string animPath, string animName) {
+	const aiScene* animationAi = importer.ReadFile(animPath, aiProcess_Triangulate | aiProcess_FlipUVs);
+	if (!animationAi)
+		throw std::exception("Model3dLoader::attachAnimation invalid collada model");
+
+	Model3d& model = getModel(modelName);
+	Animation3d defaultAnimation = collectAnimation(animationAi, model.getBoneTree(), animName);
+	model.addAnimation(defaultAnimation);
+
+	return true;
+}
+
 
 Model3d& Model3dLoader::getModel(string name) {	
 	return models.at(name);

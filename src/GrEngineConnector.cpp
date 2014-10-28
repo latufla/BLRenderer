@@ -88,6 +88,11 @@ bool GrEngineConnector::loadModel(string dir, string name) {
 	return loader.loadModel(dir, name);
 }
 
+bool GrEngineConnector::attachAnimation(string modelName, string animPath, string animName) {
+	return loader.attachAnimation(modelName, animPath, animName);
+}
+
+
 bool GrEngineConnector::addObject(uint32_t id, std::string modelPath){
 	if (!hasObjectWith(modelPath)) // first in
 		loadToGpu(modelPath);
@@ -111,14 +116,14 @@ bool GrEngineConnector::removeObject(uint32_t id){
 	return true;
 }
 
-bool GrEngineConnector::playAnimation(uint32_t id, std::string label) {
-	auto& it = idToObject.find(id);
+bool GrEngineConnector::playAnimation(uint32_t objId, std::string label) {
+	auto& it = idToObject.find(objId);
 	if (it == end(idToObject))
 		return false;
 	
 	View& object = it->second;
 	Model3d& model = loader.getModel(object.getPath());
-	Animation3d& animation = model.getAnimation();
+	Animation3d& animation = model.getAnimation(label);
 	it->second.setAnimation(label, (uint32_t)(animation.getDuration() * 1000), true);
 	return true;
 }

@@ -19,13 +19,13 @@ vector<shared_ptr<ObjectBase>> objects;
 
 int _tmain(int argc, _TCHAR* argv[]) {
 	{
-		shared_ptr<ObjectBase> obj1 = make_shared<ObjectBase>(1, GUN);
+		shared_ptr<ObjectBase> obj1 = make_shared<ObjectBase>(42, CUBE);
 
 		obj1->scale(0.1f, 0.1f, 0.1f);
 		obj1->rotateY(90.0f);
 		objects.push_back(obj1);
 
-		shared_ptr<ObjectBase> obj2 = make_shared<ObjectBase>(2, GUN);
+		shared_ptr<ObjectBase> obj2 = make_shared<ObjectBase>(2, CUBE);
 		obj2->scale(0.05f, 0.05f, 0.05f);
 		//objects.push_back(obj2);
 	}
@@ -39,8 +39,11 @@ int _tmain(int argc, _TCHAR* argv[]) {
 	renderer.setCamera(0.0f, 0.0f, 1.0f);
 	
 
-	const Model3dInfo& info = Infos::getInfo(GUN);
+	const Model3dInfo& info = Infos::getInfo(CUBE);
 	renderer.loadModel(info.getModelDir(), info.getModelName());
+
+	renderer.attachAnimation(info.getModelPath(), "models/Cube/CubeIdle.dae", "idle");
+
 
 	for (shared_ptr<ObjectBase> s : objects) {
 		uint32_t id = s->getId();
@@ -50,7 +53,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
 		renderer.transform(id, Utils::glmMatrixToArray(s->getOrientation()));
 	}
 
-	renderer.playAnimation(1);
+	renderer.playAnimation(42, "idle");
 
 
 // 	renderer.removeObject(2);

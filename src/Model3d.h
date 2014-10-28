@@ -8,9 +8,11 @@
 #include "tree\BoneNodeData.h"
 #include <unordered_map>
 
+// non active runtime creation
+// consider we can copy here 
+// for faster main loop
 class Model3d {
 public:
-	// TODO: move maybe, now it copies inside
 	Model3d(std::string, const std::vector<Mesh3d>&, const std::vector<std::string>&, const TNode<BoneNodeData>&, const Animation3d&);
 
 	std::string getName() const { return name; }
@@ -18,6 +20,7 @@ public:
 	std::vector<Material3d>& getMaterials() { return materials; }
 
 	Animation3d& getAnimation(std::string = Animation3d::DEFAULT_ANIMATION_NAME);
+	bool addAnimation(Animation3d&);
 
 	TNode<BoneNodeData>& getBoneTree(){ return boneTree; }
 

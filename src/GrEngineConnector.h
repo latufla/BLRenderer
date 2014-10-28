@@ -26,7 +26,8 @@ public:
 	int32_t init();
 	
 	bool loadModel(std::string, std::string);
-	
+	bool attachAnimation(std::string, std::string, std::string);
+
 	bool addObject(uint32_t, std::string);
 	bool removeObject(uint32_t);
 

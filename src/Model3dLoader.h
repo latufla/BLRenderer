@@ -19,10 +19,13 @@ public:
 	bool loadModel(std::string, std::string);
 
 	Model3d& getModel(std::string);
-	
+	bool attachAnimation(std::string, std::string, std::string);
+
 private:
 	std::map<std::string, Model3d> models;
-	
+
+	Assimp::Importer importer;
+
 	static const uint8_t TRIANGLE_FACE_TYPE;
 	std::vector<Mesh3d> collectMeshes(const aiScene*);
 	void parseMeshes(const aiNode*, aiMesh**, std::vector<Mesh3d>&);

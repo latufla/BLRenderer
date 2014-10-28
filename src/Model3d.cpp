@@ -47,3 +47,8 @@ string Model3d::getUniqueMeshName(const Mesh3d& mesh) {
 Animation3d& Model3d::getAnimation(std::string name) {
 	return nameToAnimation.at(name);
 }
+
+bool Model3d::addAnimation(Animation3d& anim) {
+	nameToAnimation[anim.getName()] = anim;
+	return true;
+}
