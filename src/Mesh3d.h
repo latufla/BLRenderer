@@ -28,7 +28,7 @@ public:
 	std::vector<Vertex3d>& getVertices() { return vertices; }
 	std::vector<uint16_t>& getIndices() { return indices; }
 
-	uint32_t getTextureId() const { return textureId; }
+	uint32_t getMaterialId() const { return materialId; }
 
 	operator std::string() const;
 	
@@ -52,7 +52,7 @@ private:
 	std::vector<Vertex3d> vertices;
 	std::vector<uint16_t> indices;
 
-	uint32_t textureId;
+	uint32_t materialId;
 
 	std::map<uint32_t, glm::mat4> boneIdToOffset;
 };

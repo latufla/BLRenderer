@@ -9,13 +9,13 @@ Mesh3d::Mesh3d() {
 
 }
 
-Mesh3d::Mesh3d(string name, const vector<Vertex3d>& vertices, const vector<uint16_t>& indices, uint32_t textureId) {
+Mesh3d::Mesh3d(string name, const vector<Vertex3d>& vertices, const vector<uint16_t>& indices, uint32_t materialId) {
 	this->name = name;
 
 	this->vertices = vertices;
 	this->indices = indices;
 
-	this->textureId = textureId;
+	this->materialId = materialId;
 }
 
 Mesh3d::~Mesh3d() {

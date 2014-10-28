@@ -85,7 +85,7 @@ int32_t GrEngineConnector::init()
 
 
 bool GrEngineConnector::loadModel(string dir, string name) {
-	return loader.load(dir, name);
+	return loader.loadModel(dir, name);
 }
 
 bool GrEngineConnector::addObject(uint32_t id, std::string modelPath){
@@ -116,7 +116,7 @@ bool GrEngineConnector::playAnimation(uint32_t id, std::string label) {
 		return false;
 	
 	View& object = it->second;
-	shared_ptr<Model3d> model = loader.getModel3d(object.getPath());
+	shared_ptr<Model3d> model = loader.getModel(object.getPath());
 	shared_ptr<Animation3d> animation = model->getAnimation();
 	it->second.setAnimation(label, (uint32_t)(animation->getDuration() * 1000), true);
 	return true;
@@ -167,7 +167,7 @@ bool GrEngineConnector::doStep(uint32_t stepMSec)
 		glm::mat4 mvpMtx = pvMatrix * modelMtx;
 		glUniformMatrix4fv(mvpMatrixLoc, 1, GL_FALSE, &mvpMtx[0][0]);
 
-		shared_ptr<Model3d> model = loader.getModel3d(view.getPath());
+		shared_ptr<Model3d> model = loader.getModel(view.getPath());
 		vector<Mesh3d>& meshes = model->getMeshes();
 		for (auto& s : meshes) {
 			auto bonesData = prepareAnimationStep(view, s, stepMSec);
@@ -373,7 +373,7 @@ BoneTransformer::BonesDataMap GrEngineConnector::prepareAnimationStep(View& obje
 	
 	object.doAnimationStep(stepMSec);
 
-	shared_ptr<Model3d> model = loader.getModel3d(object.getPath());
+	shared_ptr<Model3d> model = loader.getModel(object.getPath());
 	boneTransformer.transform(object, model, res);
 	return res;
 }
@@ -387,7 +387,7 @@ bool GrEngineConnector::hasObjectWith(string modelPath) {
 }
 
 bool GrEngineConnector::loadToGpu(string modelPath) {
-	shared_ptr<Model3d> model = loader.getModel3d(modelPath);
+	shared_ptr<Model3d> model = loader.getModel(modelPath);
 	vector<Mesh3d>& meshes = model->getMeshes();
 	for (auto& s : meshes) {
 		uint32_t vBuffer;
@@ -405,7 +405,7 @@ bool GrEngineConnector::loadToGpu(string modelPath) {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * iBufferLength, &indices[0], GL_STATIC_DRAW);
 
-		Material3d& mt = model->getMaterials()[s.getTextureId()];
+		Material3d& mt = model->getMaterials()[s.getMaterialId()];
 		uint32_t texture = loadTexture(mt.getData(), mt.getWidth(), mt.getHeight());
 
 		string meshName = model->getUniqueMeshName(s);
@@ -420,7 +420,7 @@ bool GrEngineConnector::loadToGpu(string modelPath) {
 }
 
 bool GrEngineConnector::deleteFromGpu(std::string modelPath) {
-	shared_ptr<Model3d> model = loader.getModel3d(modelPath);
+	shared_ptr<Model3d> model = loader.getModel(modelPath);
 	vector<Mesh3d>& meshes = model->getMeshes();
 	for (auto& s : meshes) {
 		string mName = model->getUniqueMeshName(s);

@@ -27,7 +27,7 @@ public:
 	std::string getUniqueMeshName(const Mesh3d&);
 
 	glm::mat4& getGlobalInverseTransform() { return globalInverseTransform; }
-	void setGlobalInverseTransform(glm::mat4 val) { globalInverseTransform = val; }
+	void setGlobalInverseTransform(glm::mat4& val) { globalInverseTransform = val; }
 
 private:
 	std::string name;

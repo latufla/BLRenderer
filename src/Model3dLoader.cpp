@@ -12,99 +12,109 @@ using std::shared_ptr;
 using std::make_shared;
 using std::move;
 
-using std::cout;
-using std::endl;
 
-Model3dLoader::Model3dLoader() {
-}
+const uint8_t Model3dLoader::TRIANGLE_FACE_TYPE = 3;
+const std::string Model3dLoader::BONES_ROOT_NODE = "Armature";
 
 
-Model3dLoader::~Model3dLoader() {
-}
-
-bool Model3dLoader::load(string dir, string name) {
+bool Model3dLoader::loadModel(string dir, string name) {
 	string path = dir + name + ".dae"; // TODO: hardcoded dae
 	
 	Assimp::Importer importer;
-	const aiScene* model3D = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
-	if (!model3D)
+	const aiScene* modelAi = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+	if (!modelAi)
 		return false;
 		
-	vector<Mesh3d> myMeshes;
-	aiNode* root = model3D->mRootNode;
-	forEachNode(model3D, root, loadMeshes, myMeshes);
-	forEachNode(root, printNode);
+	vector<Mesh3d> meshes = collectMeshes(modelAi);
+	vector<string> textures = collectMaterials(modelAi, dir);
 
-	TNode<BoneNodeData> boneTree = collectBones(model3D);
-	collectBoneWeightsAndOffsets(model3D, boneTree, myMeshes);
+	TNode<BoneNodeData> bones = collectBones(modelAi);
+	collectBoneWeightsAndOffsets(modelAi, bones, meshes);
 
-	shared_ptr<Animation3d> animation = collectAnimations(model3D, boneTree);
-//	cout << static_cast<string>(*(animation.get()));
-
-	uint32_t nAllTextures = model3D->mNumMaterials;
-	vector<string> myTextures;
-	for (uint32_t i = 0; i < nAllTextures; i++) {
-		aiString texPath;
-		model3D->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &texPath);
-		myTextures.push_back(dir + texPath.C_Str());
-	}
-
-	shared_ptr<Model3d> myModel = std::make_shared<Model3d>(path, myMeshes, myTextures, boneTree, animation);
-	myModel->setGlobalInverseTransform(Utils::assimpToGlmMatrix(root->mTransformation));
+	shared_ptr<Animation3d> animation = collectAnimations(modelAi, bones);
+	
+	shared_ptr<Model3d> myModel = std::make_shared<Model3d>(path, meshes, textures, bones, animation);
+	aiNode* root = modelAi->mRootNode;
+	auto glTrans = Utils::assimpToGlmMatrix(root->mTransformation);
+	myModel->setGlobalInverseTransform(glTrans);
 	models[path] = myModel;
 
 	return true;
 }
 
-void loadMeshes(const aiScene* model, aiNode* node, std::vector<Mesh3d>& outMeshes) {
-	aiMesh** meshes = model->mMeshes;
-	uint32_t nMeshes = node->mNumMeshes;
-	if (nMeshes == 0)
-		return;
+shared_ptr<Model3d> Model3dLoader::getModel(string name) {	
+	if (models.find(name) == models.cend())
+		return nullptr;
 
-	vector<Vertex3d> myVertices;
-	vector<unsigned short> myIndices;
-	unsigned int* meshIds = node->mMeshes;
-	for (uint32_t i = 0; i < nMeshes; i++) {
-		unsigned int meshId = meshIds[i];
-		aiMesh* mesh = meshes[meshId];
-		uint32_t nFaces = mesh->mNumFaces;
-		aiVector3D* vertices = mesh->mVertices;
-		aiVector3D* texCoords = mesh->mTextureCoords[0];
-		uint32_t nVertices = mesh->mNumVertices;
-		for (uint32_t j = 0; j < nVertices; j++) {
-			aiVector3D& v = vertices[j];
-			aiVector3D& t = texCoords[j];
-			myVertices.push_back({ 
-				v.x, v.y, v.z, 
-				t.x, t.y,
-				{ 0, 0, 0, 0 },
-				{0.0, 0.0, 0.0, 0.0}
-			});
-		}
-
-		for (uint32_t j = 0; j < nFaces; j++) {
-			aiFace& face = mesh->mFaces[j];
-			if (face.mNumIndices != 3)
-				continue;
-
-			unsigned int* indices = face.mIndices;
-			uint32_t nIndices = face.mNumIndices;
-			for (uint32_t k = 0; k < nIndices; k++) {
-				uint32_t vertexId = indices[k];
-				myIndices.push_back(vertexId);
-			}
-		}
-
-		Mesh3d myMesh(mesh->mName.C_Str(), myVertices, myIndices, mesh->mMaterialIndex);
-		outMeshes.push_back(myMesh);
-	}
-}
-
-shared_ptr<Model3d> Model3dLoader::getModel3d(string name) {	
 	return models[name];
 }
 
+
+vector<Mesh3d> Model3dLoader::collectMeshes(const aiScene* modelAi) {
+	vector<Mesh3d> outMeshes;
+	parseMeshes(modelAi->mRootNode, modelAi->mMeshes, outMeshes);
+	return outMeshes;
+}
+
+void Model3dLoader::parseMeshes(const aiNode* rNodeAi, aiMesh** meshesAi, std::vector<Mesh3d>& outMeshes) {
+	vector<Vertex3d> vertices;
+	vector<uint16_t> indices;
+	
+	unsigned int* meshAiIds = rNodeAi->mMeshes;
+	uint32_t nMeshesAi = rNodeAi->mNumMeshes;
+	for (uint32_t i = 0; i < nMeshesAi; i++) {
+		unsigned int meshAiId = meshAiIds[i];
+		aiMesh* meshAi = meshesAi[meshAiId];
+		
+		aiVector3D* verticesAi = meshAi->mVertices;
+		aiVector3D* textureCoordsAi = meshAi->mTextureCoords[0];
+		uint32_t nVerticesAi = meshAi->mNumVertices;
+		for (uint32_t j = 0; j < nVerticesAi; j++) {
+			aiVector3D& v = verticesAi[j];
+			aiVector3D& t = textureCoordsAi[j];
+			vertices.push_back({
+				v.x, v.y, v.z,
+				t.x, t.y,
+				{ 0, 0, 0, 0 },
+				{ 0.0, 0.0, 0.0, 0.0 }
+			});
+		}
+
+		uint32_t nFacesAi = meshAi->mNumFaces;
+		for (uint32_t j = 0; j < nFacesAi; j++) {
+			aiFace& faceAi = meshAi->mFaces[j];
+			if (faceAi.mNumIndices != TRIANGLE_FACE_TYPE)
+				continue;
+
+			unsigned int* indicesAi = faceAi.mIndices;
+			uint32_t nIndicesAi = faceAi.mNumIndices;
+			for (uint32_t k = 0; k < nIndicesAi; k++) {
+				uint32_t vertexId = indicesAi[k];
+				indices.push_back(vertexId);
+			}
+		}
+
+		Mesh3d myMesh(meshAi->mName.C_Str(), vertices, indices, meshAi->mMaterialIndex);
+		outMeshes.push_back(myMesh);
+	}
+
+	uint32_t nNodesAi = rNodeAi->mNumChildren;
+	for (uint32_t i = 0; i < nNodesAi; ++i) {
+		parseMeshes(rNodeAi->mChildren[i], meshesAi, outMeshes);
+	}
+}
+
+
+std::vector<string> Model3dLoader::collectMaterials(const aiScene* modelAi, string dir) {
+	uint32_t nAllTextures = modelAi->mNumMaterials;
+	vector<string> myTextures;
+	for (uint32_t i = 0; i < nAllTextures; i++) {
+		aiString texPath;
+		modelAi->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &texPath);
+		myTextures.push_back(dir + texPath.C_Str());
+	}
+	return myTextures;
+}
 
 TNode<BoneNodeData> Model3dLoader::collectBones(const aiScene* scene, string bonesRoot) {
 	aiNode* root = scene->mRootNode;
@@ -133,34 +143,6 @@ TNode<BoneNodeData> Model3dLoader::parseBones(const aiNode* node) {
 		bones.addChild(parseBones(node->mChildren[i]));
 	}
 	return bones;
-}
-
-
-void Model3dLoader::forEachNode(aiNode* node, void(*eacher)(aiNode*, int), int level) {
-	uint32_t nNodes = node->mNumChildren;
-
-	eacher(node, level + 1);
-	cout << endl;
-
-	if (nNodes == 0)
-		return;
-
-	for (uint32_t i = 0; i < nNodes; ++i) {
-		forEachNode(node->mChildren[i], eacher, level + 1);
-	}
-}
-
-void Model3dLoader::forEachNode(const aiScene* scene, aiNode* node, void(*eacher)(const aiScene*, aiNode*, std::vector<Mesh3d>&), std::vector<Mesh3d>& outMeshes) {
-	uint32_t nNodes = node->mNumChildren;
-
-	eacher(scene, node, outMeshes);
-
-	if (nNodes == 0)
-		return;
-
-	for (uint32_t i = 0; i < nNodes; ++i) {
-		forEachNode(scene, node->mChildren[i], eacher, outMeshes);
-	}
 }
 
 shared_ptr<Animation3d> Model3dLoader::collectAnimations(const aiScene* scene, TNode<BoneNodeData>& allBones) {
@@ -249,16 +231,9 @@ void Model3dLoader::collectBoneWeightsAndOffsets(const aiScene* scene, TNode<Bon
 			}
 		}
 	}
-	int i = 0;
 }
 
-void printNode(aiNode* node, int level) {
-	for (int i = 0; i < level; ++i) {
-		cout << " ";
-	}
-	cout << "name:" << node->mName.C_Str();
-	cout << " nChildren: " << node->mNumChildren;
-}
+
 
 
 
