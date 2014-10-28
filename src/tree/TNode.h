@@ -6,11 +6,10 @@
 template <class T>
 class TNode {
 public:
-	TNode(); // = delete;
-
+	TNode() = default;
 	TNode(uint32_t, std::string, T&&);
 
-	~TNode();
+	~TNode() = default;
 
 	bool addChild(uint32_t, std::string, T&&);
 	bool addChild(TNode<T>&&);
@@ -41,17 +40,6 @@ private:
 	
 	ChildrenList children;
 };
-
-
-template <class T>
-TNode<T>::TNode() {
-
-}
-
-template <class T>
-TNode<T>::~TNode() {
-
-}
 
 template <class T>
 TNode<T>::TNode(uint32_t id, std::string name, T&& data) {

@@ -23,11 +23,16 @@ bool Model3dLoader::loadModel(string dir, string name) {
 	Assimp::Importer importer;
 	const aiScene* modelAi = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 	if (!modelAi)
-		return false;
+		throw std::exception("Model3dLoader::loadModel invalid collada model");
 		
 	vector<Mesh3d> meshes = collectMeshes(modelAi);
-	vector<string> textures = collectMaterials(modelAi, dir);
+	if (meshes.empty())
+		throw std::exception("Model3dLoader::loadModel no meshes");
 
+	vector<string> textures = collectMaterials(modelAi, dir);
+	if (textures.empty())
+		throw std::exception("Model3dLoader::loadModel no textures");
+	
 	TNode<BoneNodeData> bones = collectBones(modelAi);
 	collectBoneWeightsAndOffsets(modelAi, bones, meshes);
 
@@ -118,7 +123,7 @@ TNode<BoneNodeData> Model3dLoader::collectBones(const aiScene* scene, string bon
 	aiNode* root = scene->mRootNode;
 	aiNode* armature = root->FindNode(bonesRoot.c_str());
 	if (!armature || !armature->mNumChildren)
-		return TNode<BoneNodeData>();
+		throw std::exception("Model3dLoader::collectBones: no bones");
 
 	aiNode* rootBone = armature->mChildren[0];	
 	TNode<BoneNodeData> boneTree = parseBones(rootBone);
