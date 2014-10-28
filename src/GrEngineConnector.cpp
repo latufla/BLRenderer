@@ -92,12 +92,13 @@ bool GrEngineConnector::addObject(uint32_t id, std::string modelPath){
 	if (!hasObjectWith(modelPath)) // first in
 		loadToGpu(modelPath);
 	
-	idToObject[id] = { id, "", modelPath };
+	View object{ id, "", modelPath };
+	idToObject.emplace(id, std::move(object));
 	return true;
 }
 
 bool GrEngineConnector::removeObject(uint32_t id){
-	View& view = idToObject[id];
+	View& view = idToObject.at(id);
 	string modelPath = view.getPath();
 
 	auto& it = idToObject.find(id);
@@ -116,8 +117,8 @@ bool GrEngineConnector::playAnimation(uint32_t id, std::string label) {
 		return false;
 	
 	View& object = it->second;
-	shared_ptr<Model3d> model = loader.getModel(object.getPath());
-	shared_ptr<Animation3d> animation = model->getAnimation();
+	Model3d& model = loader.getModel(object.getPath());
+	shared_ptr<Animation3d> animation = model.getAnimation();
 	it->second.setAnimation(label, (uint32_t)(animation->getDuration() * 1000), true);
 	return true;
 }
@@ -167,15 +168,15 @@ bool GrEngineConnector::doStep(uint32_t stepMSec)
 		glm::mat4 mvpMtx = pvMatrix * modelMtx;
 		glUniformMatrix4fv(mvpMatrixLoc, 1, GL_FALSE, &mvpMtx[0][0]);
 
-		shared_ptr<Model3d> model = loader.getModel(view.getPath());
-		vector<Mesh3d>& meshes = model->getMeshes();
+		Model3d& model = loader.getModel(view.getPath());
+		vector<Mesh3d>& meshes = model.getMeshes();
 		for (auto& s : meshes) {
 			auto bonesData = prepareAnimationStep(view, s, stepMSec);
 			for (auto& i : bonesData) {
 				glUniformMatrix4fv(bonesLoc + i.first, 1, GL_FALSE, &(i.second.finalTransform[0][0]));
 			}
 
-			string meshName = model->getUniqueMeshName(s);
+			string meshName = model.getUniqueMeshName(s);
 			GpuBufferData& buffers = meshToBuffer[meshName];
 			glBindBuffer(GL_ARRAY_BUFFER, buffers.vBuffer);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.iBuffer);
@@ -373,7 +374,7 @@ BoneTransformer::BonesDataMap GrEngineConnector::prepareAnimationStep(View& obje
 	
 	object.doAnimationStep(stepMSec);
 
-	shared_ptr<Model3d> model = loader.getModel(object.getPath());
+	Model3d& model = loader.getModel(object.getPath());
 	boneTransformer.transform(object, model, res);
 	return res;
 }
@@ -387,8 +388,8 @@ bool GrEngineConnector::hasObjectWith(string modelPath) {
 }
 
 bool GrEngineConnector::loadToGpu(string modelPath) {
-	shared_ptr<Model3d> model = loader.getModel(modelPath);
-	vector<Mesh3d>& meshes = model->getMeshes();
+	Model3d& model = loader.getModel(modelPath);
+	vector<Mesh3d>& meshes = model.getMeshes();
 	for (auto& s : meshes) {
 		uint32_t vBuffer;
 		glGenBuffers(1, &vBuffer);
@@ -405,25 +406,25 @@ bool GrEngineConnector::loadToGpu(string modelPath) {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * iBufferLength, &indices[0], GL_STATIC_DRAW);
 
-		Material3d& mt = model->getMaterials()[s.getMaterialId()];
+		Material3d& mt = model.getMaterials()[s.getMaterialId()];
 		uint32_t texture = loadTexture(mt.getData(), mt.getWidth(), mt.getHeight());
 
-		string meshName = model->getUniqueMeshName(s);
+		string meshName = model.getUniqueMeshName(s);
 		meshToBuffer[meshName] = { vBuffer, iBuffer, iBufferLength, texture };
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	std::cout << static_cast<string>(*model.get());
+	std::cout << static_cast<string>(model);
 	return true;
 }
 
 bool GrEngineConnector::deleteFromGpu(std::string modelPath) {
-	shared_ptr<Model3d> model = loader.getModel(modelPath);
-	vector<Mesh3d>& meshes = model->getMeshes();
+	Model3d& model = loader.getModel(modelPath);
+	vector<Mesh3d>& meshes = model.getMeshes();
 	for (auto& s : meshes) {
-		string mName = model->getUniqueMeshName(s);
+		string mName = model.getUniqueMeshName(s);
 		GpuBufferData& buffers = meshToBuffer[mName];
 
 		glDeleteBuffers(1, &buffers.vBuffer);

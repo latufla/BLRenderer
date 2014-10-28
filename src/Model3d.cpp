@@ -7,9 +7,6 @@ using std::string;
 using std::exception;
 using std::shared_ptr;
 
-Model3d::Model3d() {
-}
-
 Model3d::Model3d(string name, const vector<Mesh3d>& meshes, const vector<string>& materials, TNode<BoneNodeData>& boneTree, shared_ptr<Animation3d> animation) {
 	this->name = name;
 	this->meshes = meshes;
@@ -24,11 +21,6 @@ Model3d::Model3d(string name, const vector<Mesh3d>& meshes, const vector<string>
 		this->materials.push_back(m);
 	}
 }
-
-
-Model3d::~Model3d() {
-}
-
 
 Model3d::operator string() const {
 	string res = "";

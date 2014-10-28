@@ -4,10 +4,7 @@
 
 class View {
 public:
-	View(); // = delete;
 	View(uint32_t, std::string, std::string);
-	
-	~View();
 
 	uint32_t getId() const { return id; }
 	std::string getName() const { return name; }

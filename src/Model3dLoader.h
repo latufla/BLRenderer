@@ -18,10 +18,10 @@ public:
 
 	bool loadModel(std::string, std::string);
 
-	std::shared_ptr<Model3d> getModel(std::string);
+	Model3d& getModel(std::string);
 	
 private:
-	std::map<std::string, std::shared_ptr<Model3d>> models;
+	std::map<std::string, Model3d> models;
 	
 	static const uint8_t TRIANGLE_FACE_TYPE;
 	std::vector<Mesh3d> collectMeshes(const aiScene*);

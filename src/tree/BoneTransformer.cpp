@@ -13,11 +13,11 @@ BoneTransformer::BoneTransformer() {
 BoneTransformer::~BoneTransformer() {
 }
 
-void BoneTransformer::transform(View& object, shared_ptr<Model3d> model, BonesDataMap& outBonesData) {
-	auto& boneTree = model->getBoneTree();
-	auto anim = model->getAnimation(); // TODO: get animation by View animation label
+void BoneTransformer::transform(View& object, Model3d& model, BonesDataMap& outBonesData) {
+	auto& boneTree = model.getBoneTree();
+	auto anim = model.getAnimation(); // TODO: get animation by View animation label
 	uint32_t animTime = object.getAnimationTime();
-	auto& gTrans = model->getGlobalInverseTransform();
+	auto& gTrans = model.getGlobalInverseTransform();
 	glm::mat4 pTrans;
 	doTransform(boneTree, anim, animTime, gTrans, pTrans, outBonesData);
 }

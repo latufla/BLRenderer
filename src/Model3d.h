@@ -9,10 +9,7 @@
 
 class Model3d {
 public:
-	Model3d();
 	Model3d(std::string, const std::vector<Mesh3d>&, const std::vector<std::string>&, TNode<BoneNodeData>&, std::shared_ptr<Animation3d>);
-
-	~Model3d();
 
 	std::string getName() const { return name; }
 	std::vector<Mesh3d>& getMeshes() { return meshes; }

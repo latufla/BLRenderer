@@ -33,20 +33,18 @@ bool Model3dLoader::loadModel(string dir, string name) {
 
 	shared_ptr<Animation3d> animation = collectAnimations(modelAi, bones);
 	
-	shared_ptr<Model3d> model = std::make_shared<Model3d>(path, meshes, textures, bones, animation);
 	aiNode* rootAi = modelAi->mRootNode;
 	auto glTrans = Utils::assimpToGlmMatrix(rootAi->mTransformation);
-	model->setGlobalInverseTransform(glTrans);
-	models[path] = model;
-
+	
+	Model3d model{ path, meshes, textures, bones, animation };
+	model.setGlobalInverseTransform(glTrans);
+	models.emplace(path, move(model));
+	
 	return true;
 }
 
-shared_ptr<Model3d> Model3dLoader::getModel(string name) {	
-	if (models.find(name) == models.cend())
-		return nullptr;
-
-	return models[name];
+Model3d& Model3dLoader::getModel(string name) {	
+	return models.at(name);
 }
 
 
