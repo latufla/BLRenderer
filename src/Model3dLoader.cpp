@@ -40,7 +40,7 @@ bool Model3dLoader::loadModel(string dir, string name) {
 	aiNode* rootAi = modelAi->mRootNode;
 	auto glTrans = Utils::assimpToGlmMatrix(rootAi->mTransformation);
 	
-	Model3d model{ path, meshes, textures, bones, defaultAnimation };
+	Model3d model{ path, move(meshes), move(textures), move(bones), move(defaultAnimation) };
 	model.setGlobalInverseTransform(glTrans);
 	models.emplace(path, move(model));
 	
@@ -54,11 +54,10 @@ bool Model3dLoader::attachAnimation(string modelName, string animPath, string an
 
 	Model3d& model = getModel(modelName);
 	Animation3d defaultAnimation = collectAnimation(animationAi, model.getBoneTree(), animName);
-	model.addAnimation(defaultAnimation);
+	model.addAnimation(move(defaultAnimation));
 
 	return true;
 }
-
 
 Model3d& Model3dLoader::getModel(string name) {	
 	return models.at(name);
