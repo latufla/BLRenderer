@@ -35,6 +35,5 @@ private:
 
 	void collectBoneWeightsAndOffsets(const aiScene*, TNode<BoneNodeData>&, std::vector<Mesh3d>&);
 
-	// TODO: collect all 
-	std::shared_ptr<Animation3d> collectAnimations(const aiScene*, TNode<BoneNodeData>&);
+	Animation3d collectAnimation(const aiScene*, TNode<BoneNodeData>&, std::string name);
 };

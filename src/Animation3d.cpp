@@ -7,6 +7,7 @@ using std::to_string;
 
 using std::vector;
 
+const std::string Animation3d::DEFAULT_ANIMATION_NAME = "default";
 
 Animation3d::Animation3d() {
 }
@@ -69,3 +70,4 @@ BoneAnimation* Animation3d::getBoneAnimation(uint32_t id) {
 	}
 	return nullptr;
 }
+

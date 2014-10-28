@@ -118,8 +118,8 @@ bool GrEngineConnector::playAnimation(uint32_t id, std::string label) {
 	
 	View& object = it->second;
 	Model3d& model = loader.getModel(object.getPath());
-	shared_ptr<Animation3d> animation = model.getAnimation();
-	it->second.setAnimation(label, (uint32_t)(animation->getDuration() * 1000), true);
+	Animation3d& animation = model.getAnimation();
+	it->second.setAnimation(label, (uint32_t)(animation.getDuration() * 1000), true);
 	return true;
 }
 

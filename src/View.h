@@ -15,6 +15,7 @@ public:
 
 	void setAnimation(std::string, uint32_t, bool = false);
 
+	std::string getAnimationName() const { return animation.name;  }
 	uint32_t getAnimationTime() const { return animation.timeMSec; }
 
 	bool doAnimationStep(uint32_t);

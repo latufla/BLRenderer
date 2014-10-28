@@ -36,12 +36,12 @@ bool Model3dLoader::loadModel(string dir, string name) {
 	TNode<BoneNodeData> bones = collectBones(modelAi);
 	collectBoneWeightsAndOffsets(modelAi, bones, meshes);
 
-	shared_ptr<Animation3d> animation = collectAnimations(modelAi, bones);
+	Animation3d defaultAnimation = collectAnimation(modelAi, bones, Animation3d::DEFAULT_ANIMATION_NAME);
 	
 	aiNode* rootAi = modelAi->mRootNode;
 	auto glTrans = Utils::assimpToGlmMatrix(rootAi->mTransformation);
 	
-	Model3d model{ path, meshes, textures, bones, animation };
+	Model3d model{ path, meshes, textures, bones, defaultAnimation };
 	model.setGlobalInverseTransform(glTrans);
 	models.emplace(path, move(model));
 	
@@ -148,17 +148,17 @@ TNode<BoneNodeData> Model3dLoader::parseBones(const aiNode* node) {
 	return bones;
 }
 
-shared_ptr<Animation3d> Model3dLoader::collectAnimations(const aiScene* scene, TNode<BoneNodeData>& allBones) {
+Animation3d Model3dLoader::collectAnimation(const aiScene* scene, TNode<BoneNodeData>& allBones, string name) {
 	uint32_t nAnims = scene->mNumAnimations;
 	if (!nAnims)
-		return nullptr;
+		throw std::exception("Model3dLoader::collectAnimation: no animation");
 
 	aiAnimation* anim = scene->mAnimations[0];
 
 	uint32_t nChannels = anim->mNumChannels;
 	if (!nChannels)
-		return nullptr;
-		
+		throw std::exception("Model3dLoader::collectAnimation: empty animation");
+
 	// TODO: drop not bones, wonder am i right
 	vector<BoneAnimation> boneAnimations;
 	for (uint32_t i = 0; i < nChannels; ++i) {
@@ -198,11 +198,7 @@ shared_ptr<Animation3d> Model3dLoader::collectAnimations(const aiScene* scene, T
 		boneAnimations.push_back(move(myBoneAnimation));
 	}
 
-	string aName = "default";//anim->mName.C_Str();
-	double duration = anim->mDuration;
-	double ticksPerSecond = anim->mTicksPerSecond;
-	shared_ptr<Animation3d> myAnimation = make_shared<Animation3d>(aName, duration, ticksPerSecond, boneAnimations);
-	return myAnimation;
+	return{ name, anim->mDuration, anim->mTicksPerSecond, boneAnimations };
 }
 
 void Model3dLoader::collectBoneWeightsAndOffsets(const aiScene* scene, TNode<BoneNodeData>& boneTree, vector<Mesh3d>& meshes) {

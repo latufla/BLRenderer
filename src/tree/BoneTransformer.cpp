@@ -4,30 +4,23 @@
 #include <gtc\matrix_transform.hpp>
 
 using std::vector;
-using std::shared_ptr;
 
-BoneTransformer::BoneTransformer() {
-}
-
-
-BoneTransformer::~BoneTransformer() {
-}
 
 void BoneTransformer::transform(View& object, Model3d& model, BonesDataMap& outBonesData) {
 	auto& boneTree = model.getBoneTree();
-	auto anim = model.getAnimation(); // TODO: get animation by View animation label
+	auto& anim = model.getAnimation(object.getAnimationName());
 	uint32_t animTime = object.getAnimationTime();
 	auto& gTrans = model.getGlobalInverseTransform();
 	glm::mat4 pTrans;
 	doTransform(boneTree, anim, animTime, gTrans, pTrans, outBonesData);
 }
 
-void BoneTransformer::doTransform(TNode<BoneNodeData>& boneTree, shared_ptr<Animation3d> animation, uint32_t animationTime, const glm::mat4& globalInverseTransform, glm::mat4 parentTransform, BonesDataMap& outBonesData) {
+void BoneTransformer::doTransform(TNode<BoneNodeData>& boneTree, Animation3d& animation, uint32_t animationTime, const glm::mat4& globalInverseTransform, glm::mat4 parentTransform, BonesDataMap& outBonesData) {
 	uint32_t boneId = boneTree.getId();
 	BoneNodeData& bNData = boneTree.getData();
 	glm::mat4 nodeTransform = bNData.getTransform();
 
-	BoneAnimation* bAnim = animation->getBoneAnimation(boneId);
+	BoneAnimation* bAnim = animation.getBoneAnimation(boneId);
 	if (bAnim) {
 		glm::vec3 scalingV = calcTimeInterpolation(animationTime, bAnim->scalings);
 		glm::mat4 scalingM;

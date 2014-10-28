@@ -29,15 +29,17 @@ public:
 
 	~Animation3d();
 
+	static const std::string DEFAULT_ANIMATION_NAME;
+
 	operator std::string() const;
 
 	BoneAnimation* getBoneAnimation(uint32_t); // TODO: fix this dirt
 
+	std::string getName() const { return name; }
 	double getDuration() const { return duration; }
 
 private:
 	std::string name;
-
 	double duration;
 	double ticksPerSecond;
 

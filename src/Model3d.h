@@ -6,16 +6,18 @@
 #include "tree\TNode.h"
 #include "Animation3d.h"
 #include "tree\BoneNodeData.h"
+#include <unordered_map>
 
 class Model3d {
 public:
-	Model3d(std::string, const std::vector<Mesh3d>&, const std::vector<std::string>&, TNode<BoneNodeData>&, std::shared_ptr<Animation3d>);
+	// TODO: move maybe, now it copies inside
+	Model3d(std::string, const std::vector<Mesh3d>&, const std::vector<std::string>&, const TNode<BoneNodeData>&, const Animation3d&);
 
 	std::string getName() const { return name; }
 	std::vector<Mesh3d>& getMeshes() { return meshes; }
 	std::vector<Material3d>& getMaterials() { return materials; }
 
-	std::shared_ptr<Animation3d> getAnimation() const { return animation; }
+	Animation3d& getAnimation(std::string = Animation3d::DEFAULT_ANIMATION_NAME);
 
 	TNode<BoneNodeData>& getBoneTree(){ return boneTree; }
 
@@ -33,7 +35,8 @@ private:
 	std::vector<Material3d> materials;
 
 	TNode<BoneNodeData> boneTree;
-	std::shared_ptr<Animation3d> animation;
+
+	std::unordered_map<std::string, Animation3d> nameToAnimation;
 
 	glm::mat4 globalInverseTransform;
 };

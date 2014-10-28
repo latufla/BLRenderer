@@ -1,6 +1,5 @@
 #pragma once
 #include <glm.hpp>
-#include <memory>
 #include <unordered_map>
 #include "..\Animation3d.h"
 #include "TNode.h"
@@ -11,9 +10,9 @@
 
 class BoneTransformer {
 public:
-	BoneTransformer();
-	~BoneTransformer();
-
+	BoneTransformer() = default;
+	~BoneTransformer() = default;
+	
 	struct BoneData {
 		glm::mat4 offset;
 		glm::mat4 finalTransform;
@@ -24,7 +23,7 @@ public:
 
 private:
 	// only to hide useless params
-	void doTransform(TNode<BoneNodeData>&, std::shared_ptr<Animation3d>, uint32_t, const glm::mat4&, glm::mat4, BonesDataMap&);
+	void doTransform(TNode<BoneNodeData>&, Animation3d&, uint32_t, const glm::mat4&, glm::mat4, BonesDataMap&);
 	
 	glm::vec3 calcTimeInterpolation(uint32_t time, std::vector<Vec3Key> vecs);
 	glm::mat4 calcTimeInterpolation(uint32_t time, std::vector<Mat4Key> mats);
