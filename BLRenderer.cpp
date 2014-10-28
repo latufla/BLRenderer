@@ -40,7 +40,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
 	
 
 	const Model3dInfo& info = Infos::getInfo(GUN);
-	renderer.loadModel(info.getModelDir(), info.getName());
+	renderer.loadModel(info.getModelDir(), info.getModelName());
 
 	for (shared_ptr<ObjectBase> s : objects) {
 		uint32_t id = s->getId();

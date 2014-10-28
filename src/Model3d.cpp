@@ -19,7 +19,7 @@ Model3d::Model3d(string name, const vector<Mesh3d>& meshes, const vector<string>
 	for (auto& i : materials) {
 		Material3d m;
 		if (i != "" && !Utils::loadTexture(i, m))
-			throw exception("Model3d: can`t load texture");
+			throw exception("Model3d: can`t load texture"); // TODO: fix this dirt
 
 		this->materials.push_back(m);
 	}

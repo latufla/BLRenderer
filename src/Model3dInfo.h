@@ -10,12 +10,13 @@ public:
 
 	std::string getName() const { return name; }
 	
-	std::string getModelPath() const {
-		return getModelDir() + getName() + ".dae";
-	}
+	std::string getModelName() const { return name + ".dae"; }
 
 	std::string getModelDir()const {
 		return "models/" + getName() + "/";
+	}
+	std::string getModelPath() const {
+		return getModelDir() + getModelName();
 	}
 
 private:

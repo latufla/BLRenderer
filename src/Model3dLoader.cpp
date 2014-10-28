@@ -18,7 +18,7 @@ const std::string Model3dLoader::BONES_ROOT_NODE = "Armature";
 
 
 bool Model3dLoader::loadModel(string dir, string name) {
-	string path = dir + name + ".dae"; // TODO: hardcoded dae
+	string path = dir + name;
 	
 	Assimp::Importer importer;
 	const aiScene* modelAi = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
@@ -33,11 +33,11 @@ bool Model3dLoader::loadModel(string dir, string name) {
 
 	shared_ptr<Animation3d> animation = collectAnimations(modelAi, bones);
 	
-	shared_ptr<Model3d> myModel = std::make_shared<Model3d>(path, meshes, textures, bones, animation);
-	aiNode* root = modelAi->mRootNode;
-	auto glTrans = Utils::assimpToGlmMatrix(root->mTransformation);
-	myModel->setGlobalInverseTransform(glTrans);
-	models[path] = myModel;
+	shared_ptr<Model3d> model = std::make_shared<Model3d>(path, meshes, textures, bones, animation);
+	aiNode* rootAi = modelAi->mRootNode;
+	auto glTrans = Utils::assimpToGlmMatrix(rootAi->mTransformation);
+	model->setGlobalInverseTransform(glTrans);
+	models[path] = model;
 
 	return true;
 }
@@ -106,14 +106,14 @@ void Model3dLoader::parseMeshes(const aiNode* rNodeAi, aiMesh** meshesAi, std::v
 
 
 std::vector<string> Model3dLoader::collectMaterials(const aiScene* modelAi, string dir) {
-	uint32_t nAllTextures = modelAi->mNumMaterials;
-	vector<string> myTextures;
-	for (uint32_t i = 0; i < nAllTextures; i++) {
-		aiString texPath;
-		modelAi->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &texPath);
-		myTextures.push_back(dir + texPath.C_Str());
+	uint32_t nMaterialsAi = modelAi->mNumMaterials;
+	vector<string> materials;
+	for (uint32_t i = 0; i < nMaterialsAi; i++) {
+		aiString textureAi;
+		modelAi->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &textureAi);
+		materials.push_back(dir + textureAi.C_Str());
 	}
-	return myTextures;
+	return materials;
 }
 
 TNode<BoneNodeData> Model3dLoader::collectBones(const aiScene* scene, string bonesRoot) {
