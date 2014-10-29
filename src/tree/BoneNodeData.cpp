@@ -4,14 +4,8 @@
 using std::string;
 using std::to_string;
 
-BoneNodeData::BoneNodeData() {
-}
-
 BoneNodeData::BoneNodeData(const glm::mat4& transform) {
 	this->transform = transform;
-}
-
-BoneNodeData::~BoneNodeData() {
 }
 
 BoneNodeData::operator string() const {

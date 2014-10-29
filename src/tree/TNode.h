@@ -11,6 +11,20 @@ public:
 
 	~TNode() = default;
 
+	TNode<T>(TNode<T>&& that) {
+		this->id = std::move(that.id);
+		this->name = std::move(that.name);
+		this->data = std::move(that.data);
+		this->children = std::move(that.children);
+	}
+	TNode<T>& operator=(TNode<T>&& that) {
+		this->id = std::move(that.id);
+		this->name = std::move(that.name);
+		this->data = std::move(that.data);
+		this->children = std::move(that.children);
+		return *this;
+	}
+
 	bool addChild(uint32_t, std::string, T&&);
 	bool addChild(TNode<T>&&);
 
