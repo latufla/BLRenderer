@@ -392,8 +392,10 @@ bool GrEngineConnector::loadModelToGpu(string modelPath) {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * iBufferLength, &indices[0], GL_STATIC_DRAW);
 
-		Texture2d& mt = model.getTextures()[s.getMaterialId()];
-		uint32_t texture = loadTextureToGpu(mt.getData(), mt.getWidth(), mt.getHeight());
+		auto& materials = model.getMaterials();
+		Material3d& m = materials.at(s.getMaterialId());
+		Texture2d& t = m.getTexture();
+		uint32_t texture = loadTextureToGpu(t.getData(), t.getWidth(), t.getHeight());
 
 		string meshName = model.getUniqueMeshName(s);
 		meshToBuffer[meshName] = { vBuffer, iBuffer, iBufferLength, texture };

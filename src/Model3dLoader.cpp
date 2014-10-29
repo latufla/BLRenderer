@@ -28,10 +28,10 @@ bool Model3dLoader::loadModel(string dir, string name) {
 	if (meshes.empty())
 		throw std::exception("Model3dLoader::loadModel no meshes");
 
-	vector<Texture2d> textures{ collectTexture(modelAi, dir) };
-	if (textures.empty())
-		throw std::exception("Model3dLoader::loadModel no textures");
-	
+	vector<Material3d> materials = collectMaterials(modelAi, dir);
+	if (materials.empty())
+		throw std::exception("Model3dLoader::loadModel no materials");
+
 	TNode<BoneNodeData> bones = collectBones(modelAi);
 	collectBoneWeightsAndOffsets(modelAi, bones, meshes);
 
@@ -40,7 +40,7 @@ bool Model3dLoader::loadModel(string dir, string name) {
 	aiNode* rootAi = modelAi->mRootNode;
 	auto glTrans = Utils::assimpToGlmMatrix(rootAi->mTransformation);
 	
-	Model3d model{ path, move(meshes), move(textures), move(bones), move(defaultAnimation) };
+	Model3d model{ path, move(meshes), move(materials), move(bones), move(defaultAnimation) };
 	model.setGlobalInverseTransform(glTrans);
 	models.emplace(path, move(model));
 	
@@ -118,17 +118,57 @@ void Model3dLoader::parseMeshes(const aiNode* rNodeAi, aiMesh** meshesAi, std::v
 	}
 }
 
+std::vector<Material3d> Model3dLoader::collectMaterials(const aiScene* modelAi, std::string dir) {
+	uint32_t nMaterialsAi = modelAi->mNumMaterials;
+	vector<Material3d> materials;
+	for (uint32_t i = 0; i < nMaterialsAi; i++) {
+		aiMaterial* materialAi = modelAi->mMaterials[i];
 
-Texture2d Model3dLoader::collectTexture(const aiScene* modelAi, string dir) {
-	aiString textureAi;
-	modelAi->mMaterials[0]->GetTexture(aiTextureType_DIFFUSE, 0, &textureAi);
-	
-	Texture2d texture;
-	if (!Utils::loadTexture(dir + textureAi.C_Str(), texture))
-		throw std::exception("Model3dLoader::collectTexture can`t load texture");
-	
-	return texture;
+		aiColor4D emissionAi;
+		aiGetMaterialColor(materialAi, AI_MATKEY_COLOR_EMISSIVE, &emissionAi);
+
+		aiColor4D ambientAi;
+		aiGetMaterialColor(materialAi, AI_MATKEY_COLOR_AMBIENT, &ambientAi);
+
+		aiColor4D diffuseAi;
+		aiGetMaterialColor(materialAi, AI_MATKEY_COLOR_DIFFUSE, &diffuseAi);
+
+		aiColor4D specularAi;
+		aiGetMaterialColor(materialAi, AI_MATKEY_COLOR_SPECULAR, &specularAi);
+
+		float shininess;
+		uint32_t max = 1;
+		aiGetMaterialFloatArray(materialAi, AI_MATKEY_SHININESS, &shininess, &max);
+
+		float indexOfRefraction;
+		max = 1;
+		aiGetMaterialFloatArray(materialAi, AI_MATKEY_REFRACTI, &indexOfRefraction, &max);
+
+		int32_t twoSidedAi;
+		max = 1;
+		aiGetMaterialIntegerArray(materialAi, AI_MATKEY_TWOSIDED, &twoSidedAi, &max);
+		bool twoSided = twoSidedAi & 1;
+
+		aiString textureAi;
+		materialAi->GetTexture(aiTextureType_DIFFUSE, 0, &textureAi);
+		Texture2d texture;
+		if (!Utils::loadTexture(dir + textureAi.C_Str(), texture))
+			throw std::exception("Model3dLoader::collectMaterials can`t load texture");
+
+		auto converter = Utils::assimpToGlmVector4d;		
+		Material3d mat{
+			move(texture),
+			move(converter(emissionAi)),
+			move(converter(ambientAi)),
+			move(converter(diffuseAi)),
+			move(converter(specularAi)),
+			shininess, indexOfRefraction, twoSided
+		};
+		materials.push_back(move(mat));
+	}
+	return materials;
 }
+
 
 TNode<BoneNodeData> Model3dLoader::collectBones(const aiScene* scene, string bonesRoot) {
 	aiNode* root = scene->mRootNode;

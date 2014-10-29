@@ -10,6 +10,7 @@
 
 #include "Model3d.h"
 #include "tree/BoneNodeData.h"
+#include "Material3d.h"
 
 class Model3dLoader {
 public:
@@ -30,7 +31,7 @@ private:
 	std::vector<Mesh3d> collectMeshes(const aiScene*);
 	void parseMeshes(const aiNode*, aiMesh**, std::vector<Mesh3d>&);
 
-	Texture2d collectTexture(const aiScene*, std::string);
+	std::vector<Material3d> collectMaterials(const aiScene*, std::string);
 
 	static const std::string BONES_ROOT_NODE;
 	TNode<BoneNodeData> collectBones(const aiScene*, std::string = BONES_ROOT_NODE);

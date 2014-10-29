@@ -25,6 +25,7 @@ public:
 	static aiMatrix3x3 Utils::glmToAssimpMatrix3x3(const glm::mat4& m);
 
 	static glm::vec3 Utils::assimpToGlmVector3d(const aiVector3D&);
+	static glm::vec4 Utils::assimpToGlmVector4d(const aiColor4D&);
 
 	static std::array<float, 16> Utils::glmMatrixToArray(const glm::mat4&);
 

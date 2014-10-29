@@ -634,6 +634,9 @@ glm::vec3 Utils::assimpToGlmVector3d(const aiVector3D& v) {
 	return glm::vec3{ v.x, v.y, v.z };
 }
 
+glm::vec4 Utils::assimpToGlmVector4d(const aiColor4D& v) {
+	return glm::vec4{ v.r, v.g, v.b, v.a };
+}
 
 string Utils::glmToString(const glm::mat4& m) {
 	string res = "{";
@@ -684,5 +687,6 @@ glm::mat4 Utils::interpolateQ(const glm::mat4& start, const glm::mat4& end, floa
 	res = res.Normalize();
 	return assimp3x3ToGlmMatrix(res.GetMatrix());
 }
+
 
 

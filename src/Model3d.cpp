@@ -7,10 +7,10 @@ using std::string;
 using std::exception;
 using std::shared_ptr;
 
-Model3d::Model3d(string name, vector<Mesh3d>&& meshes, vector<Texture2d>&& textures, TNode<BoneNodeData>&& boneTree, Animation3d&& defaultAnimation) {
+Model3d::Model3d(string name, vector<Mesh3d>&& meshes, vector<Material3d>&& materials, TNode<BoneNodeData>&& boneTree, Animation3d&& defaultAnimation) {
 	this->name = name;
 	this->meshes = std::move(meshes);
-	this->textures = std::move(textures);
+	this->materials = std::move(materials);
 	this->boneTree = std::move(boneTree);
 	nameToAnimation.emplace(defaultAnimation.getName(), defaultAnimation);
 }
@@ -25,8 +25,8 @@ Model3d::operator string() const {
 	res += "}";
 
 	res += "\ntextures: {\n";
-	for (auto& j : textures) {
-		res += j.getName();
+	for (auto& j : materials) {
+		//res += j.getTexture().getName();
 		res += "\n";
 	}
 	res += "}}";

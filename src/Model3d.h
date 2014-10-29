@@ -7,14 +7,15 @@
 #include "Animation3d.h"
 #include "tree\BoneNodeData.h"
 #include <unordered_map>
+#include "Material3d.h"
 
 class Model3d {
 public:
-	Model3d(std::string, std::vector<Mesh3d>&&, std::vector<Texture2d>&&, TNode<BoneNodeData>&&, Animation3d&&);
+	Model3d(std::string, std::vector<Mesh3d>&&, std::vector<Material3d>&&, TNode<BoneNodeData>&&, Animation3d&&);
 
 	std::string getName() const { return name; }
 	std::vector<Mesh3d>& getMeshes() { return meshes; }
-	std::vector<Texture2d>& getTextures() { return textures; }
+	std::vector<Material3d>& getMaterials() { return materials; }
 
 	Animation3d& getAnimation(std::string = Animation3d::DEFAULT_ANIMATION_NAME);
 	bool addAnimation(Animation3d&&);
@@ -32,7 +33,7 @@ private:
 	std::string name;
 	
 	std::vector<Mesh3d> meshes;
-	std::vector<Texture2d> textures;
+	std::vector<Material3d> materials;
 
 	TNode<BoneNodeData> boneTree;
 
