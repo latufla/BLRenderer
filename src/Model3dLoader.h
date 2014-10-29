@@ -30,7 +30,7 @@ private:
 	std::vector<Mesh3d> collectMeshes(const aiScene*);
 	void parseMeshes(const aiNode*, aiMesh**, std::vector<Mesh3d>&);
 
-	std::vector<std::string> collectMaterials(const aiScene*, std::string);
+	Texture2d collectTexture(const aiScene*, std::string);
 
 	static const std::string BONES_ROOT_NODE;
 	TNode<BoneNodeData> collectBones(const aiScene*, std::string = BONES_ROOT_NODE);

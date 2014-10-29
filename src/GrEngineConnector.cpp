@@ -8,7 +8,7 @@
 #include <GLES2/gl2ext.h>
 #include "Model3d.h"
 #include "Model3dLoader.h"
-#include "Material3d.h"
+#include "Texture2d.h"
 #include "tree/BoneNodeData.h"
 
 #include <gtc\matrix_transform.hpp>
@@ -94,8 +94,8 @@ bool GrEngineConnector::attachAnimation(string modelName, string animPath, strin
 
 
 bool GrEngineConnector::addObject(uint32_t id, std::string modelPath){
-	if (!hasObjectWith(modelPath)) // first in
-		loadToGpu(modelPath);
+	if (!hasObjectWithModel(modelPath)) // first in
+		loadModelToGpu(modelPath);
 	
 	View object{ id, "", modelPath };
 	idToObject.emplace(id, std::move(object));
@@ -110,8 +110,8 @@ bool GrEngineConnector::removeObject(uint32_t id){
 	if (it != end(idToObject))
 		idToObject.erase(it);
 
-	if (!hasObjectWith(modelPath)) // last out
-		deleteFromGpu(modelPath);
+	if (!hasObjectWithModel(modelPath)) // last out
+		deleteModelFromGpu(modelPath);
 	
 	return true;
 }
@@ -128,14 +128,10 @@ bool GrEngineConnector::playAnimation(uint32_t objId, std::string label) {
 	return true;
 }
 
-bool GrEngineConnector::transform(uint32_t id, const array<float, 16> t) {
-	auto& it = idToObject.find(id);
-	if (it == end(idToObject))
-		return false;
-
-	auto tForm = glm::make_mat4(t.data());
-	it->second.setTransform(tForm);
-	return true;
+void GrEngineConnector::setCamera(float x, float y, float z) {
+	camera.x = x;
+	camera.y = y;
+	camera.z = z;
 }
 
 bool GrEngineConnector::doStep(uint32_t stepMSec)
@@ -292,8 +288,8 @@ int32_t GrEngineConnector::initEgl(){
 
 int32_t GrEngineConnector::initShaders(string vShaderSrc, string fShaderSrc)
 {
-	GLuint vShader = loadShader(GL_VERTEX_SHADER, vShaderSrc.c_str());
-	GLuint fShader = loadShader(GL_FRAGMENT_SHADER, fShaderSrc.c_str());
+	GLuint vShader = createShader(GL_VERTEX_SHADER, vShaderSrc.c_str());
+	GLuint fShader = createShader(GL_FRAGMENT_SHADER, fShaderSrc.c_str());
 	if (!vShader || !fShader)
 		return GlesError::SHADER_LOAD_FAIL;
 
@@ -322,7 +318,7 @@ int32_t GrEngineConnector::initShaders(string vShaderSrc, string fShaderSrc)
 	return 0;
 }
 
-GLuint GrEngineConnector::loadShader(GLenum shType, const char* shSource){
+GLuint GrEngineConnector::createShader(GLenum shType, const char* shSource){
 	GLboolean hasCompiler;
 	glGetBooleanv(GL_SHADER_COMPILER, &hasCompiler);
 	if (hasCompiler == GL_FALSE)
@@ -345,31 +341,6 @@ GLuint GrEngineConnector::loadShader(GLenum shType, const char* shSource){
 	return shader;
 }
 
-
-GLuint GrEngineConnector::loadTexture(vector<unsigned char>& texture, int16_t widht, int16_t height){	
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-	GLuint textureId;
-	glGenTextures(1, &textureId);
-	glBindTexture(GL_TEXTURE_2D, textureId);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, widht, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &texture[0]);
-	
-	glGenerateMipmap(GL_TEXTURE_2D);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	return textureId;
-}
-
-void GrEngineConnector::setCamera(float x, float y, float z) {
-	camera.x = x;
-	camera.y = y;
-	camera.z = z;
-}
-
-
 BoneTransformer::BonesDataMap GrEngineConnector::prepareAnimationStep(View& object, Mesh3d& m, uint32_t stepMSec) {
 	BoneTransformer::BonesDataMap res;
 	auto& boneIdToOffset = m.getBoneIdToOffset();
@@ -384,15 +355,25 @@ BoneTransformer::BonesDataMap GrEngineConnector::prepareAnimationStep(View& obje
 	return res;
 }
 
+bool GrEngineConnector::transform(uint32_t id, const array<float, 16> t) {
+	auto& it = idToObject.find(id);
+	if (it == end(idToObject))
+		return false;
 
-bool GrEngineConnector::hasObjectWith(string modelPath) {
-	auto& it = find_if(cbegin(idToObject), cend(idToObject), [&modelPath](pair<uint32_t, View> i)->bool{
-		return i.second.getPath() == modelPath;
+	auto tForm = glm::make_mat4(t.data());
+	it->second.setTransform(tForm);
+	return true;
+}
+
+
+bool GrEngineConnector::hasObjectWithModel(string path) {
+	auto& it = find_if(cbegin(idToObject), cend(idToObject), [&path](pair<uint32_t, View> i)->bool{
+		return i.second.getPath() == path;
 	});
 	return it != cend(idToObject);
 }
 
-bool GrEngineConnector::loadToGpu(string modelPath) {
+bool GrEngineConnector::loadModelToGpu(string modelPath) {
 	Model3d& model = loader.getModel(modelPath);
 	vector<Mesh3d>& meshes = model.getMeshes();
 	for (auto& s : meshes) {
@@ -411,8 +392,8 @@ bool GrEngineConnector::loadToGpu(string modelPath) {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * iBufferLength, &indices[0], GL_STATIC_DRAW);
 
-		Material3d& mt = model.getMaterials()[s.getMaterialId()];
-		uint32_t texture = loadTexture(mt.getData(), mt.getWidth(), mt.getHeight());
+		Texture2d& mt = model.getTextures()[s.getMaterialId()];
+		uint32_t texture = loadTextureToGpu(mt.getData(), mt.getWidth(), mt.getHeight());
 
 		string meshName = model.getUniqueMeshName(s);
 		meshToBuffer[meshName] = { vBuffer, iBuffer, iBufferLength, texture };
@@ -425,7 +406,7 @@ bool GrEngineConnector::loadToGpu(string modelPath) {
 	return true;
 }
 
-bool GrEngineConnector::deleteFromGpu(std::string modelPath) {
+bool GrEngineConnector::deleteModelFromGpu(std::string modelPath) {
 	Model3d& model = loader.getModel(modelPath);
 	vector<Mesh3d>& meshes = model.getMeshes();
 	for (auto& s : meshes) {
@@ -442,4 +423,21 @@ bool GrEngineConnector::deleteFromGpu(std::string modelPath) {
 			meshToBuffer.erase(bIt);
 	}
 	return true;
+}
+
+GLuint GrEngineConnector::loadTextureToGpu(vector<unsigned char>& texture, int16_t widht, int16_t height) {
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	GLuint textureId;
+	glGenTextures(1, &textureId);
+	glBindTexture(GL_TEXTURE_2D, textureId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, widht, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &texture[0]);
+
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return textureId;
 }

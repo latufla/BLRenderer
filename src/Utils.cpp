@@ -575,7 +575,7 @@ void Utils::loadFile(std::vector<unsigned char>& buffer, const std::string& file
 	else buffer.clear();
 }
 
-bool Utils::loadTexture(string path, Material3d& outTexture){
+bool Utils::loadTexture(string path, Texture2d& outTexture){
 	vector<unsigned char> buffer;
 	Utils::loadFile(buffer, path);
 	

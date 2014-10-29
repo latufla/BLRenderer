@@ -28,7 +28,7 @@ bool Model3dLoader::loadModel(string dir, string name) {
 	if (meshes.empty())
 		throw std::exception("Model3dLoader::loadModel no meshes");
 
-	vector<string> textures = collectMaterials(modelAi, dir);
+	vector<Texture2d> textures{ collectTexture(modelAi, dir) };
 	if (textures.empty())
 		throw std::exception("Model3dLoader::loadModel no textures");
 	
@@ -119,15 +119,15 @@ void Model3dLoader::parseMeshes(const aiNode* rNodeAi, aiMesh** meshesAi, std::v
 }
 
 
-std::vector<string> Model3dLoader::collectMaterials(const aiScene* modelAi, string dir) {
-	uint32_t nMaterialsAi = modelAi->mNumMaterials;
-	vector<string> materials;
-	for (uint32_t i = 0; i < nMaterialsAi; i++) {
-		aiString textureAi;
-		modelAi->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &textureAi);
-		materials.push_back(dir + textureAi.C_Str());
-	}
-	return materials;
+Texture2d Model3dLoader::collectTexture(const aiScene* modelAi, string dir) {
+	aiString textureAi;
+	modelAi->mMaterials[0]->GetTexture(aiTextureType_DIFFUSE, 0, &textureAi);
+	
+	Texture2d texture;
+	if (!Utils::loadTexture(dir + textureAi.C_Str(), texture))
+		throw std::exception("Model3dLoader::collectTexture can`t load texture");
+	
+	return texture;
 }
 
 TNode<BoneNodeData> Model3dLoader::collectBones(const aiScene* scene, string bonesRoot) {

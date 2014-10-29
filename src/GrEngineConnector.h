@@ -66,10 +66,10 @@ private:
 	};
 	std::unordered_map<std::string, GpuBufferData> meshToBuffer;
 
-	bool loadToGpu(std::string);
-	bool deleteFromGpu(std::string);
+	bool loadModelToGpu(std::string);
+	bool deleteModelFromGpu(std::string);
 
-	bool hasObjectWith(std::string);
+	bool hasObjectWithModel(std::string);
 	
 	struct EglContext {
 		void* display;
@@ -82,8 +82,8 @@ private:
 	int32_t initEgl();
 	int32_t initShaders(std::string, std::string);
 
-	uint32_t loadShader(uint32_t, const char*);
-	uint32_t loadTexture(std::vector<unsigned char>&, int16_t, int16_t);
+	uint32_t createShader(uint32_t, const char*);
+	uint32_t loadTextureToGpu(std::vector<unsigned char>&, int16_t, int16_t);
 	// ---
 	
 	// animation

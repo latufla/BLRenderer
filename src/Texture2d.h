@@ -1,13 +1,12 @@
 #pragma once
 #include <vector>
 
-// just texture now
-class Material3d {
+class Texture2d {
 public:
-	Material3d();
-	Material3d(std::string, std::vector<unsigned char>&, int16_t width, int16_t height);
+	Texture2d() = default;
+	Texture2d(std::string, std::vector<unsigned char>&, int16_t width, int16_t height);
 	
-	~Material3d();
+	~Texture2d() = default;
 
 	std::string getName() const { return name; }
 	void setName(std::string val) { name = val; }
