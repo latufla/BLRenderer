@@ -36,7 +36,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
 		const Model3dInfo& info = Infos::getInfo(s.getInfo());
 		renderer.addObject(id, info.getModelPath());
 
-		renderer.transform(id, Utils::glmMatrixToArray(s.getOrientation()));
+		renderer.transform(id, Utils::toArray(s.getOrientation()));
 	}
 
 	renderer.playAnimation(42, "idle");

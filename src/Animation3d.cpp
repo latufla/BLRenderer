@@ -33,7 +33,7 @@ Animation3d::operator string() const {
 #ifdef FULL_REPORT
 		res += ": { \n";
 		for (auto& j : i.positions) {
-			res += "{Vec3Key time: " + to_string(j.time) + " value: " + Utils::glmToString(j.value) + "}\n";
+			res += "{Vec3Key time: " + to_string(j.time) + " value: " + Utils::toString(j.value) + "}\n";
 		}
 #endif
 
@@ -42,7 +42,7 @@ Animation3d::operator string() const {
 #ifdef FULL_REPORT
 		res += ": { \n";
 		for (auto& j : i.rotations) {
-			res += "{Mat4Key time: " + to_string(j.time) + " value: \n" + Utils::glmToString(j.value) + "}\n";
+			res += "{Mat4Key time: " + to_string(j.time) + " value: \n" + Utils::toString(j.value) + "}\n";
 		}
 #endif 
 		
@@ -51,7 +51,7 @@ Animation3d::operator string() const {
 #ifdef FULL_REPORT
 		res += ": { \n";
 		for (auto& j : i.scalings) {
-			res += "{Vec3Key time: " + to_string(j.time) + " value: " + Utils::glmToString(j.value) + "}\n";
+			res += "{Vec3Key time: " + to_string(j.time) + " value: " + Utils::toString(j.value) + "}\n";
 		}
 
 #endif

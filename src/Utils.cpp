@@ -3,27 +3,11 @@
 #include "tree\BoneNodeData.h"
 #include <gtc\type_ptr.hpp>
 
-using namespace std;
-
+using std::vector;
 using std::array;
 
-void Utils::print(glm::mat4 m)
-{
-	for (int i = 0; i < 4; ++i){
-		for (int j = 0; j < 4; ++j){
-			cout << m[j][i] << " ";
-		}
-		cout << endl;
-	}
-}
-
-void Utils::print(glm::vec4 v)
-{
-	for (int i = 0; i < 4; ++i){
-		cout << v[i] << " ";
-	}
-	cout << endl;
-}
+using std::string;
+using std::to_string;
 
 /*
 decodePNG: The picoPNG function, decodes a PNG file buffer in memory, into a raw pixel buffer.
@@ -577,7 +561,7 @@ void Utils::loadFile(std::vector<unsigned char>& buffer, const std::string& file
 
 bool Utils::loadTexture(string path, Texture2d& outTexture){
 	vector<unsigned char> buffer;
-	Utils::loadFile(buffer, path);
+	loadFile(buffer, path);
 	
 	unsigned long w, h;
 	int decodeFail = Utils::decodePNG(outTexture.getData(), w, h, buffer.empty() ? 0 : &buffer[0], (unsigned long)buffer.size());
@@ -590,7 +574,7 @@ bool Utils::loadTexture(string path, Texture2d& outTexture){
 	return true;
 }
 
-glm::mat4 Utils::assimpToGlmMatrix(const aiMatrix4x4& m) {
+glm::mat4 Utils::assimpToGlm(const aiMatrix4x4& m) {
 	return glm::mat4{
 		m.a1, m.b1, m.c1, m.d1,
 		m.a2, m.b2, m.c2, m.d2,
@@ -599,7 +583,7 @@ glm::mat4 Utils::assimpToGlmMatrix(const aiMatrix4x4& m) {
 	};
 }
 
-glm::mat4 Utils::assimp3x3ToGlmMatrix(const aiMatrix3x3& m) {
+glm::mat4 Utils::assimpMat3ToGlm(const aiMatrix3x3& m) {
 	return glm::mat4{
 		m.a1, m.b1, m.c1, 0,
 		m.a2, m.b2, m.c2, 0,
@@ -608,7 +592,7 @@ glm::mat4 Utils::assimp3x3ToGlmMatrix(const aiMatrix3x3& m) {
 	};
 }
 
-aiMatrix4x4 Utils::glmToAssimpMatrix(const glm::mat4& m) {
+aiMatrix4x4 Utils::glmToAssimp(const glm::mat4& m) {
 	const float *ms = (const float*)glm::value_ptr(m);
 
 	return aiMatrix4x4{
@@ -619,7 +603,7 @@ aiMatrix4x4 Utils::glmToAssimpMatrix(const glm::mat4& m) {
 	};
 }
 
-aiMatrix3x3 Utils::glmToAssimpMatrix3x3(const glm::mat4& m) {
+aiMatrix3x3 Utils::glmToAssimpMat3(const glm::mat4& m) {
 	const float *ms = (const float*)glm::value_ptr(m);
 
 	return aiMatrix3x3{
@@ -630,15 +614,15 @@ aiMatrix3x3 Utils::glmToAssimpMatrix3x3(const glm::mat4& m) {
 }
 
 
-glm::vec3 Utils::assimpToGlmVector3d(const aiVector3D& v) {
+glm::vec3 Utils::assimpToGlm(const aiVector3D& v) {
 	return glm::vec3{ v.x, v.y, v.z };
 }
 
-glm::vec4 Utils::assimpToGlmVector4d(const aiColor4D& v) {
+glm::vec4 Utils::assimpToGlm(const aiColor4D& v) {
 	return glm::vec4{ v.r, v.g, v.b, v.a };
 }
 
-string Utils::glmToString(const glm::mat4& m) {
+string Utils::toString(const glm::mat4& m) {
 	string res = "{";
 	for (int i = 0; i < 4; ++i) {
 		for (int j = 0; j < 4; ++j) {
@@ -651,11 +635,11 @@ string Utils::glmToString(const glm::mat4& m) {
 	return res;
 }
 
-string Utils::glmToString(const glm::vec3& v) {
+string Utils::toString(const glm::vec3& v) {
 	return "{x: " + to_string(v.x) + " y:" + to_string(v.y) + " z: " + to_string(v.z) + "}";
 }
 
-std::array<float, 16> Utils::glmMatrixToArray(const glm::mat4& m) {
+std::array<float, 16> Utils::toArray(const glm::mat4& m) {
 	array <float, 16> res;
 
 	const float *pSource = (const float*)glm::value_ptr(m);
@@ -675,9 +659,9 @@ glm::vec3 Utils::interpolate(const glm::vec3& start, const glm::vec3& end, float
 	return interp;
 }
 
-glm::mat4 Utils::interpolateQ(const glm::mat4& start, const glm::mat4& end, float alpha) {
-	aiMatrix3x3 sm = glmToAssimpMatrix3x3(start);
-	aiMatrix3x3 em = glmToAssimpMatrix3x3(end);
+glm::mat4 Utils::interpolate(const glm::mat4& start, const glm::mat4& end, float alpha) {
+	aiMatrix3x3 sm = glmToAssimpMat3(start);
+	aiMatrix3x3 em = glmToAssimpMat3(end);
 	
 	aiQuaternion qs(sm);
 	aiQuaternion qe(em);
@@ -685,7 +669,7 @@ glm::mat4 Utils::interpolateQ(const glm::mat4& start, const glm::mat4& end, floa
 
 	aiQuaternion::Interpolate(res, qs, qe, alpha);
 	res = res.Normalize();
-	return assimp3x3ToGlmMatrix(res.GetMatrix());
+	return assimpMat3ToGlm(res.GetMatrix());
 }
 
 

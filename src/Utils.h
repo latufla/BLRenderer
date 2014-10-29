@@ -13,25 +13,28 @@ public:
 	Utils() = delete;
 	~Utils() = delete;
 
-	static void print(glm::mat4);
-	static void print(glm::vec4);
-	static int decodePNG(std::vector<unsigned char>& out_image, unsigned long& image_width, unsigned long& image_height, const unsigned char* in_png, size_t in_size, bool convert_to_rgba32 = true);
-	static void loadFile(std::vector<unsigned char>& buffer, const std::string& filename);
 	static bool loadTexture(std::string, Texture2d&);
 
-	static glm::mat4 Utils::assimpToGlmMatrix(const aiMatrix4x4&);
-	static glm::mat4 Utils::assimp3x3ToGlmMatrix(const aiMatrix3x3&);
-	static aiMatrix4x4 Utils::glmToAssimpMatrix(const glm::mat4&);
-	static aiMatrix3x3 Utils::glmToAssimpMatrix3x3(const glm::mat4& m);
+	static glm::mat4 Utils::assimpToGlm(const aiMatrix4x4&);
+	static aiMatrix4x4 Utils::glmToAssimp(const glm::mat4&);
 
-	static glm::vec3 Utils::assimpToGlmVector3d(const aiVector3D&);
-	static glm::vec4 Utils::assimpToGlmVector4d(const aiColor4D&);
+	static glm::mat4 Utils::assimpMat3ToGlm(const aiMatrix3x3&);
+	static aiMatrix3x3 Utils::glmToAssimpMat3(const glm::mat4& m);
 
-	static std::array<float, 16> Utils::glmMatrixToArray(const glm::mat4&);
+	static glm::vec3 Utils::assimpToGlm(const aiVector3D&);
+	static glm::vec4 Utils::assimpToGlm(const aiColor4D&);
+	
+	static std::array<float, 16> Utils::toArray(const glm::mat4&);
 
-	static std::string Utils::glmToString(const glm::mat4&);
-	static std::string Utils::glmToString(const glm::vec3&);
-	static glm::vec3 interpolate(const glm::vec3& start, const glm::vec3& end, float alpha);
-	static glm::mat4 interpolateQ(const glm::mat4& start, const glm::mat4& end, float alpha);
+	static std::string Utils::toString(const glm::mat4&);
+	static std::string Utils::toString(const glm::vec3&);
+
+	static glm::vec3 interpolate(const glm::vec3&, const glm::vec3&, float);
+	static glm::mat4 interpolate(const glm::mat4&, const glm::mat4&, float);
+
+private:
+	static void loadFile(std::vector<unsigned char>&, const std::string&);
+	static int decodePNG(std::vector<unsigned char>&, unsigned long&, unsigned long&, const unsigned char*, size_t, bool = true);
+
 };
 

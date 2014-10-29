@@ -92,5 +92,5 @@ glm::mat4 BoneTransformer::calcTimeInterpolation(uint32_t time, std::vector<Mat4
 	if (factor > 1)
 		factor = 1;
 
-	return Utils::interpolateQ(frame1.value, frame2.value, (float)factor);
+	return Utils::interpolate(frame1.value, frame2.value, (float)factor);
 }

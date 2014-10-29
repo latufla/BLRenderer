@@ -33,7 +33,7 @@ bool Model3dLoader::loadModel(string dir, string name) {
 	Animation3d defaultAnimation = collectAnimation(modelAi, bones, Animation3d::DEFAULT_ANIMATION_NAME);
 	
 	aiNode* rootAi = modelAi->mRootNode;
-	auto glTrans = Utils::assimpToGlmMatrix(rootAi->mTransformation);
+	auto glTrans = Utils::assimpToGlm(rootAi->mTransformation);
 	
 	Model3d model{ path, meshes, materials, bones, defaultAnimation };
 	model.setGlobalInverseTransform(glTrans);
@@ -149,14 +149,13 @@ std::vector<Material3d> Model3dLoader::collectMaterials(const aiScene* modelAi, 
 		Texture2d texture;
 		if (!Utils::loadTexture(dir + textureAi.C_Str(), texture))
 			throw std::exception("Model3dLoader::collectMaterials can`t load texture");
-
-		auto converter = Utils::assimpToGlmVector4d;		
+	
 		Material3d mat{
 			texture,
-			converter(emissionAi),
-			converter(ambientAi),
-			converter(diffuseAi),
-			converter(specularAi),
+			Utils::assimpToGlm(emissionAi),
+			Utils::assimpToGlm(ambientAi),
+			Utils::assimpToGlm(diffuseAi),
+			Utils::assimpToGlm(specularAi),
 			shininess, indexOfRefraction, twoSided
 		};
 		materials.push_back(mat);
@@ -181,7 +180,7 @@ TNode<BoneNodeData> Model3dLoader::collectBones(const aiScene* scene, string bon
 }
 
 TNode<BoneNodeData> Model3dLoader::parseBones(const aiNode* node) {
-	glm::mat4 transform = Utils::assimpToGlmMatrix(node->mTransformation);
+	glm::mat4 transform = Utils::assimpToGlm(node->mTransformation);
 	TNode<BoneNodeData> bones{ 0, node->mName.C_Str(), BoneNodeData(transform) };
 	
 	uint32_t nNodes = node->mNumChildren;
@@ -220,7 +219,7 @@ Animation3d Model3dLoader::collectAnimation(const aiScene* scene, TNode<BoneNode
 		uint32_t nPositions = animNode->mNumPositionKeys;
 		for (uint32_t j = 0; j < nPositions; ++j) {
 			aiVectorKey& posKey = animNode->mPositionKeys[j];
-			Vec3Key myPosKey{ posKey.mTime, Utils::assimpToGlmVector3d(posKey.mValue) };
+			Vec3Key myPosKey{ posKey.mTime, Utils::assimpToGlm(posKey.mValue) };
 			positions.push_back(myPosKey);			
 		}
 
@@ -229,7 +228,7 @@ Animation3d Model3dLoader::collectAnimation(const aiScene* scene, TNode<BoneNode
 		for (uint32_t j = 0; j < nRotations; ++j) {
 			aiQuatKey& rotKey = animNode->mRotationKeys[j];
 			aiMatrix4x4 rotMtx(rotKey.mValue.GetMatrix());
-			Mat4Key myRotKey{ rotKey.mTime, Utils::assimpToGlmMatrix(rotMtx) };
+			Mat4Key myRotKey{ rotKey.mTime, Utils::assimpToGlm(rotMtx) };
 			rotations.push_back(myRotKey);
 		}
 
@@ -237,7 +236,7 @@ Animation3d Model3dLoader::collectAnimation(const aiScene* scene, TNode<BoneNode
 		uint32_t nScalings = animNode->mNumScalingKeys;
 		for (uint32_t j = 0; j < nScalings; ++j) {
 			aiVectorKey& scaleKey = animNode->mScalingKeys[j];
-			Vec3Key myScaleKey{ scaleKey.mTime, Utils::assimpToGlmVector3d(scaleKey.mValue) };
+			Vec3Key myScaleKey{ scaleKey.mTime, Utils::assimpToGlm(scaleKey.mValue) };
 			scalings.push_back(myScaleKey);
 		}
 		BoneAnimation myBoneAnimation{ myBone->getId(), myBone->getName(), positions, rotations, scalings };
@@ -267,7 +266,7 @@ void Model3dLoader::collectBoneWeightsAndOffsets(const aiScene* scene, TNode<Bon
 			bool found = false;
 			TNode<BoneNodeData>* myBone = TNode<BoneNodeData>::FindNode(boneTree, boneAi->mName.C_Str(), found);
 			uint32_t myBoneId = myBone->getId();
-			myMesh.setBoneOffset(myBoneId, Utils::assimpToGlmMatrix(boneAi->mOffsetMatrix));
+			myMesh.setBoneOffset(myBoneId, Utils::assimpToGlm(boneAi->mOffsetMatrix));
 			
 			uint32_t nNumWeightsAi = boneAi->mNumWeights;
 			for (uint32_t k = 0; k < nNumWeightsAi; ++k) {
