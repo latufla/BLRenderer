@@ -23,7 +23,7 @@ public:
 		return instance;
 	}
 
-	int32_t init();
+	int32_t init(uint32_t, uint32_t, uint32_t, uint32_t);
 	
 	bool loadModel(std::string, std::string);
 	bool attachAnimation(std::string, std::string, std::string);

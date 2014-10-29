@@ -56,9 +56,9 @@ GrEngineConnector::~GrEngineConnector()
 	}
 }
 
-int32_t GrEngineConnector::init()
+int32_t GrEngineConnector::init(uint32_t winX, uint32_t winY, uint32_t winW, uint32_t winH)
 {
-	window = make_shared <WindowVendor>();
+	window = make_shared <WindowVendor>(winX, winY, winW, winH);
 	if (!window->nativeWindow)
 		return EglError::NATIVE_WINDOW_FAIL;
 

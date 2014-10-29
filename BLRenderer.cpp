@@ -32,7 +32,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
 
 	GrEngineConnector& renderer = GrEngineConnector::getInstance();
 
-	int rendererFail = renderer.init();
+	int rendererFail = renderer.init(0, 0, 1024, 768);
 	if (rendererFail)
 		return rendererFail;
 
