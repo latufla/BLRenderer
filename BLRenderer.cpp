@@ -3,7 +3,6 @@
 
 #include "stdafx.h"
 #include <iostream>
-#include <memory>
 
 #include "src\WindowVendor.h"
 

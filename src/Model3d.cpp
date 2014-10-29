@@ -5,7 +5,6 @@
 using std::vector;
 using std::string;
 using std::exception;
-using std::shared_ptr;
 
 Model3d::Model3d(string name, const vector<Mesh3d>& meshes, const vector<Material3d>& materials, const TNode<BoneNodeData>& boneTree, const Animation3d& defaultAnimation) {
 	this->name = name;

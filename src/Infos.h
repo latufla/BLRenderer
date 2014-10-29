@@ -1,6 +1,5 @@
 #pragma once
 #include <vector>
-#include <memory>
 #include "Model3dInfo.h"
 #include <map>
 

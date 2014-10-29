@@ -8,9 +8,6 @@ using std::to_string;
 using std::map;
 using std::vector;
 
-using std::shared_ptr;
-using std::make_shared;
-
 const uint8_t Model3dLoader::TRIANGLE_FACE_TYPE = 3;
 const std::string Model3dLoader::BONES_ROOT_NODE = "Armature";
 

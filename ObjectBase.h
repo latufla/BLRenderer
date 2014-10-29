@@ -1,6 +1,5 @@
 #pragma once
 #include <vector>
-#include <memory>
 #include <gtc\matrix_transform.hpp>
 
 class ObjectBase

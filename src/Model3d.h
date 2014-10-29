@@ -1,6 +1,5 @@
 #pragma once
 #include <vector>
-#include <memory>
 #include "Mesh3d.h"
 #include "Texture2d.h"
 #include "tree\TNode.h"
