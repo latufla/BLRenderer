@@ -3,20 +3,20 @@
 
 using glm::vec4;
 
-Material3d::Material3d(Texture2d&& texture, 
-	vec4&& emission, 
-	vec4&& ambient,
-	vec4&& diffuse,
-	vec4&& specular,
+Material3d::Material3d(const Texture2d& texture, 
+	const vec4& emission,
+	const vec4& ambient,
+	const vec4& diffuse,
+	const vec4& specular,
 	float shininess, 
 	float indexOfRefraction, 
 	bool doubleSided) {
 
-	this->texture = std::move(texture);
-	this->emission = std::move(emission);
-	this->ambient = std::move(ambient);
-	this->diffuse = std::move(diffuse);
-	this->specular = std::move(specular);
+	this->texture = texture;
+	this->emission = emission;
+	this->ambient = ambient;
+	this->diffuse = diffuse;
+	this->specular = specular;
 	this->shininess = shininess;
 	this->indexOfRefraction = indexOfRefraction;
 	this->doubleSided = doubleSided;

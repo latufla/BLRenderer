@@ -5,7 +5,7 @@
 class Material3d {
 public:
 	Material3d() = default;
-	Material3d(Texture2d&&, glm::vec4&&, glm::vec4&&, glm::vec4&&, glm::vec4&&, float, float, bool);
+	Material3d(const Texture2d&, const glm::vec4&, const glm::vec4&, const glm::vec4&, const glm::vec4&, float, float, bool);
 
 	~Material3d() = default;
 

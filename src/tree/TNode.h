@@ -2,31 +2,16 @@
 #include <string>
 #include <vector>
 
-// runtime tree
 template <class T>
 class TNode {
 public:
 	TNode() = default;
-	TNode(uint32_t, std::string, T&&);
+	TNode(uint32_t, std::string, T&);
 
 	~TNode() = default;
 
-	TNode<T>(TNode<T>&& that) {
-		this->id = std::move(that.id);
-		this->name = std::move(that.name);
-		this->data = std::move(that.data);
-		this->children = std::move(that.children);
-	}
-	TNode<T>& operator=(TNode<T>&& that) {
-		this->id = std::move(that.id);
-		this->name = std::move(that.name);
-		this->data = std::move(that.data);
-		this->children = std::move(that.children);
-		return *this;
-	}
-
-	bool addChild(uint32_t, std::string, T&&);
-	bool addChild(TNode<T>&&);
+	bool addChild(uint32_t, std::string, T&);
+	bool addChild(TNode<T>&);
 
 	uint32_t getId() const { return id; }
 	void setId(uint32_t val) { id = val; }
@@ -56,21 +41,21 @@ private:
 };
 
 template <class T>
-TNode<T>::TNode(uint32_t id, std::string name, T&& data) {
+TNode<T>::TNode(uint32_t id, std::string name, T& data) {
 	this->id = id;
 	this->name = name;
 	this->data = data;
 }
 
 template <class T>
-bool TNode<T>::addChild(uint32_t id, std::string name, T&& data) {
-	children.push_back({id, name, (T&&)data});
+bool TNode<T>::addChild(uint32_t id, std::string name, T& data) {
+	children.push_back({id, name, data});
 	return true;
 }
 
 template <class T>
-bool TNode<T>::addChild(TNode<T>&& child) {
-	children.push_back((TNode<T>&&)child);
+bool TNode<T>::addChild(TNode<T>& child) {
+	children.push_back(child);
 	return true;
 }
 

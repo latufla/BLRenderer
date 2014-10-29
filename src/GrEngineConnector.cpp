@@ -98,7 +98,7 @@ bool GrEngineConnector::addObject(uint32_t id, std::string modelPath){
 		loadModelToGpu(modelPath);
 	
 	View object{ id, "", modelPath };
-	idToObject.emplace(id, std::move(object));
+	idToObject.emplace(id, object);
 	return true;
 }
 

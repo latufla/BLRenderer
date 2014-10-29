@@ -10,8 +10,6 @@ using std::vector;
 
 using std::shared_ptr;
 using std::make_shared;
-using std::move;
-
 
 const uint8_t Model3dLoader::TRIANGLE_FACE_TYPE = 3;
 const std::string Model3dLoader::BONES_ROOT_NODE = "Armature";
@@ -40,9 +38,9 @@ bool Model3dLoader::loadModel(string dir, string name) {
 	aiNode* rootAi = modelAi->mRootNode;
 	auto glTrans = Utils::assimpToGlmMatrix(rootAi->mTransformation);
 	
-	Model3d model{ path, move(meshes), move(materials), move(bones), move(defaultAnimation) };
+	Model3d model{ path, meshes, materials, bones, defaultAnimation };
 	model.setGlobalInverseTransform(glTrans);
-	models.emplace(path, move(model));
+	models.emplace(path, model);
 	
 	return true;
 }
@@ -54,7 +52,7 @@ bool Model3dLoader::attachAnimation(string modelName, string animPath, string an
 
 	Model3d& model = getModel(modelName);
 	Animation3d defaultAnimation = collectAnimation(animationAi, model.getBoneTree(), animName);
-	model.addAnimation(move(defaultAnimation));
+	model.addAnimation(defaultAnimation);
 
 	return true;
 }
@@ -157,14 +155,14 @@ std::vector<Material3d> Model3dLoader::collectMaterials(const aiScene* modelAi, 
 
 		auto converter = Utils::assimpToGlmVector4d;		
 		Material3d mat{
-			move(texture),
-			move(converter(emissionAi)),
-			move(converter(ambientAi)),
-			move(converter(diffuseAi)),
-			move(converter(specularAi)),
+			texture,
+			converter(emissionAi),
+			converter(ambientAi),
+			converter(diffuseAi),
+			converter(specularAi),
 			shininess, indexOfRefraction, twoSided
 		};
-		materials.push_back(move(mat));
+		materials.push_back(mat);
 	}
 	return materials;
 }
@@ -226,7 +224,7 @@ Animation3d Model3dLoader::collectAnimation(const aiScene* scene, TNode<BoneNode
 		for (uint32_t j = 0; j < nPositions; ++j) {
 			aiVectorKey& posKey = animNode->mPositionKeys[j];
 			Vec3Key myPosKey{ posKey.mTime, Utils::assimpToGlmVector3d(posKey.mValue) };
-			positions.push_back(move(myPosKey));			
+			positions.push_back(myPosKey);			
 		}
 
 		vector<Mat4Key> rotations;
@@ -235,7 +233,7 @@ Animation3d Model3dLoader::collectAnimation(const aiScene* scene, TNode<BoneNode
 			aiQuatKey& rotKey = animNode->mRotationKeys[j];
 			aiMatrix4x4 rotMtx(rotKey.mValue.GetMatrix());
 			Mat4Key myRotKey{ rotKey.mTime, Utils::assimpToGlmMatrix(rotMtx) };
-			rotations.push_back(move(myRotKey));
+			rotations.push_back(myRotKey);
 		}
 
 		vector<Vec3Key> scalings;
@@ -243,10 +241,10 @@ Animation3d Model3dLoader::collectAnimation(const aiScene* scene, TNode<BoneNode
 		for (uint32_t j = 0; j < nScalings; ++j) {
 			aiVectorKey& scaleKey = animNode->mScalingKeys[j];
 			Vec3Key myScaleKey{ scaleKey.mTime, Utils::assimpToGlmVector3d(scaleKey.mValue) };
-			scalings.push_back(move(myScaleKey));
+			scalings.push_back(myScaleKey);
 		}
-		BoneAnimation myBoneAnimation{ myBone->getId(), myBone->getName(), move(positions), move(rotations), move(scalings) };
-		boneAnimations.push_back(move(myBoneAnimation));
+		BoneAnimation myBoneAnimation{ myBone->getId(), myBone->getName(), positions, rotations, scalings };
+		boneAnimations.push_back(myBoneAnimation);
 	}
 
 	return{ name, anim->mDuration, anim->mTicksPerSecond, boneAnimations };

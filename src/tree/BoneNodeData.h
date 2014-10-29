@@ -5,15 +5,6 @@ class BoneNodeData{
 public:
 	BoneNodeData() = default;
 	BoneNodeData(const glm::mat4&);
-	
-	BoneNodeData(BoneNodeData&& that) {
-		this->transform = std::move(that.transform);
-	};
-
-	BoneNodeData& operator=(BoneNodeData&& that) {
-		this->transform = std::move(that.transform);
-		return *this;
-	}
 
 	~BoneNodeData() = default;
 	
