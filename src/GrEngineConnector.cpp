@@ -344,7 +344,8 @@ BoneTransformer::BonesDataMap GrEngineConnector::prepareAnimationStep(View& obje
 	BoneTransformer::BonesDataMap res;
 	auto& boneIdToOffset = m.getBoneIdToOffset();
 	for (auto& i : boneIdToOffset) {
-		res[i.first].offset = i.second;
+		BoneTransformer::BoneData bData{ i.second };
+		res.emplace(i.first, bData);
 	}
 	
 	object.doAnimationStep(stepMSec);
