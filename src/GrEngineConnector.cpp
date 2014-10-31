@@ -397,7 +397,8 @@ bool GrEngineConnector::loadModelToGpu(string modelPath) {
 		uint32_t texture = loadTextureToGpu(t.getData(), t.getWidth(), t.getHeight());
 
 		string meshName = model.getUniqueMeshName(s);
-		meshToBuffer[meshName] = { vBuffer, iBuffer, iBufferLength, texture };
+		GpuBufferData buffer{ vBuffer, iBuffer, iBufferLength, texture };
+		meshToBuffer.emplace(meshName, buffer);
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -412,7 +413,7 @@ bool GrEngineConnector::deleteModelFromGpu(std::string modelPath) {
 	vector<Mesh3d>& meshes = model.getMeshes();
 	for (auto& s : meshes) {
 		string mName = model.getUniqueMeshName(s);
-		GpuBufferData& buffers = meshToBuffer[mName];
+		GpuBufferData& buffers = meshToBuffer.at(mName);
 
 		glDeleteBuffers(1, &buffers.vBuffer);
 		glDeleteBuffers(1, &buffers.iBuffer);

@@ -39,7 +39,7 @@ bool Model3dLoader::loadModel(string dir, string name) {
 	
 	Model3d model{ path, meshes, materials, bones, defaultAnimation };
 	model.setGlobalInverseTransform(glTrans);
-	models.emplace(path, model);
+	pathToModel.emplace(path, model);
 	
 	return true;
 }
@@ -57,7 +57,7 @@ bool Model3dLoader::attachAnimation(string modelName, string animPath, string an
 }
 
 Model3d& Model3dLoader::getModel(string name) {	
-	return models.at(name);
+	return pathToModel.at(name);
 }
 
 
@@ -206,7 +206,7 @@ Animation3d Model3dLoader::collectAnimation(const aiScene* scene, BNode<BoneNode
 		throw std::exception("Model3dLoader::collectAnimation: empty animation");
 
 	// TODO: drop not bones, wonder am i right
-	unordered_map<uint32_t, BoneAnimation> boneAnimations;
+	unordered_map<uint32_t, BoneAnimation> idToBoneAnimation;
 	for (uint32_t i = 0; i < nChannels; ++i) {
 		aiNodeAnim* animNode = anim->mChannels[i];
 		string nName = animNode->mNodeName.C_Str();
@@ -242,10 +242,10 @@ Animation3d Model3dLoader::collectAnimation(const aiScene* scene, BNode<BoneNode
 
 		uint32_t boneId = myBone->getId();
 		BoneAnimation myBoneAnimation{ boneId, myBone->getName(), positions, rotations, scalings };
-		boneAnimations[boneId] = myBoneAnimation;
+		idToBoneAnimation.emplace(boneId, myBoneAnimation);
 	}
 
-	return{ name, anim->mDuration, anim->mTicksPerSecond, boneAnimations };
+	return{ name, anim->mDuration, anim->mTicksPerSecond, idToBoneAnimation };
 }
 
 void Model3dLoader::collectBoneWeightsAndOffsets(const aiScene* scene, BNode<BoneNodeData>& boneTree, vector<Mesh3d>& meshes) {

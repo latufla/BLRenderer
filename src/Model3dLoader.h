@@ -22,7 +22,7 @@ public:
 	bool attachAnimation(std::string, std::string, std::string);
 
 private:
-	std::map<std::string, Model3d> models;
+	std::map<std::string, Model3d> pathToModel;
 
 	Assimp::Importer importer;
 
