@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Utils.h"
+#include <fstream>
 #include <gtc\type_ptr.hpp>
 
 using std::vector;

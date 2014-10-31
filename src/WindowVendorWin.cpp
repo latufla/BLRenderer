@@ -1,12 +1,12 @@
 #include "stdafx.h"
-
+#include <windows.h>
 #include "WindowVendor.h"
 
 using std::vector;
 
 LRESULT CALLBACK processMessages(HWND, UINT, WPARAM, LPARAM);
 
-WindowVendor::WindowVendor(int x, int y, int w, int h)
+WindowVendor::WindowVendor(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 {
 	HINSTANCE hInstance = GetModuleHandle(nullptr);
 
@@ -70,7 +70,7 @@ vector<float> WindowVendor::getRect()
 }
 
 
-bool WindowVendor::doStep(int stepMSec) const
+bool WindowVendor::doStep() const
 {
 	MSG msg;
 	if (!PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))

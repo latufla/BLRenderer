@@ -22,7 +22,7 @@ bool View::doAnimationStep(uint32_t stepMSec) {
 	return false;
 }
 
-void View::setAnimation(std::string name, uint32_t durationMSec, bool loop) {
+void View::setAnimation(string name, uint32_t durationMSec, bool loop) {
 	animation.name = name; 
 	animation.durationMSec = durationMSec;
 	animation.loop = loop;

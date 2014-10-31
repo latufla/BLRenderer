@@ -1,7 +1,5 @@
 #pragma once
-#include <iostream>
 #include <vector>
-#include <fstream>
 #include <glm.hpp>
 #include "Texture2d.h"
 #include <assimp/Importer.hpp>

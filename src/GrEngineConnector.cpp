@@ -426,7 +426,7 @@ bool GrEngineConnector::deleteModelFromGpu(std::string modelPath) {
 	return true;
 }
 
-GLuint GrEngineConnector::loadTextureToGpu(vector<unsigned char>& texture, int16_t widht, int16_t height) {
+GLuint GrEngineConnector::loadTextureToGpu(vector<uint8_t>& texture, int16_t widht, int16_t height) {
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	GLuint textureId;

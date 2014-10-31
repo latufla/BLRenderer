@@ -1,15 +1,14 @@
 #pragma once
-#include <windows.h>
 #include <EGL/egl.h>
 #include <vector>
 
 class WindowVendor
 {
 public:
-	WindowVendor(int = 0, int = 0, int = 640, int = 480);
+	WindowVendor(uint32_t = 0, uint32_t = 0, uint32_t = 640, uint32_t = 480);
 	~WindowVendor();
 
-	bool doStep(int = 0) const;
+	bool doStep() const;
 
 	EGLNativeWindowType nativeWindow;
 
