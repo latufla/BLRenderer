@@ -12,9 +12,6 @@
 #include <stdint.h>
 #include <string>
 
-#define WINDOWS_PLATFORM
-//#define ANDROID_PLATFORM
-
 //#define FULL_REPORT
 
 // TODO: reference additional headers your program requires here

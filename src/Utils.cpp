@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Utils.h"
-#include "tree\BoneNodeData.h"
 #include <gtc\type_ptr.hpp>
 
 using std::vector;
@@ -9,54 +8,173 @@ using std::array;
 using std::string;
 using std::to_string;
 
-/*
-decodePNG: The picoPNG function, decodes a PNG file buffer in memory, into a raw pixel buffer.
-out_image: output parameter, this will contain the raw pixels after decoding.
-By default the output is 32-bit RGBA color.
-The std::vector is automatically resized to the correct size.
-image_width: output_parameter, this will contain the width of the image in pixels.
-image_height: output_parameter, this will contain the height of the image in pixels.
-in_png: pointer to the buffer of the PNG file in memory. To get it from a file on
-disk, load it and store it in a memory buffer yourself first.
-in_size: size of the input PNG file in bytes.
-convert_to_rgba32: optional parameter, true by default.
-Set to true to get the output in RGBA 32-bit (8 bit per channel) color format
-no matter what color type the original PNG image had. This gives predictable,
-useable data from any random input PNG.
-Set to false to do no color conversion at all. The result then has the same data
-type as the PNG image, which can range from 1 bit to 64 bits per pixel.
-Information about the color type or palette colors are not provided. You need
-to know this information yourself to be able to use the data so this only
-works for trusted PNG files. Use LodePNG instead of picoPNG if you need this information.
-return: 0 if success, not 0 if some error occured.
-*/
-int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image_width, unsigned long& image_height, const unsigned char* in_png, size_t in_size, bool convert_to_rgba32)
-{
-	// picoPNG version 20101224
-	// Copyright (c) 2005-2010 Lode Vandevenne
-	//
-	// This software is provided 'as-is', without any express or implied
-	// warranty. In no event will the authors be held liable for any damages
-	// arising from the use of this software.
-	//
-	// Permission is granted to anyone to use this software for any purpose,
-	// including commercial applications, and to alter it and redistribute it
-	// freely, subject to the following restrictions:
-	//
-	//     1. The origin of this software must not be misrepresented; you must not
-	//     claim that you wrote the original software. If you use this software
-	//     in a product, an acknowledgment in the product documentation would be
-	//     appreciated but is not required.
-	//     2. Altered source versions must be plainly marked as such, and must not be
-	//     misrepresented as being the original software.
-	//     3. This notice may not be removed or altered from any source distribution.
+using glm::mat4;
+using glm::value_ptr;
+using glm::vec4;
+using glm::vec3;
 
-	// picoPNG is a PNG decoder in one C++ function of around 500 lines. Use picoPNG for
-	// programs that need only 1 .cpp file. Since it's a single function, it's very limited,
-	// it can convert a PNG to raw pixel data either converted to 32-bit RGBA color or
-	// with no color conversion at all. For anything more complex, another tiny library
-	// is available: LodePNG (lodepng.c(pp)), which is a single source and header file.
-	// Apologies for the compact code style, it's to make this tiny.
+string Utils::defaultVertexShader =
+	"uniform mat4 mvpMatrix;		\n"
+	"uniform mat4 bones[25];		\n"
+	"attribute vec4 aPosition;		\n"
+
+	"attribute vec2 aTexCoord;		\n"
+
+	"attribute vec4 boneIds;		\n"
+	"attribute vec4 weights;		\n"
+
+	"varying vec2 vTexCoord;		\n"
+	"void main(){					\n"
+	"	mat4 boneTransform = bones[int(boneIds.x)] * weights.x;		\n"
+	"	boneTransform += bones[int(boneIds.y)] * weights.y;			\n"
+	"	boneTransform += bones[int(boneIds.z)] * weights.z;			\n"
+	"	boneTransform += bones[int(boneIds.w)] * weights.w;			\n"
+	"   vec4 pos = boneTransform * aPosition;						\n"
+	"   gl_Position = mvpMatrix * pos;								\n"
+	"   vTexCoord = aTexCoord;										\n"
+	"}";
+
+
+string Utils::defaultFragmentShader =
+	"precision mediump float;                           \n"
+	"varying vec2 vTexCoord;                            \n"
+	"uniform sampler2D sTexture;                        \n"
+	"void main(){										\n"                                                  
+	"  gl_FragColor = texture2D( sTexture, vTexCoord ); \n"
+	"}";
+
+
+mat4 Utils::assimpToGlm(const aiMatrix4x4& m) {
+	return mat4{
+		m.a1, m.b1, m.c1, m.d1,
+		m.a2, m.b2, m.c2, m.d2,
+		m.a3, m.b3, m.c3, m.d3,
+		m.a4, m.b4, m.c4, m.d4
+	};
+}
+
+mat4 Utils::assimpMat3ToGlm(const aiMatrix3x3& m) {
+	return mat4{
+		m.a1, m.b1, m.c1, 0,
+		m.a2, m.b2, m.c2, 0,
+		m.a3, m.b3, m.c3, 0,
+		0, 0, 0, 1
+	};
+}
+
+aiMatrix4x4 Utils::glmToAssimp(const mat4& m) {
+	const float *ms = (const float*)value_ptr(m);
+
+	return aiMatrix4x4{
+		ms[0], ms[4], ms[8], ms[12],
+		ms[1], ms[5], ms[9], ms[13],
+		ms[2], ms[6], ms[10], ms[14],
+		ms[3], ms[7], ms[11], ms[15]
+	};
+}
+
+aiMatrix3x3 Utils::glmToAssimpMat3(const mat4& m) {
+	const float *ms = (const float*)value_ptr(m);
+
+	return aiMatrix3x3{
+		ms[0], ms[4], ms[8],
+		ms[1], ms[5], ms[9],
+		ms[2], ms[6], ms[10]
+	};
+}
+
+
+vec3 Utils::assimpToGlm(const aiVector3D& v) {
+	return vec3{ v.x, v.y, v.z };
+}
+
+vec4 Utils::assimpToGlm(const aiColor4D& v) {
+	return vec4{ v.r, v.g, v.b, v.a };
+}
+
+string Utils::toString(const mat4& m) {
+	string res = "{";
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			res += to_string(m[j][i]) + " ";
+		}
+		if(i!= 3)
+			res += "\n ";
+	}
+	res += "}";
+	return res;
+}
+
+string Utils::toString(const vec3& v) {
+	return "{x: " + to_string(v.x) + " y:" + to_string(v.y) + " z: " + to_string(v.z) + "}";
+}
+
+std::array<float, 16> Utils::toArray(const mat4& m) {
+	array <float, 16> res;
+
+	const float *pSource = (const float*)value_ptr(m);
+	for (int i = 0; i < 16; ++i)
+		res[i] = pSource[i];
+
+	return res;
+}
+
+vec3 Utils::interpolate(const vec3& start, const vec3& end, float alpha) {
+	vec3 interp;
+
+	interp.x = end.x*alpha + start.x*(1 - alpha);
+	interp.y = end.y*alpha + start.y*(1 - alpha);
+	interp.z = end.z*alpha + start.z*(1 - alpha);
+
+	return interp;
+}
+
+mat4 Utils::interpolate(const mat4& start, const mat4& end, float alpha) {
+	aiMatrix3x3 sm = glmToAssimpMat3(start);
+	aiMatrix3x3 em = glmToAssimpMat3(end);
+	
+	aiQuaternion qs(sm);
+	aiQuaternion qe(em);
+	aiQuaternion res;
+
+	aiQuaternion::Interpolate(res, qs, qe, alpha);
+	res = res.Normalize();
+	return assimpMat3ToGlm(res.GetMatrix());
+}
+
+bool Utils::loadTexture(string path, Texture2d& outTexture) {
+	vector<uint8_t> buffer = loadFile( path);
+	loadFile(path);
+
+	unsigned long w, h;
+	int decodeFail = Utils::decodePNG(outTexture.getData(), w, h, buffer.empty() ? 0 : &buffer[0], (unsigned long)buffer.size());
+	if (decodeFail)
+		return false;
+
+	outTexture.setName(path);
+	outTexture.setWidth(static_cast<std::int16_t>(w));
+	outTexture.setHeight(static_cast<std::int16_t>(h));
+	return true;
+}
+
+vector<uint8_t> Utils::loadFile(const std::string& filename) {
+	std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+	
+	std::streamsize size = 0;
+	if (file.seekg(0, std::ios::end).good()) size = file.tellg();
+	if (file.seekg(0, std::ios::beg).good()) size -= file.tellg();
+
+	vector<uint8_t> content;
+	if (size > 0) {
+		content.resize((size_t)size);
+		file.read((char*)(&content[0]), size);
+	}
+	return content;
+}
+
+// picoPNG version 20101224
+// Copyright (c) 2005-2010 Lode Vandevenne
+int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image_width, unsigned long& image_height, const unsigned char* in_png, size_t in_size, bool convert_to_rgba32) {
 
 	static const unsigned long LENBASE[29] = { 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258 };
 	static const unsigned long LENEXTRA[29] = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0 };
@@ -66,16 +184,13 @@ int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image
 	struct Zlib //nested functions for zlib decompression
 	{
 		static unsigned long readBitFromStream(size_t& bitp, const unsigned char* bits) { unsigned long result = (bits[bitp >> 3] >> (bitp & 0x7)) & 1; bitp++; return result; }
-		static unsigned long readBitsFromStream(size_t& bitp, const unsigned char* bits, size_t nbits)
-		{
+		static unsigned long readBitsFromStream(size_t& bitp, const unsigned char* bits, size_t nbits) {
 			unsigned long result = 0;
 			for (size_t i = 0; i < nbits; i++) result += (readBitFromStream(bitp, bits)) << i;
 			return result;
 		}
-		struct HuffmanTree
-		{
-			int makeFromLengths(const std::vector<unsigned long>& bitlen, unsigned long maxbitlen)
-			{ //make tree given the lengths
+		struct HuffmanTree {
+			int makeFromLengths(const std::vector<unsigned long>& bitlen, unsigned long maxbitlen) { //make tree given the lengths
 				unsigned long numcodes = (unsigned long)(bitlen.size()), treepos = 0, nodefilled = 0;
 				std::vector<unsigned long> tree1d(numcodes), blcount(maxbitlen + 1, 0), nextcode(maxbitlen + 1, 0);
 				for (unsigned long bits = 0; bits < numcodes; bits++) blcount[bitlen[bits]]++; //count number of instances of each code length
@@ -96,8 +211,7 @@ int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image
 					}
 				return 0;
 			}
-			int decode(bool& decoded, unsigned long& result, size_t& treepos, unsigned long bit) const
-			{ //Decodes a symbol from the tree
+			int decode(bool& decoded, unsigned long& result, size_t& treepos, unsigned long bit) const { //Decodes a symbol from the tree
 				unsigned long numcodes = (unsigned long)tree2d.size() / 2;
 				if (treepos >= numcodes) return 11; //error: you appeared outside the codetree
 				result = tree2d[2 * treepos + bit];
@@ -107,16 +221,13 @@ int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image
 			}
 			std::vector<unsigned long> tree2d; //2D representation of a huffman tree: The one dimension is "0" or "1", the other contains all nodes and leaves of the tree.
 		};
-		struct Inflator
-		{
+		struct Inflator {
 			int error;
-			void inflate(std::vector<unsigned char>& out, const std::vector<unsigned char>& in, size_t inpos = 0)
-			{
+			void inflate(std::vector<unsigned char>& out, const std::vector<unsigned char>& in, size_t inpos = 0) {
 				size_t bp = 0, pos = 0; //bit pointer and byte pointer
 				error = 0;
 				unsigned long BFINAL = 0;
-				while (!BFINAL && !error)
-				{
+				while (!BFINAL && !error) {
 					if (bp >> 3 >= in.size()) { error = 52; return; } //error, bit pointer will jump past memory
 					BFINAL = readBitFromStream(bp, &in[inpos]);
 					unsigned long BTYPE = readBitFromStream(bp, &in[inpos]); BTYPE += 2 * readBitFromStream(bp, &in[inpos]);
@@ -135,18 +246,15 @@ int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image
 				treeD.makeFromLengths(bitlenD, 15);
 			}
 			HuffmanTree codetree, codetreeD, codelengthcodetree; //the code tree for Huffman codes, dist codes, and code length codes
-			unsigned long huffmanDecodeSymbol(const unsigned char* in, size_t& bp, const HuffmanTree& codetree, size_t inlength)
-			{ //decode a single symbol from given list of bits with given code tree. return value is the symbol
+			unsigned long huffmanDecodeSymbol(const unsigned char* in, size_t& bp, const HuffmanTree& codetree, size_t inlength) { //decode a single symbol from given list of bits with given code tree. return value is the symbol
 				bool decoded; unsigned long ct;
-				for (size_t treepos = 0;;)
-				{
+				for (size_t treepos = 0;;) {
 					if ((bp & 0x07) == 0 && (bp >> 3) > inlength) { error = 10; return 0; } //error: end reached without endcode
 					error = codetree.decode(decoded, ct, treepos, readBitFromStream(bp, in)); if (error) return 0; //stop, an error happened
 					if (decoded) return ct;
 				}
 			}
-			void getTreeInflateDynamic(HuffmanTree& tree, HuffmanTree& treeD, const unsigned char* in, size_t& bp, size_t inlength)
-			{ //get the tree of a deflated block with dynamic tree, the tree itself is also Huffman compressed with a known tree
+			void getTreeInflateDynamic(HuffmanTree& tree, HuffmanTree& treeD, const unsigned char* in, size_t& bp, size_t inlength) { //get the tree of a deflated block with dynamic tree, the tree itself is also Huffman compressed with a known tree
 				std::vector<unsigned long> bitlen(288, 0), bitlenD(32, 0);
 				if (bp >> 3 >= inlength - 2) { error = 49; return; } //the bit pointer is or will go past the memory
 				size_t HLIT = readBitsFromStream(bp, in, 5) + 257; //number of literal/length codes + 257
@@ -156,10 +264,9 @@ int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image
 				for (size_t i = 0; i < 19; i++) codelengthcode[CLCL[i]] = (i < HCLEN) ? readBitsFromStream(bp, in, 3) : 0;
 				error = codelengthcodetree.makeFromLengths(codelengthcode, 7); if (error) return;
 				size_t i = 0, replength;
-				while (i < HLIT + HDIST)
-				{
+				while (i < HLIT + HDIST) {
 					unsigned long code = huffmanDecodeSymbol(in, bp, codelengthcodetree, inlength); if (error) return;
-					if (code <= 15)  { if (i < HLIT) bitlen[i++] = code; else bitlenD[i++ - HLIT] = code; } //a length code
+					if (code <= 15) { if (i < HLIT) bitlen[i++] = code; else bitlenD[i++ - HLIT] = code; } //a length code
 					else if (code == 16) //repeat previous
 					{
 						if (bp >> 3 >= inlength) { error = 50; return; } //error, bit pointer jumps past memory
@@ -199,12 +306,10 @@ int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image
 				error = tree.makeFromLengths(bitlen, 15); if (error) return; //now we've finally got HLIT and HDIST, so generate the code trees, and the function is done
 				error = treeD.makeFromLengths(bitlenD, 15); if (error) return;
 			}
-			void inflateHuffmanBlock(std::vector<unsigned char>& out, const unsigned char* in, size_t& bp, size_t& pos, size_t inlength, unsigned long btype)
-			{
+			void inflateHuffmanBlock(std::vector<unsigned char>& out, const unsigned char* in, size_t& bp, size_t& pos, size_t inlength, unsigned long btype) {
 				if (btype == 1) { generateFixedTrees(codetree, codetreeD); }
 				else if (btype == 2) { getTreeInflateDynamic(codetree, codetreeD, in, bp, inlength); if (error) return; }
-				for (;;)
-				{
+				for (;;) {
 					unsigned long code = huffmanDecodeSymbol(in, bp, codetree, inlength); if (error) return;
 					if (code == 256) return; //end code
 					else if (code <= 255) //literal symbol
@@ -228,8 +333,7 @@ int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image
 					}
 				}
 			}
-			void inflateNoCompression(std::vector<unsigned char>& out, const unsigned char* in, size_t& bp, size_t& pos, size_t inlength)
-			{
+			void inflateNoCompression(std::vector<unsigned char>& out, const unsigned char* in, size_t& bp, size_t& pos, size_t inlength) {
 				while ((bp & 0x7) != 0) bp++; //go to first boundary of byte
 				size_t p = bp / 8;
 				if (p >= inlength - 4) { error = 52; return; } //error, bit pointer will jump past memory
@@ -255,15 +359,13 @@ int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image
 	};
 	struct PNG //nested functions for PNG decoding
 	{
-		struct Info
-		{
+		struct Info {
 			unsigned long width, height, colorType, bitDepth, compressionMethod, filterMethod, interlaceMethod, key_r, key_g, key_b;
 			bool key_defined; //is a transparent color key given?
 			std::vector<unsigned char> palette;
 		} info;
 		int error;
-		void decode(std::vector<unsigned char>& out, const unsigned char* in, size_t size, bool convert_to_rgba32)
-		{
+		void decode(std::vector<unsigned char>& out, const unsigned char* in, size_t size, bool convert_to_rgba32) {
 			error = 0;
 			if (size == 0 || in == 0) { error = 48; return; } //the given data is empty
 			readPngHeader(&in[0], size); if (error) return;
@@ -282,14 +384,13 @@ int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image
 					idat.insert(idat.end(), &in[pos + 4], &in[pos + 4 + chunkLength]);
 					pos += (4 + chunkLength);
 				}
-				else if (in[pos + 0] == 'I' && in[pos + 1] == 'E' && in[pos + 2] == 'N' && in[pos + 3] == 'D')  { pos += 4; IEND = true; }
+				else if (in[pos + 0] == 'I' && in[pos + 1] == 'E' && in[pos + 2] == 'N' && in[pos + 3] == 'D') { pos += 4; IEND = true; }
 				else if (in[pos + 0] == 'P' && in[pos + 1] == 'L' && in[pos + 2] == 'T' && in[pos + 3] == 'E') //palette chunk (PLTE)
 				{
 					pos += 4; //go after the 4 letters
 					info.palette.resize(4 * (chunkLength / 3));
 					if (info.palette.size() > (4 * 256)) { error = 38; return; } //error: palette too big
-					for (size_t i = 0; i < info.palette.size(); i += 4)
-					{
+					for (size_t i = 0; i < info.palette.size(); i += 4) {
 						for (size_t j = 0; j < 3; j++) info.palette[i + j] = in[pos++]; //RGB
 						info.palette[i + 3] = 255; //alpha
 					}
@@ -297,18 +398,15 @@ int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image
 				else if (in[pos + 0] == 't' && in[pos + 1] == 'R' && in[pos + 2] == 'N' && in[pos + 3] == 'S') //palette transparency chunk (tRNS)
 				{
 					pos += 4; //go after the 4 letters
-					if (info.colorType == 3)
-					{
+					if (info.colorType == 3) {
 						if (4 * chunkLength > info.palette.size()) { error = 39; return; } //error: more alpha values given than there are palette entries
 						for (size_t i = 0; i < chunkLength; i++) info.palette[4 * i + 3] = in[pos++];
 					}
-					else if (info.colorType == 0)
-					{
+					else if (info.colorType == 0) {
 						if (chunkLength != 2) { error = 40; return; } //error: this chunk must be 2 bytes for greyscale image
 						info.key_defined = 1; info.key_r = info.key_g = info.key_b = 256 * in[pos] + in[pos + 1]; pos += 2;
 					}
-					else if (info.colorType == 2)
-					{
+					else if (info.colorType == 2) {
 						if (chunkLength != 6) { error = 41; return; } //error: this chunk must be 6 bytes for RGB image
 						info.key_defined = 1;
 						info.key_r = 256 * in[pos] + in[pos + 1]; pos += 2;
@@ -336,8 +434,7 @@ int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image
 			{
 				size_t linestart = 0, linelength = (info.width * bpp + 7) / 8; //length in bytes of a scanline, excluding the filtertype byte
 				if (bpp >= 8) //byte per byte
-					for (unsigned long y = 0; y < info.height; y++)
-					{
+					for (unsigned long y = 0; y < info.height; y++) {
 					unsigned long filterType = scanlines[linestart];
 					const unsigned char* prevline = (y == 0) ? 0 : &out_[(y - 1) * info.width * bytewidth];
 					unFilterScanline(&out_[linestart - y], &scanlines[linestart + 1], prevline, bytewidth, filterType, linelength); if (error) return;
@@ -346,8 +443,7 @@ int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image
 				else //less than 8 bits per pixel, so fill it up bit per bit
 				{
 					std::vector<unsigned char> templine((info.width * bpp + 7) >> 3); //only used if bpp < 8
-					for (size_t y = 0, obp = 0; y < info.height; y++)
-					{
+					for (size_t y = 0, obp = 0; y < info.height; y++) {
 						unsigned long filterType = scanlines[linestart];
 						const unsigned char* prevline = (y == 0) ? 0 : &out_[(y - 1) * info.width * bytewidth];
 						unFilterScanline(&templine[0], &scanlines[linestart + 1], prevline, bytewidth, filterType, linelength); if (error) return;
@@ -385,10 +481,8 @@ int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image
 			info.interlaceMethod = in[28]; if (in[28] > 1) { error = 34; return; } //error: only interlace methods 0 and 1 exist in the specification
 			error = checkColorValidity(info.colorType, info.bitDepth);
 		}
-		void unFilterScanline(unsigned char* recon, const unsigned char* scanline, const unsigned char* precon, size_t bytewidth, unsigned long filterType, size_t length)
-		{
-			switch (filterType)
-			{
+		void unFilterScanline(unsigned char* recon, const unsigned char* scanline, const unsigned char* precon, size_t bytewidth, unsigned long filterType, size_t length) {
+			switch (filterType) {
 			case 0: for (size_t i = 0; i < length; i++) recon[i] = scanline[i]; break;
 			case 1:
 				for (size_t i = 0; i < bytewidth; i++) recon[i] = scanline[i];
@@ -399,25 +493,21 @@ int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image
 				else       for (size_t i = 0; i < length; i++) recon[i] = scanline[i];
 				break;
 			case 3:
-				if (precon)
-				{
+				if (precon) {
 					for (size_t i = 0; i < bytewidth; i++) recon[i] = scanline[i] + precon[i] / 2;
 					for (size_t i = bytewidth; i < length; i++) recon[i] = scanline[i] + ((recon[i - bytewidth] + precon[i]) / 2);
 				}
-				else
-				{
+				else {
 					for (size_t i = 0; i < bytewidth; i++) recon[i] = scanline[i];
 					for (size_t i = bytewidth; i < length; i++) recon[i] = scanline[i] + recon[i - bytewidth] / 2;
 				}
 				break;
 			case 4:
-				if (precon)
-				{
+				if (precon) {
 					for (size_t i = 0; i < bytewidth; i++) recon[i] = scanline[i] + paethPredictor(0, precon[i], 0);
 					for (size_t i = bytewidth; i < length; i++) recon[i] = scanline[i] + paethPredictor(recon[i - bytewidth], precon[i], precon[i - bytewidth]);
 				}
-				else
-				{
+				else {
 					for (size_t i = 0; i < bytewidth; i++) recon[i] = scanline[i];
 					for (size_t i = bytewidth; i < length; i++) recon[i] = scanline[i] + paethPredictor(recon[i - bytewidth], 0, 0);
 				}
@@ -425,18 +515,15 @@ int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image
 			default: error = 36; return; //error: unexisting filter type given
 			}
 		}
-		void adam7Pass(unsigned char* out, unsigned char* linen, unsigned char* lineo, const unsigned char* in, unsigned long w, size_t passleft, size_t passtop, size_t spacex, size_t spacey, size_t passw, size_t passh, unsigned long bpp)
-		{ //filter and reposition the pixels into the output when the image is Adam7 interlaced. This function can only do it after the full image is already decoded. The out buffer must have the correct allocated memory size already.
+		void adam7Pass(unsigned char* out, unsigned char* linen, unsigned char* lineo, const unsigned char* in, unsigned long w, size_t passleft, size_t passtop, size_t spacex, size_t spacey, size_t passw, size_t passh, unsigned long bpp) { //filter and reposition the pixels into the output when the image is Adam7 interlaced. This function can only do it after the full image is already decoded. The out buffer must have the correct allocated memory size already.
 			if (passw == 0) return;
 			size_t bytewidth = (bpp + 7) / 8, linelength = 1 + ((bpp * passw + 7) / 8);
-			for (unsigned long y = 0; y < passh; y++)
-			{
+			for (unsigned long y = 0; y < passh; y++) {
 				unsigned char filterType = in[y * linelength], *prevline = (y == 0) ? 0 : lineo;
 				unFilterScanline(linen, &in[y * linelength + 1], prevline, bytewidth, filterType, (w * bpp + 7) / 8); if (error) return;
 				if (bpp >= 8) for (size_t i = 0; i < passw; i++) for (size_t b = 0; b < bytewidth; b++) //b = current byte of this pixel
 					out[bytewidth * w * (passtop + spacey * y) + bytewidth * (passleft + spacex * i) + b] = linen[bytewidth * i + b];
-				else for (size_t i = 0; i < passw; i++)
-				{
+				else for (size_t i = 0; i < passw; i++) {
 					size_t obp = bpp * w * (passtop + spacey * y) + bpp * (passleft + spacex * i), bp = i * bpp;
 					for (size_t b = 0; b < bpp; b++) setBitOfReversedStream(obp, out, readBitFromReversedStream(bp, &linen[0]));
 				}
@@ -444,8 +531,7 @@ int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image
 			}
 		}
 		static unsigned long readBitFromReversedStream(size_t& bitp, const unsigned char* bits) { unsigned long result = (bits[bitp >> 3] >> (7 - (bitp & 0x7))) & 1; bitp++; return result; }
-		static unsigned long readBitsFromReversedStream(size_t& bitp, const unsigned char* bits, unsigned long nbits)
-		{
+		static unsigned long readBitsFromReversedStream(size_t& bitp, const unsigned char* bits, unsigned long nbits) {
 			unsigned long result = 0;
 			for (size_t i = nbits - 1; i < nbits; i--) result += ((readBitFromReversedStream(bitp, bits)) << i);
 			return result;
@@ -459,71 +545,60 @@ int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image
 			else if (colorType == 3) { if (!(bd == 1 || bd == 2 || bd == 4 || bd == 8)) return 37; else return 0; }
 			else return 31; //unexisting color type
 		}
-		unsigned long getBpp(const Info& info)
-		{
+		unsigned long getBpp(const Info& info) {
 			if (info.colorType == 2) return (3 * info.bitDepth);
 			else if (info.colorType >= 4) return (info.colorType - 2) * info.bitDepth;
 			else return info.bitDepth;
 		}
-		int convert(std::vector<unsigned char>& out, const unsigned char* in, Info& infoIn, unsigned long w, unsigned long h)
-		{ //converts from any color type to 32-bit. return value = LodePNG error code
+		int convert(std::vector<unsigned char>& out, const unsigned char* in, Info& infoIn, unsigned long w, unsigned long h) { //converts from any color type to 32-bit. return value = LodePNG error code
 			size_t numpixels = w * h, bp = 0;
 			out.resize(numpixels * 4);
 			unsigned char* out_ = out.empty() ? 0 : &out[0]; //faster if compiled without optimization
 			if (infoIn.bitDepth == 8 && infoIn.colorType == 0) //greyscale
-				for (size_t i = 0; i < numpixels; i++)
-				{
+				for (size_t i = 0; i < numpixels; i++) {
 				out_[4 * i + 0] = out_[4 * i + 1] = out_[4 * i + 2] = in[i];
 				out_[4 * i + 3] = (infoIn.key_defined && in[i] == infoIn.key_r) ? 0 : 255;
 				}
 			else if (infoIn.bitDepth == 8 && infoIn.colorType == 2) //RGB color
-				for (size_t i = 0; i < numpixels; i++)
-				{
+				for (size_t i = 0; i < numpixels; i++) {
 				for (size_t c = 0; c < 3; c++) out_[4 * i + c] = in[3 * i + c];
 				out_[4 * i + 3] = (infoIn.key_defined == 1 && in[3 * i + 0] == infoIn.key_r && in[3 * i + 1] == infoIn.key_g && in[3 * i + 2] == infoIn.key_b) ? 0 : 255;
 				}
 			else if (infoIn.bitDepth == 8 && infoIn.colorType == 3) //indexed color (palette)
-				for (size_t i = 0; i < numpixels; i++)
-				{
+				for (size_t i = 0; i < numpixels; i++) {
 				if (4U * in[i] >= infoIn.palette.size()) return 46;
 				for (size_t c = 0; c < 4; c++) out_[4 * i + c] = infoIn.palette[4 * in[i] + c]; //get rgb colors from the palette
 				}
 			else if (infoIn.bitDepth == 8 && infoIn.colorType == 4) //greyscale with alpha
-				for (size_t i = 0; i < numpixels; i++)
-				{
+				for (size_t i = 0; i < numpixels; i++) {
 				out_[4 * i + 0] = out_[4 * i + 1] = out_[4 * i + 2] = in[2 * i + 0];
 				out_[4 * i + 3] = in[2 * i + 1];
 				}
 			else if (infoIn.bitDepth == 8 && infoIn.colorType == 6) for (size_t i = 0; i < numpixels; i++) for (size_t c = 0; c < 4; c++) out_[4 * i + c] = in[4 * i + c]; //RGB with alpha
 			else if (infoIn.bitDepth == 16 && infoIn.colorType == 0) //greyscale
-				for (size_t i = 0; i < numpixels; i++)
-				{
+				for (size_t i = 0; i < numpixels; i++) {
 				out_[4 * i + 0] = out_[4 * i + 1] = out_[4 * i + 2] = in[2 * i];
 				out_[4 * i + 3] = (infoIn.key_defined && 256U * in[i] + in[i + 1] == infoIn.key_r) ? 0 : 255;
 				}
 			else if (infoIn.bitDepth == 16 && infoIn.colorType == 2) //RGB color
-				for (size_t i = 0; i < numpixels; i++)
-				{
+				for (size_t i = 0; i < numpixels; i++) {
 				for (size_t c = 0; c < 3; c++) out_[4 * i + c] = in[6 * i + 2 * c];
 				out_[4 * i + 3] = (infoIn.key_defined && 256U * in[6 * i + 0] + in[6 * i + 1] == infoIn.key_r && 256U * in[6 * i + 2] + in[6 * i + 3] == infoIn.key_g && 256U * in[6 * i + 4] + in[6 * i + 5] == infoIn.key_b) ? 0 : 255;
 				}
 			else if (infoIn.bitDepth == 16 && infoIn.colorType == 4) //greyscale with alpha
-				for (size_t i = 0; i < numpixels; i++)
-				{
+				for (size_t i = 0; i < numpixels; i++) {
 				out_[4 * i + 0] = out_[4 * i + 1] = out_[4 * i + 2] = in[4 * i]; //most significant byte
 				out_[4 * i + 3] = in[4 * i + 2];
 				}
 			else if (infoIn.bitDepth == 16 && infoIn.colorType == 6) for (size_t i = 0; i < numpixels; i++) for (size_t c = 0; c < 4; c++) out_[4 * i + c] = in[8 * i + 2 * c]; //RGB with alpha
 			else if (infoIn.bitDepth < 8 && infoIn.colorType == 0) //greyscale
-				for (size_t i = 0; i < numpixels; i++)
-				{
+				for (size_t i = 0; i < numpixels; i++) {
 				unsigned long value = (readBitsFromReversedStream(bp, in, infoIn.bitDepth) * 255) / ((1 << infoIn.bitDepth) - 1); //scale value from 0 to 255
 				out_[4 * i + 0] = out_[4 * i + 1] = out_[4 * i + 2] = (unsigned char)(value);
 				out_[4 * i + 3] = (infoIn.key_defined && value && ((1U << infoIn.bitDepth) - 1U) == infoIn.key_r && ((1U << infoIn.bitDepth) - 1U)) ? 0 : 255;
 				}
 			else if (infoIn.bitDepth < 8 && infoIn.colorType == 3) //palette
-				for (size_t i = 0; i < numpixels; i++)
-				{
+				for (size_t i = 0; i < numpixels; i++) {
 				unsigned long value = readBitsFromReversedStream(bp, in, infoIn.bitDepth);
 				if (4 * value >= infoIn.palette.size()) return 47;
 				for (size_t c = 0; c < 4; c++) out_[4 * i + c] = infoIn.palette[4 * value + c]; //get rgb colors from the palette
@@ -539,137 +614,6 @@ int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image
 	PNG decoder; decoder.decode(out_image, in_png, in_size, convert_to_rgba32);
 	image_width = decoder.info.width; image_height = decoder.info.height;
 	return decoder.error;
-}
-
-void Utils::loadFile(std::vector<unsigned char>& buffer, const std::string& filename) //designed for loading files from hard disk in an std::vector
-{
-	std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-
-	//get filesize
-	std::streamsize size = 0;
-	if (file.seekg(0, std::ios::end).good()) size = file.tellg();
-	if (file.seekg(0, std::ios::beg).good()) size -= file.tellg();
-
-	//read contents of the file into the vector
-	if (size > 0)
-	{
-		buffer.resize((size_t)size);
-		file.read((char*)(&buffer[0]), size);
-	}
-	else buffer.clear();
-}
-
-bool Utils::loadTexture(string path, Texture2d& outTexture){
-	vector<unsigned char> buffer;
-	loadFile(buffer, path);
-	
-	unsigned long w, h;
-	int decodeFail = Utils::decodePNG(outTexture.getData(), w, h, buffer.empty() ? 0 : &buffer[0], (unsigned long)buffer.size());
-	if (decodeFail)
-		return false;
-
-	outTexture.setName(path);
-	outTexture.setWidth(static_cast<std::int16_t>(w));
-	outTexture.setHeight(static_cast<std::int16_t>(h));
-	return true;
-}
-
-glm::mat4 Utils::assimpToGlm(const aiMatrix4x4& m) {
-	return glm::mat4{
-		m.a1, m.b1, m.c1, m.d1,
-		m.a2, m.b2, m.c2, m.d2,
-		m.a3, m.b3, m.c3, m.d3,
-		m.a4, m.b4, m.c4, m.d4
-	};
-}
-
-glm::mat4 Utils::assimpMat3ToGlm(const aiMatrix3x3& m) {
-	return glm::mat4{
-		m.a1, m.b1, m.c1, 0,
-		m.a2, m.b2, m.c2, 0,
-		m.a3, m.b3, m.c3, 0,
-		0, 0, 0, 1
-	};
-}
-
-aiMatrix4x4 Utils::glmToAssimp(const glm::mat4& m) {
-	const float *ms = (const float*)glm::value_ptr(m);
-
-	return aiMatrix4x4{
-		ms[0], ms[4], ms[8], ms[12],
-		ms[1], ms[5], ms[9], ms[13],
-		ms[2], ms[6], ms[10], ms[14],
-		ms[3], ms[7], ms[11], ms[15]
-	};
-}
-
-aiMatrix3x3 Utils::glmToAssimpMat3(const glm::mat4& m) {
-	const float *ms = (const float*)glm::value_ptr(m);
-
-	return aiMatrix3x3{
-		ms[0], ms[4], ms[8],
-		ms[1], ms[5], ms[9],
-		ms[2], ms[6], ms[10]
-	};
-}
-
-
-glm::vec3 Utils::assimpToGlm(const aiVector3D& v) {
-	return glm::vec3{ v.x, v.y, v.z };
-}
-
-glm::vec4 Utils::assimpToGlm(const aiColor4D& v) {
-	return glm::vec4{ v.r, v.g, v.b, v.a };
-}
-
-string Utils::toString(const glm::mat4& m) {
-	string res = "{";
-	for (int i = 0; i < 4; ++i) {
-		for (int j = 0; j < 4; ++j) {
-			res += to_string(m[j][i]) + " ";
-		}
-		if(i!= 3)
-			res += "\n ";
-	}
-	res += "}";
-	return res;
-}
-
-string Utils::toString(const glm::vec3& v) {
-	return "{x: " + to_string(v.x) + " y:" + to_string(v.y) + " z: " + to_string(v.z) + "}";
-}
-
-std::array<float, 16> Utils::toArray(const glm::mat4& m) {
-	array <float, 16> res;
-
-	const float *pSource = (const float*)glm::value_ptr(m);
-	for (int i = 0; i < 16; ++i)
-		res[i] = pSource[i];
-
-	return res;
-}
-
-glm::vec3 Utils::interpolate(const glm::vec3& start, const glm::vec3& end, float alpha) {
-	glm::vec3 interp;
-
-	interp.x = end.x*alpha + start.x*(1 - alpha);
-	interp.y = end.y*alpha + start.y*(1 - alpha);
-	interp.z = end.z*alpha + start.z*(1 - alpha);
-
-	return interp;
-}
-
-glm::mat4 Utils::interpolate(const glm::mat4& start, const glm::mat4& end, float alpha) {
-	aiMatrix3x3 sm = glmToAssimpMat3(start);
-	aiMatrix3x3 em = glmToAssimpMat3(end);
-	
-	aiQuaternion qs(sm);
-	aiQuaternion qe(em);
-	aiQuaternion res;
-
-	aiQuaternion::Interpolate(res, qs, qe, alpha);
-	res = res.Normalize();
-	return assimpMat3ToGlm(res.GetMatrix());
 }
 
 

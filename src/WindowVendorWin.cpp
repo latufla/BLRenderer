@@ -1,9 +1,8 @@
 #include "stdafx.h"
 
-#ifdef WINDOWS_PLATFORM
 #include "WindowVendor.h"
 
-using namespace std;
+using std::vector;
 
 LRESULT CALLBACK processMessages(HWND, UINT, WPARAM, LPARAM);
 
@@ -102,6 +101,4 @@ LRESULT CALLBACK processMessages(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPar
 	}
 	return 0;
 }
-#endif
-
 

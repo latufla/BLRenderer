@@ -13,6 +13,9 @@ public:
 	Utils() = delete;
 	~Utils() = delete;
 
+	static std::string defaultVertexShader;
+	static std::string defaultFragmentShader;
+
 	static bool loadTexture(std::string, Texture2d&);
 
 	static glm::mat4 Utils::assimpToGlm(const aiMatrix4x4&);
@@ -33,7 +36,7 @@ public:
 	static glm::mat4 interpolate(const glm::mat4&, const glm::mat4&, float);
 
 private:
-	static void loadFile(std::vector<unsigned char>&, const std::string&);
+	static std::vector<uint8_t> loadFile(const std::string&);
 	static int decodePNG(std::vector<unsigned char>&, unsigned long&, unsigned long&, const unsigned char*, size_t, bool = true);
 
 };

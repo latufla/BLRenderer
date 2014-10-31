@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "GrEngineConnector.h"
 
-#include "ShaderHelper.h"
 #include "Utils.h"
 
 #include <GLES2/gl2.h>
@@ -66,7 +65,7 @@ int32_t GrEngineConnector::init(uint32_t winX, uint32_t winY, uint32_t winW, uin
 	if (eglFail)
 		return eglFail;
 
-	int32_t shadersFail = initShaders(ShaderHelper::animVertexShader, ShaderHelper::texFragmentShader);
+	int32_t shadersFail = initShaders(Utils::defaultVertexShader, Utils::defaultFragmentShader);
 	if (shadersFail)
 		return shadersFail;
 	

@@ -8,7 +8,7 @@
 #include "src\GrEngineConnector.h"
 #include "Model3dInfo.h"
 
-using namespace std;
+using std::vector;
 
 const std::string CUBE = "Cube";
 const std::string GUN = "Gun";
@@ -41,7 +41,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
 
 	renderer.playAnimation(42, "idle");
 
-	const float fps = 1.0 / 60;
+	const float fps = 1.0f / 60;
 	const uint32_t step = (uint32_t)(fps * 1000);
 	bool done = false;
 	while (!done) {
