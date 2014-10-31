@@ -24,15 +24,15 @@ void BoneTransformer::doTransform(BNode<BoneNodeData>& boneTree, Animation3d& an
 	BoneNodeData& bNData = boneTree.getData();
 	mat4 nodeTransform = bNData.getTransform();
 
-	BoneAnimation* bAnim = animation.getBoneAnimation(boneId);
-	if (bAnim) {
-		vec3 scalingV = calcTimeInterpolation<vec3, Vec3Key>(animationTime, bAnim->scalings);
+	if (animation.hasBoneAnimation(boneId)) {
+		BoneAnimation& bAnim = animation.getBoneAnimation(boneId);
+		vec3 scalingV = calcTimeInterpolation<vec3, Vec3Key>(animationTime, bAnim.scalings);
 		mat4 scalingM;
 		scalingM = scale(scalingM, scalingV);
 
-		mat4 rotationM = calcTimeInterpolation<mat4, Mat4Key>(animationTime, bAnim->rotations);
+		mat4 rotationM = calcTimeInterpolation<mat4, Mat4Key>(animationTime, bAnim.rotations);
 
-		vec3 translationV = calcTimeInterpolation<vec3, Vec3Key>(animationTime, bAnim->positions);
+		vec3 translationV = calcTimeInterpolation<vec3, Vec3Key>(animationTime, bAnim.positions);
 		mat4 translationM;
 		translationM = translate(translationM, translationV);
 

@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <glm.hpp>
+#include <unordered_map>
 
 struct Vec3Key {
 	double time;
@@ -25,7 +26,7 @@ struct BoneAnimation {
 class Animation3d {
 public:
 	Animation3d(); // = delete;
-	Animation3d(std::string, double, double, std::vector<BoneAnimation>&);
+	Animation3d(std::string, double, double, std::unordered_map<uint32_t, BoneAnimation>&);
 
 	~Animation3d();
 
@@ -33,7 +34,8 @@ public:
 
 	operator std::string() const;
 
-	BoneAnimation* getBoneAnimation(uint32_t); // TODO: fix this dirt
+	bool hasBoneAnimation(uint32_t);
+	BoneAnimation& getBoneAnimation(uint32_t);
 
 	std::string getName() const { return name; }
 	double getDuration() const { return duration; }
@@ -43,6 +45,6 @@ private:
 	double duration;
 	double ticksPerSecond;
 
-	std::vector<BoneAnimation> boneAnimations;
+	std::unordered_map<uint32_t, BoneAnimation> idToBoneAnimation;
 };
 

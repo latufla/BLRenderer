@@ -2,11 +2,13 @@
 #include "Model3dLoader.h"
 #include "bone\BoneNodeData.h"
 #include "Utils.h"
+#include <unordered_map>
 
 using std::string;
 using std::to_string;
 using std::map;
 using std::vector;
+using std::unordered_map;
 
 const uint8_t Model3dLoader::TRIANGLE_FACE_TYPE = 3;
 const std::string Model3dLoader::BONES_ROOT_NODE = "Armature";
@@ -204,7 +206,7 @@ Animation3d Model3dLoader::collectAnimation(const aiScene* scene, BNode<BoneNode
 		throw std::exception("Model3dLoader::collectAnimation: empty animation");
 
 	// TODO: drop not bones, wonder am i right
-	vector<BoneAnimation> boneAnimations;
+	unordered_map<uint32_t, BoneAnimation> boneAnimations;
 	for (uint32_t i = 0; i < nChannels; ++i) {
 		aiNodeAnim* animNode = anim->mChannels[i];
 		string nName = animNode->mNodeName.C_Str();
@@ -237,8 +239,10 @@ Animation3d Model3dLoader::collectAnimation(const aiScene* scene, BNode<BoneNode
 			Vec3Key myScaleKey{ scaleKey.mTime, Utils::assimpToGlm(scaleKey.mValue) };
 			scalings.push_back(myScaleKey);
 		}
-		BoneAnimation myBoneAnimation{ myBone->getId(), myBone->getName(), positions, rotations, scalings };
-		boneAnimations.push_back(myBoneAnimation);
+
+		uint32_t boneId = myBone->getId();
+		BoneAnimation myBoneAnimation{ boneId, myBone->getName(), positions, rotations, scalings };
+		boneAnimations[boneId] = myBoneAnimation;
 	}
 
 	return{ name, anim->mDuration, anim->mTicksPerSecond, boneAnimations };
