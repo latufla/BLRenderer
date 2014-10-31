@@ -1,5 +1,4 @@
 #pragma once
-#include "Model3dInfo.h"
 #include <glm.hpp>
 
 class View {

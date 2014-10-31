@@ -6,6 +6,7 @@
 
 #include "ObjectBase.h"
 #include "src\GrEngineConnector.h"
+#include "Model3dInfo.h"
 
 using namespace std;
 
@@ -30,7 +31,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
 	
 	const Model3dInfo& info(CUBE);
 	renderer.loadModel(info.getModelDir(), info.getModelName());
-	renderer.attachAnimation(info.getModelPath(), "models/Cube/CubeIdle.dae", "idle");
+	renderer.attachAnimation(info.getModelPath(), "models/Cube/CubeIdle.dae", "idle");	
 
 	for (auto& s : objects) {
 		uint32_t id = s.getId();
