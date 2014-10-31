@@ -2,15 +2,15 @@
 #include <vector>
 #include "Mesh3d.h"
 #include "Texture2d.h"
-#include "tree\TNode.h"
+#include "bone\BNode.h"
 #include "Animation3d.h"
-#include "tree\BoneNodeData.h"
+#include "bone\BoneNodeData.h"
 #include <unordered_map>
 #include "Material3d.h"
 
 class Model3d {
 public:
-	Model3d(std::string, const std::vector<Mesh3d>&, const std::vector<Material3d>&, const TNode<BoneNodeData>&, const Animation3d&);
+	Model3d(std::string, const std::vector<Mesh3d>&, const std::vector<Material3d>&, const BNode<BoneNodeData>&, const Animation3d&);
 
 	std::string getName() const { return name; }
 	std::vector<Mesh3d>& getMeshes() { return meshes; }
@@ -19,7 +19,7 @@ public:
 	Animation3d& getAnimation(std::string = Animation3d::DEFAULT_ANIMATION_NAME);
 	bool addAnimation(Animation3d&);
 
-	TNode<BoneNodeData>& getBoneTree(){ return boneTree; }
+	BNode<BoneNodeData>& getBoneTree(){ return boneTree; }
 
 	operator std::string() const;
 
@@ -34,7 +34,7 @@ private:
 	std::vector<Mesh3d> meshes;
 	std::vector<Material3d> materials;
 
-	TNode<BoneNodeData> boneTree;
+	BNode<BoneNodeData> boneTree;
 
 	std::unordered_map<std::string, Animation3d> nameToAnimation;
 

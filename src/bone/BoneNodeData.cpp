@@ -3,8 +3,9 @@
 
 using std::string;
 using std::to_string;
+using glm::mat4;
 
-BoneNodeData::BoneNodeData(const glm::mat4& transform) {
+BoneNodeData::BoneNodeData(const mat4& transform) {
 	this->transform = transform;
 }
 

@@ -6,7 +6,7 @@ using std::vector;
 using std::string;
 using std::exception;
 
-Model3d::Model3d(string name, const vector<Mesh3d>& meshes, const vector<Material3d>& materials, const TNode<BoneNodeData>& boneTree, const Animation3d& defaultAnimation) {
+Model3d::Model3d(string name, const vector<Mesh3d>& meshes, const vector<Material3d>& materials, const BNode<BoneNodeData>& boneTree, const Animation3d& defaultAnimation) {
 	this->name = name;
 	this->meshes = meshes;
 	this->materials = materials;

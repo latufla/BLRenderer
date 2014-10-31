@@ -8,7 +8,7 @@
 #include <assimp/postprocess.h>
 
 #include "Model3d.h"
-#include "tree/BoneNodeData.h"
+#include "bone/BoneNodeData.h"
 #include "Material3d.h"
 
 class Model3dLoader {
@@ -33,10 +33,10 @@ private:
 	std::vector<Material3d> collectMaterials(const aiScene*, std::string);
 
 	static const std::string BONES_ROOT_NODE;
-	TNode<BoneNodeData> collectBones(const aiScene*, std::string = BONES_ROOT_NODE);
-	TNode<BoneNodeData> parseBones(const aiNode*);
+	BNode<BoneNodeData> collectBones(const aiScene*, std::string = BONES_ROOT_NODE);
+	BNode<BoneNodeData> parseBones(const aiNode*);
 
-	void collectBoneWeightsAndOffsets(const aiScene*, TNode<BoneNodeData>&, std::vector<Mesh3d>&);
+	void collectBoneWeightsAndOffsets(const aiScene*, BNode<BoneNodeData>&, std::vector<Mesh3d>&);
 
-	Animation3d collectAnimation(const aiScene*, TNode<BoneNodeData>&, std::string name);
+	Animation3d collectAnimation(const aiScene*, BNode<BoneNodeData>&, std::string name);
 };

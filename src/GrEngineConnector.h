@@ -10,8 +10,8 @@
 #include "Model3dLoader.h"
 #include "View.h"
 #include <array>
-#include "tree\TNode.h"
-#include "tree\BoneTransformer.h"
+#include "bone\BNode.h"
+#include "bone\BoneTransformer.h"
 
 class GrEngineConnector
 {

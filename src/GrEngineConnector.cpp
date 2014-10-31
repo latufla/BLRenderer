@@ -8,7 +8,7 @@
 #include "Model3d.h"
 #include "Model3dLoader.h"
 #include "Texture2d.h"
-#include "tree/BoneNodeData.h"
+#include "bone/BoneNodeData.h"
 
 #include <gtc\matrix_transform.hpp>
 #include <utility>

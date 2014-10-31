@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Model3dLoader.h"
-#include "tree\BoneNodeData.h"
+#include "bone\BoneNodeData.h"
 #include "Utils.h"
 
 using std::string;
@@ -27,7 +27,7 @@ bool Model3dLoader::loadModel(string dir, string name) {
 	if (materials.empty())
 		throw std::exception("Model3dLoader::loadModel no materials");
 
-	TNode<BoneNodeData> bones = collectBones(modelAi);
+	BNode<BoneNodeData> bones = collectBones(modelAi);
 	collectBoneWeightsAndOffsets(modelAi, bones, meshes);
 
 	Animation3d defaultAnimation = collectAnimation(modelAi, bones, Animation3d::DEFAULT_ANIMATION_NAME);
@@ -164,24 +164,23 @@ std::vector<Material3d> Model3dLoader::collectMaterials(const aiScene* modelAi, 
 }
 
 
-TNode<BoneNodeData> Model3dLoader::collectBones(const aiScene* scene, string bonesRoot) {
+BNode<BoneNodeData> Model3dLoader::collectBones(const aiScene* scene, string bonesRoot) {
 	aiNode* root = scene->mRootNode;
 	aiNode* armature = root->FindNode(bonesRoot.c_str());
 	if (!armature || !armature->mNumChildren)
 		throw std::exception("Model3dLoader::collectBones: no bones");
 
 	aiNode* rootBone = armature->mChildren[0];	
-	TNode<BoneNodeData> boneTree = parseBones(rootBone);
-
-	uint32_t firstId = 0; 
-	TNode<BoneNodeData>::ArrangeIds(boneTree, firstId);
+	BNode<BoneNodeData> boneTree = parseBones(rootBone);
+	
+	BNode<BoneNodeData>::ArrangeIds(boneTree);
 	
 	return boneTree;
 }
 
-TNode<BoneNodeData> Model3dLoader::parseBones(const aiNode* node) {
+BNode<BoneNodeData> Model3dLoader::parseBones(const aiNode* node) {
 	glm::mat4 transform = Utils::assimpToGlm(node->mTransformation);
-	TNode<BoneNodeData> bones{ 0, node->mName.C_Str(), BoneNodeData(transform) };
+	BNode<BoneNodeData> bones{ 0, node->mName.C_Str(), BoneNodeData(transform) };
 	
 	uint32_t nNodes = node->mNumChildren;
 	if (nNodes == 0)
@@ -193,7 +192,7 @@ TNode<BoneNodeData> Model3dLoader::parseBones(const aiNode* node) {
 	return bones;
 }
 
-Animation3d Model3dLoader::collectAnimation(const aiScene* scene, TNode<BoneNodeData>& allBones, string name) {
+Animation3d Model3dLoader::collectAnimation(const aiScene* scene, BNode<BoneNodeData>& allBones, string name) {
 	uint32_t nAnims = scene->mNumAnimations;
 	if (!nAnims)
 		throw std::exception("Model3dLoader::collectAnimation: no animation");
@@ -210,8 +209,7 @@ Animation3d Model3dLoader::collectAnimation(const aiScene* scene, TNode<BoneNode
 		aiNodeAnim* animNode = anim->mChannels[i];
 		string nName = animNode->mNodeName.C_Str();
 		
-		bool found = false;
-		TNode<BoneNodeData>* myBone = TNode<BoneNodeData>::FindNode(allBones, nName, found);
+		BNode<BoneNodeData>* myBone = BNode<BoneNodeData>::FindNode(allBones, nName);
 		if (!myBone)
 			continue;
 
@@ -246,7 +244,7 @@ Animation3d Model3dLoader::collectAnimation(const aiScene* scene, TNode<BoneNode
 	return{ name, anim->mDuration, anim->mTicksPerSecond, boneAnimations };
 }
 
-void Model3dLoader::collectBoneWeightsAndOffsets(const aiScene* scene, TNode<BoneNodeData>& boneTree, vector<Mesh3d>& meshes) {
+void Model3dLoader::collectBoneWeightsAndOffsets(const aiScene* scene, BNode<BoneNodeData>& boneTree, vector<Mesh3d>& meshes) {
 	std::map<string, aiMesh*> nameToMeshAi;
 	uint32_t nMeshAi = scene->mNumMeshes;
 	for (uint32_t i = 0; i < nMeshAi; ++i) {
@@ -263,8 +261,7 @@ void Model3dLoader::collectBoneWeightsAndOffsets(const aiScene* scene, TNode<Bon
 		uint32_t nBonesAi = meshAi->mNumBones;
 		for (uint32_t j = 0; j < nBonesAi; ++j) {
 			aiBone* boneAi = meshAi->mBones[j];
-			bool found = false;
-			TNode<BoneNodeData>* myBone = TNode<BoneNodeData>::FindNode(boneTree, boneAi->mName.C_Str(), found);
+			BNode<BoneNodeData>* myBone = BNode<BoneNodeData>::FindNode(boneTree, boneAi->mName.C_Str());
 			uint32_t myBoneId = myBone->getId();
 			myMesh.setBoneOffset(myBoneId, Utils::assimpToGlm(boneAi->mOffsetMatrix));
 			
