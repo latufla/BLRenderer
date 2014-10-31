@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <glm.hpp>
 
 
@@ -35,7 +35,7 @@ public:
 	void setVertexBoneInfo(uint32_t, uint32_t, float);
 	void setBoneOffset(uint32_t, glm::mat4);
 
-	std::map<uint32_t, glm::mat4>& getBoneIdToOffset() { return boneIdToOffset; }
+	std::unordered_map<uint32_t, glm::mat4>& getBoneIdToOffset() { return boneIdToOffset; }
 
 	static const uint8_t VERTEX3D_POSITION = 3;
 	static const uint8_t VERTEX3D_TEXTURE = 2;
@@ -54,6 +54,6 @@ private:
 
 	uint32_t materialId;
 
-	std::map<uint32_t, glm::mat4> boneIdToOffset;
+	std::unordered_map<uint32_t, glm::mat4> boneIdToOffset;
 };
 

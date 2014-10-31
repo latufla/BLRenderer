@@ -39,7 +39,7 @@ Mesh3d::operator string() const {
 }
 
 void Mesh3d::setVertexBoneInfo(uint32_t vId, uint32_t boneId, float weight) {
-	Vertex3d& v = vertices[vId];
+	Vertex3d& v = vertices.at(vId);
 	for (uint32_t i = 0; i < 4; ++i) {
 		if (v.weigths[i] == 0.0) { // TODO: wonder can we compare doubles
 			v.boneIds[i] = boneId;
@@ -50,7 +50,7 @@ void Mesh3d::setVertexBoneInfo(uint32_t vId, uint32_t boneId, float weight) {
 }
 
 void Mesh3d::setBoneOffset(uint32_t id, glm::mat4 offset) {
-	boneIdToOffset[id] = offset;
+	boneIdToOffset.emplace(id, offset);
 }
 
 

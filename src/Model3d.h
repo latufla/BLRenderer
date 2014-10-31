@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include "Mesh3d.h"
-#include "Texture2d.h"
 #include "bone\BNode.h"
 #include "Animation3d.h"
 #include "bone\BoneNodeData.h"
