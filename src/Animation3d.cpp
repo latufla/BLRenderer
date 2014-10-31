@@ -64,12 +64,12 @@ Animation3d::operator string() const {
 	return res;
 }
 
-bool Animation3d::hasBoneAnimation(uint32_t boneId) {
-	return idToBoneAnimation.find(boneId) != idToBoneAnimation.cend();
-}
+BoneAnimation* Animation3d::getBoneAnimation(uint32_t boneId) {
+	auto it = idToBoneAnimation.find(boneId);
+	if (it != cend(idToBoneAnimation))
+		return &it->second;
 
-BoneAnimation& Animation3d::getBoneAnimation(uint32_t boneId) {
-	return idToBoneAnimation.find(boneId)->second;
+	return nullptr;
 }
 
 

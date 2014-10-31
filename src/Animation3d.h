@@ -34,8 +34,7 @@ public:
 
 	operator std::string() const;
 
-	bool hasBoneAnimation(uint32_t);
-	BoneAnimation& getBoneAnimation(uint32_t);
+	BoneAnimation* getBoneAnimation(uint32_t);
 
 	std::string getName() const { return name; }
 	double getDuration() const { return duration; }
