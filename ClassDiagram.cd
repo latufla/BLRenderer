@@ -1,0 +1,193 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Material3d" Collapsed="true">
+    <Position X="6.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAABAAAABAAAAgAIABQAAAoAAAAAAgAAAAAAAABAAAA=</HashCode>
+      <FileName>src\Material3d.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BoneTransformer" Collapsed="true">
+    <Position X="2.75" Y="3.75" Width="1.5" />
+    <NestedTypes>
+      <Struct Name="BoneTransformer::BoneData" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>src\bone\BoneTransformer.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+      <Typedef Name="BoneTransformer::BonesDataMap" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>src\bone\BoneTransformer.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Typedef>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAABAAAAAAAEAAAAAAAAAEAAAAAAAAAAAQAAA=</HashCode>
+      <FileName>src\bone\BoneTransformer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Animation3d" Collapsed="true">
+    <Position X="6.25" Y="2.75" Width="1.5" />
+    <Members>
+      <Field Name="DEFAULT_ANIMATION_NAME" Hidden="true" />
+      <Field Name="duration" Hidden="true" />
+      <Field Name="idToBoneAnimation" Hidden="true" />
+      <Field Name="name" Hidden="true" />
+      <Field Name="ticksPerSecond" Hidden="true" />
+    </Members>
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <NestedTypes>
+      <Struct Name="Animation3d::BoneAnimation" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>src\Animation3d.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+      <Struct Name="Animation3d::Mat4Key" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>src\Animation3d.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+      <Struct Name="Animation3d::Vec3Key" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>src\Animation3d.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AABAAIIAAAEAIIAAAAAgAEAAAAAEAAAAAAEEAAAAAAA=</HashCode>
+      <FileName>src\Animation3d.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BoneNodeData" Collapsed="true">
+    <Position X="2.75" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAEAAAAAgAAAAAQAEAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>src\bone\BoneNodeData.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GrEngineConnector">
+    <Position X="0.5" Y="0.75" Width="1.5" />
+    <Members>
+      <Field Name="boneTransformer" Hidden="true" />
+      <Field Name="camera" Hidden="true" />
+      <Method Name="createShader" Hidden="true" />
+      <Field Name="defaultProgram" Hidden="true" />
+      <Method Name="deleteModelFromGpu" Hidden="true" />
+      <Field Name="eglContext" Hidden="true" />
+      <Method Name="GrEngineConnector" Hidden="true" />
+      <Method Name="hasObjectWithModel" Hidden="true" />
+      <Field Name="idToObject" Hidden="true" />
+      <Method Name="initEgl" Hidden="true" />
+      <Method Name="initShaders" Hidden="true" />
+      <Field Name="loader" Hidden="true" />
+      <Method Name="loadModelToGpu" Hidden="true" />
+      <Method Name="loadTextureToGpu" Hidden="true" />
+      <Field Name="meshToBuffer" Hidden="true" />
+      <Method Name="operator=" Hidden="true" />
+      <Method Name="prepareAnimationStep" Hidden="true" />
+      <Field Name="timeMSec" Hidden="true" />
+      <Field Name="window" Hidden="true" />
+    </Members>
+    <NestedTypes>
+      <Struct Name="GrEngineConnector::Camera" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>src\GrEngineConnector.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+      <Struct Name="GrEngineConnector::GpuBufferData" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>src\GrEngineConnector.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+      <Struct Name="GrEngineConnector::EglContext" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>src\GrEngineConnector.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAgBAAAAAgECAAoBgQAEDCAAAABEBEYMIAAwACCEAAg=</HashCode>
+      <FileName>src\GrEngineConnector.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Texture2d" Collapsed="true">
+    <Position X="6.25" Y="8.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAQBAAAAAAAAAQAQAAgAAAAAAAEQABEAAAUAAAAACA=</HashCode>
+      <FileName>src\Texture2d.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Mesh3d" Collapsed="true">
+    <Position X="6.25" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAQAAAAAABABBgQAAgAAAEBAAWAEAgAAAMAIAIAAA=</HashCode>
+      <FileName>src\Mesh3d.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Model3d" Collapsed="true">
+    <Position X="4.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAVAAAAAABAAAAAEgAKAAAAIEAAACAAAEAIBAgAA=</HashCode>
+      <FileName>src\Model3d.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Model3dLoader" Collapsed="true">
+    <Position X="2.75" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAIAAIAABEQgBAAAEBABAAAAAABCIAAAgAAAAAQA=</HashCode>
+      <FileName>src\Model3dLoader.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BNode&lt;B&gt;" Collapsed="true">
+    <Position X="2.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAQAAAAAAQAAAQAADAgAAAAAAAMAEAAQEIUIAAAAgA=</HashCode>
+      <FileName>src\bone\BNode.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="View" Collapsed="true">
+    <Position X="2.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AiAAAAAAAAAAAEAAAIACIIIAAAAHAAAABAAEAAAAAgA=</HashCode>
+      <FileName>src\View.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Utils" Collapsed="true">
+    <Position X="8" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAEAAAABAAAAABAAAAEhAAAAEAEAAAAACAAQEAAAQQ=</HashCode>
+      <FileName>src\Utils.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WindowVendor" Collapsed="true">
+    <Position X="2.75" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAAUACAAAAAAAAAAAAAAAAAAAAIAA=</HashCode>
+      <FileName>src\WindowVendor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="Vertex3d" Collapsed="true">
+    <Position X="6.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAIRgAQEAAAA=</HashCode>
+      <FileName>src\Mesh3d.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Enum Name="GlesError" Collapsed="true">
+    <Position X="0.5" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAQAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>src\GrEngineConnector.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="EglError" Collapsed="true">
+    <Position X="0.5" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAIAAAAIAAAIAAMAAEAAAAI=</HashCode>
+      <FileName>src\GrEngineConnector.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

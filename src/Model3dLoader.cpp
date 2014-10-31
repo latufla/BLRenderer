@@ -206,7 +206,7 @@ Animation3d Model3dLoader::collectAnimation(const aiScene* scene, BNode<BoneNode
 		throw std::exception("Model3dLoader::collectAnimation: empty animation");
 
 	// TODO: drop not bones, wonder am i right
-	unordered_map<uint32_t, BoneAnimation> idToBoneAnimation;
+	unordered_map<uint32_t, Animation3d::BoneAnimation> idToBoneAnimation;
 	for (uint32_t i = 0; i < nChannels; ++i) {
 		aiNodeAnim* animNode = anim->mChannels[i];
 		string nName = animNode->mNodeName.C_Str();
@@ -215,33 +215,33 @@ Animation3d Model3dLoader::collectAnimation(const aiScene* scene, BNode<BoneNode
 		if (!myBone)
 			continue;
 
-		vector<Vec3Key> positions;
+		vector<Animation3d::Vec3Key> positions;
 		uint32_t nPositions = animNode->mNumPositionKeys;
 		for (uint32_t j = 0; j < nPositions; ++j) {
 			aiVectorKey& posKey = animNode->mPositionKeys[j];
-			Vec3Key myPosKey{ posKey.mTime, Utils::assimpToGlm(posKey.mValue) };
+			Animation3d::Vec3Key myPosKey{ posKey.mTime, Utils::assimpToGlm(posKey.mValue) };
 			positions.push_back(myPosKey);			
 		}
 
-		vector<Mat4Key> rotations;
+		vector<Animation3d::Mat4Key> rotations;
 		uint32_t nRotations = animNode->mNumRotationKeys;
 		for (uint32_t j = 0; j < nRotations; ++j) {
 			aiQuatKey& rotKey = animNode->mRotationKeys[j];
 			aiMatrix4x4 rotMtx(rotKey.mValue.GetMatrix());
-			Mat4Key myRotKey{ rotKey.mTime, Utils::assimpToGlm(rotMtx) };
+			Animation3d::Mat4Key myRotKey{ rotKey.mTime, Utils::assimpToGlm(rotMtx) };
 			rotations.push_back(myRotKey);
 		}
 
-		vector<Vec3Key> scalings;
+		vector<Animation3d::Vec3Key> scalings;
 		uint32_t nScalings = animNode->mNumScalingKeys;
 		for (uint32_t j = 0; j < nScalings; ++j) {
 			aiVectorKey& scaleKey = animNode->mScalingKeys[j];
-			Vec3Key myScaleKey{ scaleKey.mTime, Utils::assimpToGlm(scaleKey.mValue) };
+			Animation3d::Vec3Key myScaleKey{ scaleKey.mTime, Utils::assimpToGlm(scaleKey.mValue) };
 			scalings.push_back(myScaleKey);
 		}
 
 		uint32_t boneId = myBone->getId();
-		BoneAnimation myBoneAnimation{ boneId, myBone->getName(), positions, rotations, scalings };
+		Animation3d::BoneAnimation myBoneAnimation{ boneId, myBone->getName(), positions, rotations, scalings };
 		idToBoneAnimation.emplace(boneId, myBoneAnimation);
 	}
 

@@ -22,29 +22,6 @@ using std::array;
 using std::shared_ptr;
 using std::make_shared;
 
-enum EglError {
-	GET_DISPLAY_FAIL = 0x01,
-	INIT_DISPLAY_FAIL = 0x02,
-	CHOSE_CONFIG_FAIL = 0x04,
-
-	NATIVE_WINDOW_FAIL = 0x08,
-
-	CREATE_SURFACE_FAIL = 0x10,
-	CREATE_CONTEXT_FAIL = 0x20,
-	MAKE_CONTEXT_CURRENT_FAIL = 0x40,
-};
-
-enum GlesError {
-	SHADER_LOAD_FAIL = 0x80,
-	PROGRAM_CREATE_FAIL = 0x100,
-	PROGRAM_LINK_FAIL = 0x200
-};
-
-enum ImporterError{
-	MODEL_IMPORT_FAIL = 0x400
-};
-
-
 GrEngineConnector::~GrEngineConnector()
 {
 	glDeleteProgram(defaultProgram);

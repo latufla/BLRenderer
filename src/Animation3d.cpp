@@ -64,7 +64,7 @@ Animation3d::operator string() const {
 	return res;
 }
 
-BoneAnimation* Animation3d::getBoneAnimation(uint32_t boneId) {
+Animation3d::BoneAnimation* Animation3d::getBoneAnimation(uint32_t boneId) {
 	auto it = idToBoneAnimation.find(boneId);
 	if (it != cend(idToBoneAnimation))
 		return &it->second;
