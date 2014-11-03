@@ -144,7 +144,7 @@ std::vector<Material3d> Model3dLoader::collectMaterials(const aiScene* modelAi, 
 		int32_t twoSidedAi;
 		max = 1;
 		aiGetMaterialIntegerArray(materialAi, AI_MATKEY_TWOSIDED, &twoSidedAi, &max);
-		bool twoSided = twoSidedAi & 1;
+		bool twoSided = (twoSidedAi != 0);
 
 		aiString textureAi;
 		materialAi->GetTexture(aiTextureType_DIFFUSE, 0, &textureAi);
