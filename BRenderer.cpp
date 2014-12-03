@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "ObjectBase.h"
-#include "src\GrEngineConnector.h"
+#include "src\Renderer.h"
 #include "Model3dInfo.h"
 #include <memory>
 
@@ -28,8 +28,8 @@ int _tmain(int argc, _TCHAR* argv[]) {
  	std::shared_ptr<Model3dLoader> loader = std::make_shared<Model3dLoader>();
  	loader->loadModel(info.getModelDir(), info.getModelName());
 	loader->attachAnimation(info.getModelPath(), "models/Cube/CubeIdle.dae", "idle");
-
-	GrEngineConnector renderer{loader, 0, 0, 1024, 768};
+	
+	Renderer renderer{loader, 0, 0, 1024, 768};
 
  	renderer.setCamera(7.48f, 6.5f, 5.34f);
 

@@ -31,11 +31,11 @@ enum GlesError {
 	PROGRAM_LINK_FAIL = 0x200
 };
 
-class GrEngineConnector
+class Renderer
 {
 public:
-	GrEngineConnector(std::shared_ptr<Model3dLoader> loader, uint32_t, uint32_t, uint32_t, uint32_t);
-	~GrEngineConnector();
+	Renderer(std::shared_ptr<Model3dLoader> loader, uint32_t, uint32_t, uint32_t, uint32_t);
+	~Renderer();
 
 	bool addObject(uint32_t, std::string);
 	bool removeObject(uint32_t);

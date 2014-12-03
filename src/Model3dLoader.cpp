@@ -277,13 +277,3 @@ void Model3dLoader::collectBoneWeightsAndOffsets(const aiScene* scene, BNode<Bon
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-

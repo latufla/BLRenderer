@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "GrEngineConnector.h"
+#include "Renderer.h"
 
 #include "Utils.h"
 
@@ -24,7 +24,7 @@ using std::make_shared;
 
 
 // TODO: throw exceptions
-GrEngineConnector::GrEngineConnector(std::shared_ptr<Model3dLoader> loader, uint32_t winX, uint32_t winY, uint32_t winW, uint32_t winH)
+Renderer::Renderer(std::shared_ptr<Model3dLoader> loader, uint32_t winX, uint32_t winY, uint32_t winW, uint32_t winH)
 	: loader(loader) {
 	window = make_shared <WindowVendor>(winX, winY, winW, winH);
 	if(!window->nativeWindow)
@@ -51,7 +51,7 @@ GrEngineConnector::GrEngineConnector(std::shared_ptr<Model3dLoader> loader, uint
 	return; // 0;
 }
 
-GrEngineConnector::~GrEngineConnector()
+Renderer::~Renderer()
 {
 	glDeleteProgram(defaultProgram);
 
@@ -61,7 +61,7 @@ GrEngineConnector::~GrEngineConnector()
 	}
 }
 
-bool GrEngineConnector::addObject(uint32_t id, std::string modelPath){
+bool Renderer::addObject(uint32_t id, std::string modelPath){
 	if (!hasObjectWithModel(modelPath)) // first in
 		loadModelToGpu(modelPath);
 	
@@ -70,7 +70,7 @@ bool GrEngineConnector::addObject(uint32_t id, std::string modelPath){
 	return true;
 }
 
-bool GrEngineConnector::removeObject(uint32_t id){
+bool Renderer::removeObject(uint32_t id){
 	View& view = idToObject.at(id);
 	string modelPath = view.getPath();
 
@@ -84,7 +84,7 @@ bool GrEngineConnector::removeObject(uint32_t id){
 	return true;
 }
 
-bool GrEngineConnector::playAnimation(uint32_t objId, std::string label) {
+bool Renderer::playAnimation(uint32_t objId, std::string label) {
 	auto& it = idToObject.find(objId);
 	if (it == end(idToObject))
 		return false;
@@ -96,13 +96,13 @@ bool GrEngineConnector::playAnimation(uint32_t objId, std::string label) {
 	return true;
 }
 
-void GrEngineConnector::setCamera(float x, float y, float z) {
+void Renderer::setCamera(float x, float y, float z) {
 	camera.x = x;
 	camera.y = y;
 	camera.z = z;
 }
 
-bool GrEngineConnector::doStep(uint32_t stepMSec)
+bool Renderer::doStep(uint32_t stepMSec)
 {
 	timeMSec += stepMSec;
 
@@ -191,7 +191,7 @@ bool GrEngineConnector::doStep(uint32_t stepMSec)
 
 // private
 
-int32_t GrEngineConnector::initEgl(){
+int32_t Renderer::initEgl(){
 	EGLint minorVersion;
 	EGLint majorVersion;
 
@@ -254,7 +254,7 @@ int32_t GrEngineConnector::initEgl(){
 }
 
 
-int32_t GrEngineConnector::initShaders(string vShaderSrc, string fShaderSrc)
+int32_t Renderer::initShaders(string vShaderSrc, string fShaderSrc)
 {
 	GLuint vShader = createShader(GL_VERTEX_SHADER, vShaderSrc.c_str());
 	GLuint fShader = createShader(GL_FRAGMENT_SHADER, fShaderSrc.c_str());
@@ -286,7 +286,7 @@ int32_t GrEngineConnector::initShaders(string vShaderSrc, string fShaderSrc)
 	return 0;
 }
 
-GLuint GrEngineConnector::createShader(GLenum shType, const char* shSource){
+GLuint Renderer::createShader(GLenum shType, const char* shSource){
 	GLboolean hasCompiler;
 	glGetBooleanv(GL_SHADER_COMPILER, &hasCompiler);
 	if (hasCompiler == GL_FALSE)
@@ -309,7 +309,7 @@ GLuint GrEngineConnector::createShader(GLenum shType, const char* shSource){
 	return shader;
 }
 
-BoneTransformer::BonesDataMap GrEngineConnector::prepareAnimationStep(View& object, Mesh3d& m, uint32_t stepMSec) {
+BoneTransformer::BonesDataMap Renderer::prepareAnimationStep(View& object, Mesh3d& m, uint32_t stepMSec) {
 	BoneTransformer::BonesDataMap res;
 	auto& boneIdToOffset = m.getBoneIdToOffset();
 	for (auto& i : boneIdToOffset) {
@@ -324,7 +324,7 @@ BoneTransformer::BonesDataMap GrEngineConnector::prepareAnimationStep(View& obje
 	return res;
 }
 
-bool GrEngineConnector::transform(uint32_t id, const array<float, 16> t) {
+bool Renderer::transform(uint32_t id, const array<float, 16> t) {
 	auto& it = idToObject.find(id);
 	if (it == end(idToObject))
 		return false;
@@ -335,14 +335,14 @@ bool GrEngineConnector::transform(uint32_t id, const array<float, 16> t) {
 }
 
 
-bool GrEngineConnector::hasObjectWithModel(string path) {
+bool Renderer::hasObjectWithModel(string path) {
 	auto& it = find_if(cbegin(idToObject), cend(idToObject), [&path](pair<uint32_t, View> i)->bool{
 		return i.second.getPath() == path;
 	});
 	return it != cend(idToObject);
 }
 
-bool GrEngineConnector::loadModelToGpu(string modelPath) {
+bool Renderer::loadModelToGpu(string modelPath) {
 	Model3d& model = loader->getModel(modelPath);
 	vector<Mesh3d>& meshes = model.getMeshes();
 	for (auto& s : meshes) {
@@ -378,7 +378,7 @@ bool GrEngineConnector::loadModelToGpu(string modelPath) {
 	return true;
 }
 
-bool GrEngineConnector::deleteModelFromGpu(std::string modelPath) {
+bool Renderer::deleteModelFromGpu(std::string modelPath) {
 	Model3d& model = loader->getModel(modelPath);
 	vector<Mesh3d>& meshes = model.getMeshes();
 	for (auto& s : meshes) {
@@ -397,7 +397,7 @@ bool GrEngineConnector::deleteModelFromGpu(std::string modelPath) {
 	return true;
 }
 
-GLuint GrEngineConnector::loadTextureToGpu(vector<uint8_t>& texture, int16_t widht, int16_t height) {
+GLuint Renderer::loadTextureToGpu(vector<uint8_t>& texture, int16_t widht, int16_t height) {
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	GLuint textureId;
