@@ -25,18 +25,18 @@ int _tmain(int argc, _TCHAR* argv[]) {
 
 	const Model3dInfo info(CUBE);
 	
- 	std::shared_ptr<Model3dLoader> loader = std::make_shared<Model3dLoader>();
+	std::shared_ptr<br::Model3dLoader> loader = std::make_shared<br::Model3dLoader>();
  	loader->loadModel(info.getModelDir(), info.getModelName());
 	loader->attachAnimation(info.getModelPath(), "models/Cube/CubeIdle.dae", "idle");
 	
-	Renderer renderer{loader, 0, 0, 1024, 768};
+	br::Renderer renderer{loader, 0, 0, 1024, 768};
 
  	renderer.setCamera(7.48f, 6.5f, 5.34f);
 
 	for (auto& s : objects) {
 		uint32_t id = s.getId();
 		renderer.addObject(id, info.getModelPath());
-		renderer.transform(id, Utils::toArray(s.getOrientation()));
+		renderer.transform(id, br::Utils::toArray(s.getOrientation()));
 	}
 
 	renderer.playAnimation(42, "idle");
