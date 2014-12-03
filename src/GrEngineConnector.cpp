@@ -22,31 +22,23 @@ using std::array;
 using std::shared_ptr;
 using std::make_shared;
 
-GrEngineConnector::~GrEngineConnector()
-{
-	glDeleteProgram(defaultProgram);
 
-	auto allObjects = idToObject;
-	for (auto& i : allObjects) {
-		removeObject(i.first);
-	}
-}
-
-int32_t GrEngineConnector::init(uint32_t winX, uint32_t winY, uint32_t winW, uint32_t winH)
-{
+// TODO: throw exceptions
+GrEngineConnector::GrEngineConnector(std::shared_ptr<Model3dLoader> loader, uint32_t winX, uint32_t winY, uint32_t winW, uint32_t winH)
+	: loader(loader) {
 	window = make_shared <WindowVendor>(winX, winY, winW, winH);
-	if (!window->nativeWindow)
-		return EglError::NATIVE_WINDOW_FAIL;
+	if(!window->nativeWindow)
+		return; // EglError::NATIVE_WINDOW_FAIL;
 
 	int32_t eglFail = initEgl();
-	if (eglFail)
-		return eglFail;
+	if(eglFail)
+		return; // eglFail;
 
 	int32_t shadersFail = initShaders(Utils::defaultVertexShader, Utils::defaultFragmentShader);
-	if (shadersFail)
-		return shadersFail;
-	
-	glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
+	if(shadersFail)
+		return; // shadersFail;
+
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
@@ -56,18 +48,18 @@ int32_t GrEngineConnector::init(uint32_t winX, uint32_t winY, uint32_t winW, uin
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CCW);
 
-	return 0;
+	return; // 0;
 }
 
+GrEngineConnector::~GrEngineConnector()
+{
+	glDeleteProgram(defaultProgram);
 
-bool GrEngineConnector::loadModel(string dir, string name) {
-	return loader.loadModel(dir, name);
+	auto allObjects = idToObject;
+	for (auto& i : allObjects) {
+		removeObject(i.first);
+	}
 }
-
-bool GrEngineConnector::attachAnimation(string modelName, string animPath, string animName) {
-	return loader.attachAnimation(modelName, animPath, animName);
-}
-
 
 bool GrEngineConnector::addObject(uint32_t id, std::string modelPath){
 	if (!hasObjectWithModel(modelPath)) // first in
@@ -98,7 +90,7 @@ bool GrEngineConnector::playAnimation(uint32_t objId, std::string label) {
 		return false;
 	
 	View& object = it->second;
-	Model3d& model = loader.getModel(object.getPath());
+	Model3d& model = loader->getModel(object.getPath());
 	Animation3d& animation = model.getAnimation(label);
 	it->second.setAnimation(label, (uint32_t)(animation.getDuration() * 1000), true);
 	return true;
@@ -145,7 +137,7 @@ bool GrEngineConnector::doStep(uint32_t stepMSec)
 		glm::mat4 mvpMtx = pvMatrix * modelMtx;
 		glUniformMatrix4fv(mvpMatrixLoc, 1, GL_FALSE, &mvpMtx[0][0]);
 
-		Model3d& model = loader.getModel(view.getPath());
+		Model3d& model = loader->getModel(view.getPath());
 		vector<Mesh3d>& meshes = model.getMeshes();
 		for (auto& s : meshes) {
 			auto bonesData = prepareAnimationStep(view, s, stepMSec);
@@ -327,7 +319,7 @@ BoneTransformer::BonesDataMap GrEngineConnector::prepareAnimationStep(View& obje
 	
 	object.doAnimationStep(stepMSec);
 
-	Model3d& model = loader.getModel(object.getPath());
+	Model3d& model = loader->getModel(object.getPath());
 	boneTransformer.transform(object, model, res);
 	return res;
 }
@@ -351,7 +343,7 @@ bool GrEngineConnector::hasObjectWithModel(string path) {
 }
 
 bool GrEngineConnector::loadModelToGpu(string modelPath) {
-	Model3d& model = loader.getModel(modelPath);
+	Model3d& model = loader->getModel(modelPath);
 	vector<Mesh3d>& meshes = model.getMeshes();
 	for (auto& s : meshes) {
 		uint32_t vBuffer;
@@ -387,7 +379,7 @@ bool GrEngineConnector::loadModelToGpu(string modelPath) {
 }
 
 bool GrEngineConnector::deleteModelFromGpu(std::string modelPath) {
-	Model3d& model = loader.getModel(modelPath);
+	Model3d& model = loader->getModel(modelPath);
 	vector<Mesh3d>& meshes = model.getMeshes();
 	for (auto& s : meshes) {
 		string mName = model.getUniqueMeshName(s);

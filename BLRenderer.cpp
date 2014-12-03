@@ -7,6 +7,7 @@
 #include "ObjectBase.h"
 #include "src\GrEngineConnector.h"
 #include "Model3dInfo.h"
+#include <memory>
 
 using std::vector;
 
@@ -20,18 +21,17 @@ vector<ObjectBase> objects;
 
 int _tmain(int argc, _TCHAR* argv[]) {
 
-	objects.push_back({ 42, CUBE });
+ 	objects.push_back({ 42, CUBE });
 
-	GrEngineConnector& renderer = GrEngineConnector::getInstance();
-	int rendererFail = renderer.init(0, 0, 1024, 768);
-	if (rendererFail)
-		return rendererFail;
-
-	renderer.setCamera(7.48f, 6.5f, 5.34f);
+	const Model3dInfo info(CUBE);
 	
-	const Model3dInfo& info(CUBE);
-	renderer.loadModel(info.getModelDir(), info.getModelName());
-	renderer.attachAnimation(info.getModelPath(), "models/Cube/CubeIdle.dae", "idle");	
+ 	std::shared_ptr<Model3dLoader> loader = std::make_shared<Model3dLoader>();
+ 	loader->loadModel(info.getModelDir(), info.getModelName());
+	loader->attachAnimation(info.getModelPath(), "models/Cube/CubeIdle.dae", "idle");
+
+	GrEngineConnector renderer{loader, 0, 0, 1024, 768};
+
+ 	renderer.setCamera(7.48f, 6.5f, 5.34f);
 
 	for (auto& s : objects) {
 		uint32_t id = s.getId();

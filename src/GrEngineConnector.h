@@ -34,17 +34,8 @@ enum GlesError {
 class GrEngineConnector
 {
 public:
+	GrEngineConnector(std::shared_ptr<Model3dLoader> loader, uint32_t, uint32_t, uint32_t, uint32_t);
 	~GrEngineConnector();
-	
-	static GrEngineConnector& getInstance(){
-		static GrEngineConnector instance;
-		return instance;
-	}
-
-	int32_t init(uint32_t, uint32_t, uint32_t, uint32_t);
-	
-	bool loadModel(std::string, std::string);
-	bool attachAnimation(std::string, std::string, std::string);
 
 	bool addObject(uint32_t, std::string);
 	bool removeObject(uint32_t);
@@ -57,14 +48,10 @@ public:
 	void setCamera(float, float, float);
 
 private:
-	GrEngineConnector(){};
-	GrEngineConnector(GrEngineConnector &){};
-	GrEngineConnector operator=(GrEngineConnector&){};
-
 	std::shared_ptr<WindowVendor> window;
 	uint32_t timeMSec = 0;
 
-	Model3dLoader loader;
+	std::shared_ptr<Model3dLoader> loader;
 	
 	struct Camera {
 		float x;
