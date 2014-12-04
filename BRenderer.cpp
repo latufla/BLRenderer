@@ -1,11 +1,11 @@
 // BLRenderer.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
+#include "src/SharedHeaders.h"
 #include <iostream>
 
 #include "ObjectBase.h"
-#include "src\Renderer.h"
+#include "src/Renderer.h"
 #include "Model3dInfo.h"
 #include <memory>
 

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "SharedHeaders.h"
 #include "Texture2d.h"
 
 using std::string;

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "SharedHeaders.h"
 #include "Utils.h"
 #include <fstream>
 #include <gtc\type_ptr.hpp>

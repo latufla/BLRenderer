@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "src/SharedHeaders.h"
 #include "Model3dInfo.h"
 
 

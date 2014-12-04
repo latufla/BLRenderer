@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "SharedHeaders.h"
 #include "View.h"
 
 using std::string;

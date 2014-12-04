@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "SharedHeaders.h"
 #include "Model3dLoader.h"
 #include "bone\BoneNodeData.h"
 #include "Utils.h"

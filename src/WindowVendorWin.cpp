@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "SharedHeaders.h"
 #include <windows.h>
 #include "WindowVendor.h"
 

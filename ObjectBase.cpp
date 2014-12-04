@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "src/SharedHeaders.h"
 #include "ObjectBase.h"
 
 using std::string;

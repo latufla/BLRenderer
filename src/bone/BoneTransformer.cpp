@@ -1,7 +1,7 @@
-#include "stdafx.h"
-#include <gtc\matrix_transform.hpp>
+#include "../SharedHeaders.h"
+#include <gtc/matrix_transform.hpp>
 #include "BoneTransformer.h"
-#include "..\Utils.h"
+#include "../Utils.h"
 
 using std::vector;
 using glm::mat4;
