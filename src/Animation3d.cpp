@@ -11,20 +11,10 @@ using std::unordered_map;
 namespace br {
 	const std::string Animation3d::DEFAULT_ANIMATION_NAME = "default";
 	
-	Animation3d::Animation3d() {
+	Animation3d::Animation3d(string name, double duration, double ticksPerSecond, unordered_map<uint32_t, BoneAnimation>& idToBoneAnimation) 
+		: name(name), duration(duration), ticksPerSecond(ticksPerSecond), idToBoneAnimation(idToBoneAnimation){
 	}
-	
-	Animation3d::Animation3d(string name, double duration, double ticksPerSecond, unordered_map<uint32_t, BoneAnimation>& idToBoneAnimation) {
-		this->name = name;
-		this->duration = duration;
-		this->ticksPerSecond = ticksPerSecond;
-		this->idToBoneAnimation = idToBoneAnimation;
-	}
-	
-	
-	Animation3d::~Animation3d() {
-	}
-	
+
 	Animation3d::operator string() const {
 		string res = "{Animation3d name: " + name + " duration: " + to_string(duration) + " ticksPerSecond: " + to_string(ticksPerSecond);
 		res += " boneAnimations: {";

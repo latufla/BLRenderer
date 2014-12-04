@@ -19,10 +19,10 @@ namespace br {
 	
 	class Mesh3d {
 	public:
-		Mesh3d();
-		Mesh3d(std::string, const std::vector<Vertex3d>&, const std::vector<uint16_t>&, uint32_t);
+		Mesh3d() = delete;
+		Mesh3d(std::string name, const std::vector<Vertex3d>& vertices, const std::vector<uint16_t>& indices, uint32_t materialId);
 	
-		~Mesh3d();
+		~Mesh3d() = default;
 	
 		std::string getName() const { return name; }
 	
@@ -33,8 +33,8 @@ namespace br {
 	
 		operator std::string() const;
 		
-		void setVertexBoneInfo(uint32_t, uint32_t, float);
-		void setBoneOffset(uint32_t, glm::mat4);
+		void setVertexBoneInfo(uint32_t vertexId, uint32_t boneId, float weight);
+		void setBoneOffset(uint32_t boneId, glm::mat4 val);
 	
 		std::unordered_map<uint32_t, glm::mat4>& getBoneIdToOffset() { return boneIdToOffset; }
 	

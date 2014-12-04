@@ -35,23 +35,29 @@ namespace br {
 	class Renderer
 	{
 	public:
-		Renderer(std::shared_ptr<Model3dLoader> loader, uint32_t, uint32_t, uint32_t, uint32_t);
+		Renderer() = delete;
+
+		Renderer(std::shared_ptr<Model3dLoader> loader,
+			uint32_t wndX,
+			uint32_t wndY, 
+			uint32_t wndW, 
+			uint32_t wndH);
+
 		~Renderer();
 	
-		bool addObject(uint32_t, std::string);
-		bool removeObject(uint32_t);
+		bool addObject(uint32_t id, std::string modelPath);
+		bool removeObject(uint32_t id);
 	
-		bool doStep(uint32_t);
+		bool doStep(uint32_t stepMSec);
 		
-		bool playAnimation(uint32_t, std::string = "default");
-		bool transform(uint32_t, const std::array<float, 16>);
+		bool playAnimation(uint32_t objId, std::string animName = Animation3d::DEFAULT_ANIMATION_NAME);
+		bool transform(uint32_t objId, const std::array<float, 16> tForm);
 	
-		void setCamera(float, float, float);
+		void setCamera(float x, float y, float z);
 	
 	private:
 		std::shared_ptr<WindowVendor> window;
-		uint32_t timeMSec = 0;
-	
+
 		std::shared_ptr<Model3dLoader> loader;
 		
 		struct Camera {

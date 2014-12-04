@@ -26,16 +26,16 @@ namespace br {
 			std::vector<Vec3Key> scalings;
 		};
 	
-		Animation3d(); // = delete;
-		Animation3d(std::string, double, double, std::unordered_map<uint32_t, BoneAnimation>&);
+		Animation3d() = delete;
+		Animation3d(std::string name, double duration, double ticksPerSecond, std::unordered_map<uint32_t, BoneAnimation>& idToBoneAnimation);
 	
-		~Animation3d();
+		~Animation3d() = default;
 	
 		static const std::string DEFAULT_ANIMATION_NAME;
 	
 		operator std::string() const;
 	
-		BoneAnimation* getBoneAnimation(uint32_t);
+		BoneAnimation* getBoneAnimation(uint32_t boneId);
 	
 		std::string getName() const { return name; }
 		double getDuration() const { return duration; }

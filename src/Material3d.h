@@ -5,9 +5,16 @@
 namespace br {
 	class Material3d {
 	public:
-		Material3d() = default;
-		Material3d(const Texture2d&, const glm::vec4&, const glm::vec4&, const glm::vec4&, const glm::vec4&, float, float, bool);
-	
+		Material3d() = delete;
+		Material3d(const Texture2d& texture,
+			const glm::vec4& emission,
+			const glm::vec4& ambient,
+			const glm::vec4& diffuse,
+			const glm::vec4& specular,
+			float shininess,
+			float indexOfRefraction,
+			bool doubleSided);
+
 		~Material3d() = default;
 	
 		Texture2d& getTexture(){ return texture; }

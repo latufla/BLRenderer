@@ -25,9 +25,13 @@ using std::make_shared;
 
 namespace br {
 	// TODO: throw exceptions
-	Renderer::Renderer(std::shared_ptr<Model3dLoader> loader, uint32_t winX, uint32_t winY, uint32_t winW, uint32_t winH)
+	Renderer::Renderer(std::shared_ptr<Model3dLoader> loader,
+		uint32_t wndX,
+		uint32_t wndY,
+		uint32_t wndW, 
+		uint32_t wndH)
 		: loader(loader) {
-		window = make_shared <WindowVendor>(winX, winY, winW, winH);
+		window = make_shared <WindowVendor>(wndX, wndY, wndW, wndH);
 		if(!window->nativeWindow)
 			return; // EglError::NATIVE_WINDOW_FAIL;
 	
@@ -85,15 +89,15 @@ namespace br {
 		return true;
 	}
 	
-	bool Renderer::playAnimation(uint32_t objId, std::string label) {
+	bool Renderer::playAnimation(uint32_t objId, std::string animName) {
 		auto& it = idToObject.find(objId);
 		if (it == end(idToObject))
 			return false;
 		
 		View& object = it->second;
 		Model3d& model = loader->getModel(object.getPath());
-		Animation3d& animation = model.getAnimation(label);
-		it->second.setAnimation(label, (uint32_t)(animation.getDuration() * 1000), true);
+		Animation3d& animation = model.getAnimationBy(animName);
+		it->second.setAnimation(animName, (uint32_t)(animation.getDuration() * 1000), true);
 		return true;
 	}
 	
@@ -105,8 +109,6 @@ namespace br {
 	
 	bool Renderer::doStep(uint32_t stepMSec)
 	{
-		timeMSec += stepMSec;
-	
 		vector<float> rect = window->getRect();
 		float wWidth = rect[2];
 		float wHeight = rect[3];
@@ -325,13 +327,13 @@ namespace br {
 		return res;
 	}
 	
-	bool Renderer::transform(uint32_t id, const array<float, 16> t) {
-		auto& it = idToObject.find(id);
+	bool Renderer::transform(uint32_t objId, const array<float, 16> tForm) {
+		auto& it = idToObject.find(objId);
 		if (it == end(idToObject))
 			return false;
 	
-		auto tForm = glm::make_mat4(t.data());
-		it->second.setTransform(tForm);
+		auto t = glm::make_mat4(tForm.data());
+		it->second.setTransform(t);
 		return true;
 	}
 	

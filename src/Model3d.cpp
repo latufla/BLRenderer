@@ -7,11 +7,15 @@ using std::string;
 using std::exception;
 
 namespace br {
-	Model3d::Model3d(string name, const vector<Mesh3d>& meshes, const vector<Material3d>& materials, const BNode<BoneNodeData>& boneTree, const Animation3d& defaultAnimation) {
-		this->name = name;
-		this->meshes = meshes;
-		this->materials = materials;
-		this->boneTree = boneTree;
+	Model3d::Model3d(string name, 
+		const vector<Mesh3d>& meshes, 
+		const vector<Material3d>& materials,
+		const BNode<BoneNodeData>& boneTree, 
+		const Animation3d& defaultAnimation)
+		: name(name),
+		meshes(meshes),
+		materials(materials),
+		boneTree(boneTree) {
 		nameToAnimation.emplace(defaultAnimation.getName(), defaultAnimation);
 	}
 	
@@ -37,12 +41,11 @@ namespace br {
 		return name + mesh.getName();
 	}
 	
-	Animation3d& Model3d::getAnimation(std::string name) {
+	Animation3d& Model3d::getAnimationBy(std::string name) {
 		return nameToAnimation.at(name);
 	}
 	
-	bool Model3d::addAnimation(Animation3d& anim) {
+	void Model3d::addAnimation(Animation3d& anim) {
 		nameToAnimation.emplace(anim.getName(), anim);
-		return true;
 	}
 }

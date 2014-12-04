@@ -6,8 +6,10 @@ namespace br {
 	class WindowVendor
 	{
 	public:
-		WindowVendor(uint32_t = 0, uint32_t = 0, uint32_t = 640, uint32_t = 480);
-		~WindowVendor();
+		WindowVendor() = delete;
+		WindowVendor(uint32_t x = 0, uint32_t y = 0, uint32_t w = 640, uint32_t h = 480);
+		
+		~WindowVendor() = default;
 	
 		bool doStep() const;
 	

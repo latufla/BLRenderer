@@ -6,20 +6,9 @@ using std::string;
 using std::to_string;
 
 namespace br {
-	Mesh3d::Mesh3d() {
 	
-	}
-	
-	Mesh3d::Mesh3d(string name, const vector<Vertex3d>& vertices, const vector<uint16_t>& indices, uint32_t materialId) {
-		this->name = name;
-	
-		this->vertices = vertices;
-		this->indices = indices;
-	
-		this->materialId = materialId;
-	}
-	
-	Mesh3d::~Mesh3d() {
+	Mesh3d::Mesh3d(string name, const vector<Vertex3d>& vertices, const vector<uint16_t>& indices, uint32_t materialId) 
+		: name(name), vertices(vertices), indices(indices), materialId(materialId){
 	}
 	
 	Mesh3d::operator string() const {
@@ -39,8 +28,8 @@ namespace br {
 		return res;
 	}
 	
-	void Mesh3d::setVertexBoneInfo(uint32_t vId, uint32_t boneId, float weight) {
-		Vertex3d& v = vertices.at(vId);
+	void Mesh3d::setVertexBoneInfo(uint32_t vertexId, uint32_t boneId, float weight) {
+		Vertex3d& v = vertices.at(vertexId);
 		for (uint32_t i = 0; i < 4; ++i) {
 			if (v.weigths[i] == 0.0) { // TODO: wonder can we compare doubles
 				v.boneIds[i] = boneId;
@@ -50,8 +39,8 @@ namespace br {
 		}
 	}
 	
-	void Mesh3d::setBoneOffset(uint32_t id, glm::mat4 offset) {
-		boneIdToOffset.emplace(id, offset);
+	void Mesh3d::setBoneOffset(uint32_t boneId, glm::mat4 val) {
+		boneIdToOffset.emplace(boneId, val);
 	}
 }
 

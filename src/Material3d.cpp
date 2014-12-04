@@ -11,15 +11,14 @@ namespace br {
 		const vec4& specular,
 		float shininess, 
 		float indexOfRefraction, 
-		bool doubleSided) {
-	
-		this->texture = texture;
-		this->emission = emission;
-		this->ambient = ambient;
-		this->diffuse = diffuse;
-		this->specular = specular;
-		this->shininess = shininess;
-		this->indexOfRefraction = indexOfRefraction;
-		this->doubleSided = doubleSided;
+		bool doubleSided) 
+		: texture(texture), 
+		emission(emission),
+		ambient(ambient),
+		diffuse(diffuse),
+		specular(specular),
+		shininess(shininess),
+		indexOfRefraction(indexOfRefraction),
+		doubleSided(doubleSided){
 	}
 }

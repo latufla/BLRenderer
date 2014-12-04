@@ -4,8 +4,8 @@
 namespace br {
 	class BoneNodeData{
 	public:
-		BoneNodeData() = default;
-		BoneNodeData(const glm::mat4&);
+		BoneNodeData() = delete;
+		BoneNodeData(const glm::mat4& transform);
 	
 		~BoneNodeData() = default;
 		

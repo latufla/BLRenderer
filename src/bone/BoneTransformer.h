@@ -19,7 +19,7 @@ namespace br {
 		};
 	
 		typedef std::unordered_map<uint32_t, BoneData> BonesDataMap;
-		void transform(View&, Model3d&, BonesDataMap&);
+		void transform(View& object, Model3d& model, BonesDataMap& outBonesData);
 	
 	private:
 		// only to hide useless params

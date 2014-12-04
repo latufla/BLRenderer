@@ -15,12 +15,12 @@ namespace br {
 	class Model3dLoader {
 	public:
 		Model3dLoader() {};
-		~Model3dLoader() {};
+		~Model3dLoader() = default;
 	
-		bool loadModel(std::string, std::string);
+		bool loadModel(std::string directory, std::string name);
 	
-		Model3d& getModel(std::string);
-		bool attachAnimation(std::string, std::string, std::string);
+		Model3d& getModel(std::string name);
+		bool attachAnimation(std::string modelName, std::string animPath, std::string animName);
 	
 	private:
 		std::map<std::string, Model3d> pathToModel;

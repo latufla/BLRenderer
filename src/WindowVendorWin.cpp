@@ -52,12 +52,7 @@ namespace br {
 		ShowWindow(hWnd, true);
 		UpdateWindow(hWnd);
 	}
-	
-	WindowVendor::~WindowVendor()
-	{
-		// TODO: implement if needed
-	}
-	
+		
 	vector<float> WindowVendor::getRect()
 	{
 		RECT rect;

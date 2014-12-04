@@ -13,7 +13,7 @@ using glm::scale;
 namespace br {
 	void BoneTransformer::transform(View& object, Model3d& model, BonesDataMap& outBonesData) {
 		auto& boneTree = model.getBoneTree();
-		auto& anim = model.getAnimation(object.getAnimationName());
+		auto& anim = model.getAnimationBy(object.getAnimationName());
 		uint32_t animTime = object.getAnimationTime();
 		auto& gTrans = model.getGlobalInverseTransform();
 		mat4 pTrans;

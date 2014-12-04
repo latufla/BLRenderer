@@ -21,7 +21,7 @@ vector<ObjectBase> objects;
 
 int _tmain(int argc, _TCHAR* argv[]) {
 
- 	objects.push_back({ 42, CUBE });
+ 	objects.push_back({ 42, CUBE });	
 
 	const Model3dInfo info(CUBE);
 	

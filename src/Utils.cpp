@@ -121,19 +121,19 @@ namespace br {
 		return res;
 	}
 	
-	vec3 Utils::interpolate(const vec3& start, const vec3& end, float alpha) {
+	vec3 Utils::interpolate(const vec3& from, const vec3& to, float alpha) {
 		vec3 interp;
 	
-		interp.x = end.x*alpha + start.x*(1 - alpha);
-		interp.y = end.y*alpha + start.y*(1 - alpha);
-		interp.z = end.z*alpha + start.z*(1 - alpha);
+		interp.x = to.x * alpha + from.x * (1 - alpha);
+		interp.y = to.y * alpha + from.y * (1 - alpha);
+		interp.z = to.z * alpha + from.z * (1 - alpha);
 	
 		return interp;
 	}
 	
-	mat4 Utils::interpolate(const mat4& start, const mat4& end, float alpha) {
-		aiMatrix3x3 sm = glmToAssimpMat3(start);
-		aiMatrix3x3 em = glmToAssimpMat3(end);
+	mat4 Utils::interpolate(const mat4& from, const mat4& to, float alpha) {
+		aiMatrix3x3 sm = glmToAssimpMat3(from);
+		aiMatrix3x3 em = glmToAssimpMat3(to);
 		
 		aiQuaternion qs(sm);
 		aiQuaternion qe(em);
@@ -144,19 +144,17 @@ namespace br {
 		return assimpMat3ToGlm(res.GetMatrix());
 	}
 	
-	bool Utils::loadTexture(string path, Texture2d& outTexture) {
-		vector<uint8_t> buffer = loadFile( path);
-		loadFile(path);
+	Texture2d Utils::loadTexture(string path) {
+		vector<uint8_t> buffer = loadFile(path);
 	
+		std::vector<uint8_t> data;
 		unsigned long w, h;
-		int decodeFail = Utils::decodePNG(outTexture.getData(), w, h, buffer.empty() ? 0 : &buffer[0], (unsigned long)buffer.size());
+		int decodeFail = Utils::decodePNG(data, w, h, buffer.empty() ? 0 : &buffer[0], (unsigned long)buffer.size());
 		if (decodeFail)
-			return false;
+			throw std::exception("Utils::loadTexture can`t load texture");
 	
-		outTexture.setName(path);
-		outTexture.setWidth(static_cast<std::int16_t>(w));
-		outTexture.setHeight(static_cast<std::int16_t>(h));
-		return true;
+		Texture2d res{path, data, static_cast<std::int16_t>(w), static_cast<std::int16_t>(h)};
+		return res;
 	}
 	
 	vector<uint8_t> Utils::loadFile(const std::string& filename) {

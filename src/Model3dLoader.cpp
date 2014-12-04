@@ -14,8 +14,8 @@ namespace br {
 	const uint8_t Model3dLoader::TRIANGLE_FACE_TYPE = 3;
 	const std::string Model3dLoader::BONES_ROOT_NODE = "Armature";
 	
-	bool Model3dLoader::loadModel(string dir, string name) {
-		string path = dir + name;
+	bool Model3dLoader::loadModel(string directory, string name) {
+		string path = directory + name;
 		
 		const aiScene* modelAi = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 		if (!modelAi)
@@ -25,7 +25,7 @@ namespace br {
 		if (meshes.empty())
 			throw std::exception("Model3dLoader::loadModel no meshes");
 	
-		vector<Material3d> materials = collectMaterials(modelAi, dir);
+		vector<Material3d> materials = collectMaterials(modelAi, directory);
 		if (materials.empty())
 			throw std::exception("Model3dLoader::loadModel no materials");
 	
@@ -50,8 +50,8 @@ namespace br {
 			throw std::exception("Model3dLoader::attachAnimation invalid collada model");
 	
 		Model3d& model = getModel(modelName);
-		Animation3d defaultAnimation = collectAnimation(animationAi, model.getBoneTree(), animName);
-		model.addAnimation(defaultAnimation);
+		Animation3d animation = collectAnimation(animationAi, model.getBoneTree(), animName);
+		model.addAnimation(animation);
 	
 		return true;
 	}
@@ -148,10 +148,9 @@ namespace br {
 	
 			aiString textureAi;
 			materialAi->GetTexture(aiTextureType_DIFFUSE, 0, &textureAi);
-			Texture2d texture;
-			if (!Utils::loadTexture(dir + textureAi.C_Str(), texture))
-				throw std::exception("Model3dLoader::collectMaterials can`t load texture");
-		
+			
+			Texture2d texture = Utils::loadTexture(dir + textureAi.C_Str());
+			
 			Material3d mat{
 				texture,
 				Utils::assimpToGlm(emissionAi),

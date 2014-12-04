@@ -6,13 +6,13 @@ namespace br {
 	template <class B>
 	class BNode {
 	public:
-		BNode() = default;
+		BNode() = delete;
 		BNode(uint32_t, std::string, B&);
 	
 		~BNode() = default;
 	
-		bool addChild(uint32_t, std::string, B&);
-		bool addChild(BNode<B>&);
+		bool addChild(uint32_t id, std::string name, B& data);
+		bool addChild(BNode<B>& child);
 	
 		uint32_t getId() const { return id; }
 		void setId(uint32_t val) { id = val; }
@@ -26,12 +26,12 @@ namespace br {
 	
 		operator std::string() const;
 	
-		static void ForEachNode(BNode<B>&, void(*)(BNode<B>&, uint32_t), uint32_t = 0);
-		static void ForEachNode(BNode<B>&, void*, void*, void(*)(BNode<B>&, void*, void*, uint32_t), uint32_t = 0);
+		static void ForEachNode(BNode<B>& node, void(*eacher)(BNode<B>&, uint32_t), uint32_t level = 0);
+		static void ForEachNode(BNode<B>&, void* inData, void* outData, void(*eacher)(BNode<B>&, void*, void*, uint32_t), uint32_t level = 0);
 		
-		static void ArrangeIds(BNode<B>&);
+		static void ArrangeIds(BNode<B>& root);
 	
-		static BNode<B>* BNode<B>::FindNode(BNode<B>&, std::string);
+		static BNode<B>* BNode<B>::FindNode(BNode<B>& root, std::string name);
 	
 	private:
 		uint32_t id;
@@ -45,10 +45,7 @@ namespace br {
 	};
 	
 	template <class B>
-	BNode<B>::BNode(uint32_t id, std::string name, B& data) {
-		this->id = id;
-		this->name = name;
-		this->data = data;
+	BNode<B>::BNode(uint32_t id, std::string name, B& data) : id(id), name(name), data(data){
 	}
 	
 	template <class B>
@@ -96,15 +93,15 @@ namespace br {
 	}
 	
 	template <class B>
-	void BNode<B>::ArrangeIds(BNode<B>& node) {
+	void BNode<B>::ArrangeIds(BNode<B>& root) {
 		uint32_t firstId = 0;
-		ArrangeIds(node, firstId);
+		ArrangeIds(root, firstId);
 	}
 	
 	template <class B>
-	BNode<B>* BNode<B>::FindNode(BNode<B>& node, std::string withName) {
+	BNode<B>* BNode<B>::FindNode(BNode<B>& root, std::string withName) {
 		bool found = false;
-		return BNode<B>::FindNode(node, withName, found);
+		return BNode<B>::FindNode(root, withName, found);
 	}
 	
 	

@@ -10,14 +10,18 @@
 namespace br {
 	class Model3d {
 	public:
-		Model3d(std::string, const std::vector<Mesh3d>&, const std::vector<Material3d>&, const BNode<BoneNodeData>&, const Animation3d&);
-	
+		Model3d(std::string name,
+			const std::vector<Mesh3d>& meshes,
+			const std::vector<Material3d>& materials, 
+			const BNode<BoneNodeData>& boneTree,
+			const Animation3d& defaultAnimation);
+
 		std::string getName() const { return name; }
 		std::vector<Mesh3d>& getMeshes() { return meshes; }
 		std::vector<Material3d>& getMaterials() { return materials; }
 	
-		Animation3d& getAnimation(std::string = Animation3d::DEFAULT_ANIMATION_NAME);
-		bool addAnimation(Animation3d&);
+		Animation3d& getAnimationBy(std::string name = Animation3d::DEFAULT_ANIMATION_NAME);
+		void addAnimation(Animation3d&);
 	
 		BNode<BoneNodeData>& getBoneTree(){ return boneTree; }
 	

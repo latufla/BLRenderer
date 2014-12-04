@@ -6,8 +6,7 @@ using std::to_string;
 using glm::mat4;
 
 namespace br {
-	BoneNodeData::BoneNodeData(const mat4& transform) {
-		this->transform = transform;
+	BoneNodeData::BoneNodeData(const mat4& transform) : transform(transform) {
 	}
 	
 	BoneNodeData::operator string() const {

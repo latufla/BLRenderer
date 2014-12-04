@@ -4,8 +4,8 @@
 namespace br {
 	class Texture2d {
 	public:
-		Texture2d() = default;
-		Texture2d(std::string, std::vector<uint8_t>&, int16_t, int16_t);
+		Texture2d() = delete;
+		Texture2d(std::string name, std::vector<uint8_t>& data, int16_t widht, int16_t height);
 		
 		~Texture2d() = default;
 	
