@@ -338,7 +338,8 @@ namespace br {
 		return it != cend(idToObject);
 	}
 	
-	bool Renderer::loadModelToGpu(string modelPath) {
+	// TODO: implement fail checks
+	void Renderer::loadModelToGpu(string modelPath) {
 		Model3d& model = loader->getModelBy(modelPath);
 		vector<Mesh3d>& meshes = model.getMeshes();
 		for (auto& s : meshes) {
@@ -369,12 +370,9 @@ namespace br {
 	
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	
-		std::cout << static_cast<string>(model);
-		return true;
 	}
 	
-	bool Renderer::deleteModelFromGpu(std::string modelPath) {
+	void Renderer::deleteModelFromGpu(std::string modelPath) {
 		Model3d& model = loader->getModelBy(modelPath);
 		vector<Mesh3d>& meshes = model.getMeshes();
 		for (auto& s : meshes) {
@@ -386,11 +384,8 @@ namespace br {
 	
 			glDeleteTextures(1, &buffers.texture);
 	
-			auto& bIt = meshToBuffer.find(mName);
-			if (bIt != end(meshToBuffer))
-				meshToBuffer.erase(bIt);
+			meshToBuffer.erase(mName);
 		}
-		return true;
 	}
 	
 	GLuint Renderer::loadTextureToGpu(vector<uint8_t>& texture, int16_t widht, int16_t height) {
@@ -409,4 +404,5 @@ namespace br {
 	
 		return textureId;
 	}
+	//
 }

@@ -60,8 +60,8 @@ namespace br {
 		};
 		std::unordered_map<std::string, GpuBufferData> meshToBuffer;
 	
-		bool loadModelToGpu(std::string);
-		bool deleteModelFromGpu(std::string);
+		void loadModelToGpu(std::string);
+		void deleteModelFromGpu(std::string);
 	
 		bool hasObjectWithModel(std::string);
 		
