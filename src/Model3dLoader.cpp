@@ -20,7 +20,7 @@ namespace br {
 			throw Model3dException(EXCEPTION_INFO, pathAsKey, "has same model");
 		
 		
-		const aiScene* modelAi = importer.ReadFile(pathAsKey, aiProcess_Triangulate | aiProcess_FlipUVs);
+		const aiScene* modelAi = importer.ReadFile(pathAsKey, aiProcess_FlipUVs);
 		if (!modelAi)
 			throw Model3dException(EXCEPTION_INFO, pathAsKey,"invalid collada model");
 		
