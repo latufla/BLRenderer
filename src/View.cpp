@@ -4,9 +4,8 @@
 using std::string;
 
 namespace br {
-	View::View(uint32_t id, string name, string path) 
+	View::View(uint32_t id, string path) 
 		: id(id),
-		name(name), 
 		path(path){
 	}
 	

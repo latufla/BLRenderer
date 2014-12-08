@@ -70,7 +70,7 @@ namespace br {
 		if (!hasObjectWithModel(modelPath)) // first in
 			loadModelToGpu(modelPath);
 		
-		View object{ id, "", modelPath };
+		View object{ id, modelPath };
 		idToObject.emplace(id, object);
 		return true;
 	}
@@ -95,9 +95,9 @@ namespace br {
 			return false;
 		
 		View& object = it->second;
-		Model3d& model = loader->getModel(object.getPath());
+		Model3d& model = loader->getModelBy(object.getPath());
 		Animation3d& animation = model.getAnimationBy(animName);
-		it->second.setAnimation(animName, (uint32_t)(animation.getDuration() * 1000), true);
+		object.setAnimation(animName, (uint32_t)(animation.getDuration() * 1000), true);
 		return true;
 	}
 	
@@ -140,7 +140,7 @@ namespace br {
 			glm::mat4 mvpMtx = pvMatrix * modelMtx;
 			glUniformMatrix4fv(mvpMatrixLoc, 1, GL_FALSE, &mvpMtx[0][0]);
 	
-			Model3d& model = loader->getModel(view.getPath());
+			Model3d& model = loader->getModelBy(view.getPath());
 			vector<Mesh3d>& meshes = model.getMeshes();
 			for (auto& s : meshes) {
 				auto bonesData = prepareAnimationStep(view, s, stepMSec);
@@ -322,7 +322,7 @@ namespace br {
 		
 		object.doAnimationStep(stepMSec);
 	
-		Model3d& model = loader->getModel(object.getPath());
+		Model3d& model = loader->getModelBy(object.getPath());
 		boneTransformer.transform(object, model, res);
 		return res;
 	}
@@ -346,7 +346,7 @@ namespace br {
 	}
 	
 	bool Renderer::loadModelToGpu(string modelPath) {
-		Model3d& model = loader->getModel(modelPath);
+		Model3d& model = loader->getModelBy(modelPath);
 		vector<Mesh3d>& meshes = model.getMeshes();
 		for (auto& s : meshes) {
 			uint32_t vBuffer;
@@ -382,7 +382,7 @@ namespace br {
 	}
 	
 	bool Renderer::deleteModelFromGpu(std::string modelPath) {
-		Model3d& model = loader->getModel(modelPath);
+		Model3d& model = loader->getModelBy(modelPath);
 		vector<Mesh3d>& meshes = model.getMeshes();
 		for (auto& s : meshes) {
 			string mName = model.getUniqueMeshName(s);

@@ -10,13 +10,13 @@
 namespace br {
 	class Model3d {
 	public:
-		Model3d(std::string name,
+		Model3d(std::string path,
 			const std::vector<Mesh3d>& meshes,
 			const std::vector<Material3d>& materials, 
 			const BNode<BoneNodeData>& boneTree,
 			const Animation3d& defaultAnimation);
 
-		std::string getName() const { return name; }
+		std::string getPath() const { return path; }
 		std::vector<Mesh3d>& getMeshes() { return meshes; }
 		std::vector<Material3d>& getMaterials() { return materials; }
 	
@@ -33,7 +33,7 @@ namespace br {
 		void setGlobalInverseTransform(glm::mat4& val) { globalInverseTransform = val; }
 	
 	private:
-		std::string name;
+		std::string path;
 		
 		std::vector<Mesh3d> meshes;
 		std::vector<Material3d> materials;

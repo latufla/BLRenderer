@@ -5,12 +5,11 @@ namespace br {
 	class View {
 	public:
 		View() = delete;
-		View(uint32_t id, std::string name, std::string path);
+		View(uint32_t id, std::string path);
 	
 		~View() = default;
 
 		uint32_t getId() const { return id; }
-		std::string getName() const { return name; }
 		std::string getPath() const { return path; }
 	
 		glm::mat4& getTransform() { return transform; }
@@ -25,7 +24,6 @@ namespace br {
 	
 	private:
 		uint32_t id;
-		std::string name;
 		std::string path;
 		
 		glm::mat4 transform;

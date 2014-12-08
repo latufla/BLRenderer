@@ -17,10 +17,10 @@ namespace br {
 		Model3dLoader() {};
 		~Model3dLoader() = default;
 	
-		bool loadModel(std::string directory, std::string name);
+		bool loadModel(std::string pathAsKey, std::string textureDirectory);
 	
-		Model3d& getModel(std::string name);
-		bool attachAnimation(std::string modelName, std::string animPath, std::string animName);
+		Model3d& getModelBy(std::string path);
+		bool attachAnimation(std::string toModel, std::string byNameAsKey, std::string withPath);
 	
 	private:
 		std::map<std::string, Model3d> pathToModel;

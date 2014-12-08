@@ -7,12 +7,12 @@ using std::string;
 using std::exception;
 
 namespace br {
-	Model3d::Model3d(string name, 
+	Model3d::Model3d(string path, 
 		const vector<Mesh3d>& meshes, 
 		const vector<Material3d>& materials,
 		const BNode<BoneNodeData>& boneTree, 
 		const Animation3d& defaultAnimation)
-		: name(name),
+		: path(path),
 		meshes(meshes),
 		materials(materials),
 		boneTree(boneTree) {
@@ -21,7 +21,7 @@ namespace br {
 	
 	Model3d::operator string() const {
 		string res = "";
-		res += "{ name : " + name + "\nmeshes: {\n";
+		res += "{ path : " + path + "\nmeshes: {\n";
 		for (auto& i : meshes) {
 			res += i;
 			res += "\n";
@@ -38,7 +38,7 @@ namespace br {
 	}
 	
 	string Model3d::getUniqueMeshName(const Mesh3d& mesh) {
-		return name + mesh.getName();
+		return path + mesh.getName();
 	}
 	
 	Animation3d& Model3d::getAnimationBy(std::string name) {

@@ -14,10 +14,8 @@ namespace br {
 	const uint8_t Model3dLoader::TRIANGLE_FACE_TYPE = 3;
 	const std::string Model3dLoader::BONES_ROOT_NODE = "Armature";
 	
-	bool Model3dLoader::loadModel(string directory, string name) {
-		string path = directory + name;
-		
-		const aiScene* modelAi = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+	bool Model3dLoader::loadModel(string pathAsKey, string textureDirectory) {
+		const aiScene* modelAi = importer.ReadFile(pathAsKey, aiProcess_Triangulate | aiProcess_FlipUVs);
 		if (!modelAi)
 			throw std::exception("Model3dLoader::loadModel invalid collada model");
 			
@@ -25,7 +23,7 @@ namespace br {
 		if (meshes.empty())
 			throw std::exception("Model3dLoader::loadModel no meshes");
 	
-		vector<Material3d> materials = collectMaterials(modelAi, directory);
+		vector<Material3d> materials = collectMaterials(modelAi, textureDirectory);
 		if (materials.empty())
 			throw std::exception("Model3dLoader::loadModel no materials");
 	
@@ -37,27 +35,27 @@ namespace br {
 		aiNode* rootAi = modelAi->mRootNode;
 		auto glTrans = Utils::assimpToGlm(rootAi->mTransformation);
 		
-		Model3d model{ path, meshes, materials, bones, defaultAnimation };
+		Model3d model{pathAsKey, meshes, materials, bones, defaultAnimation};
 		model.setGlobalInverseTransform(glTrans);
-		pathToModel.emplace(path, model);
+		pathToModel.emplace(pathAsKey, model);
 		
 		return true;
 	}
 	
-	bool Model3dLoader::attachAnimation(string modelName, string animPath, string animName) {
-		const aiScene* animationAi = importer.ReadFile(animPath, aiProcess_Triangulate | aiProcess_FlipUVs);
+	bool Model3dLoader::attachAnimation(string toModel, string byNameAsKey, string withPath) {
+		const aiScene* animationAi = importer.ReadFile(withPath, aiProcess_Triangulate | aiProcess_FlipUVs);
 		if (!animationAi)
 			throw std::exception("Model3dLoader::attachAnimation invalid collada model");
 	
-		Model3d& model = getModel(modelName);
-		Animation3d animation = collectAnimation(animationAi, model.getBoneTree(), animName);
+		Model3d& model = getModelBy(toModel);
+		Animation3d animation = collectAnimation(animationAi, model.getBoneTree(), byNameAsKey);
 		model.addAnimation(animation);
 	
 		return true;
 	}
 	
-	Model3d& Model3dLoader::getModel(string name) {	
-		return pathToModel.at(name);
+	Model3d& Model3dLoader::getModelBy(string path) {
+		return pathToModel.at(path);
 	}
 	
 	
