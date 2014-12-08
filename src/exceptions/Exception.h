@@ -78,4 +78,16 @@ namespace br {
 			return "Model3dException";
 		}
 	};
+
+	class GpuException : public Exception {
+	public:
+		GpuException(std::string func, uint32_t line, std::string reason)
+			: Exception(func, line, reason) {
+		}
+		~GpuException() = default;
+
+		const char* what() const override {
+			return "GpuException";
+		}
+	};
 }

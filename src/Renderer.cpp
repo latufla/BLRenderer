@@ -345,19 +345,36 @@ namespace br {
 		for (auto& s : meshes) {
 			uint32_t vBuffer;
 			glGenBuffers(1, &vBuffer);
-	
-			auto vertices = s.getVertices();
 			glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex3d) * vertices.size(), &vertices[0], GL_STATIC_DRAW);
+			
+			auto vertices = s.getVertices();
+			GLint szInBytes = sizeof(Vertex3d) * vertices.size();
+			glBufferData(GL_ARRAY_BUFFER, szInBytes, &vertices[0], GL_STATIC_DRAW);
+			
+			GLint loadedBytes = 0;
+			glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &loadedBytes);
+			if(szInBytes != loadedBytes) {
+				glDeleteBuffers(1, &vBuffer);
+				throw GpuException(EXCEPTION_INFO, "can`t load vertices");
+			}
 	
+
 			uint32_t iBuffer;
 			glGenBuffers(1, &iBuffer);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
 	
 			auto indices = s.getIndices();
 			uint32_t iBufferLength = indices.size();
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * iBufferLength, &indices[0], GL_STATIC_DRAW);
-	
+			szInBytes = sizeof(uint16_t) * iBufferLength;
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, szInBytes, &indices[0], GL_STATIC_DRAW);
+			
+			glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &loadedBytes);
+			if(szInBytes != loadedBytes) {
+				glDeleteBuffers(1, &iBuffer);
+				throw GpuException(EXCEPTION_INFO, "can`t load indices");
+			}
+
+
 			auto& materials = model.getMaterials();
 			Material3d& m = materials.at(s.getMaterialId());
 			Texture2d& t = m.getTexture();
@@ -388,18 +405,19 @@ namespace br {
 		}
 	}
 	
-	GLuint Renderer::loadTextureToGpu(vector<uint8_t>& texture, int16_t widht, int16_t height) {
+	GLuint Renderer::loadTextureToGpu(vector<uint8_t>& texture, int16_t width, int16_t height) {
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	
+		
 		GLuint textureId;
 		glGenTextures(1, &textureId);
 		glBindTexture(GL_TEXTURE_2D, textureId);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, widht, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &texture[0]);
-	
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &texture[0]);
+		
 		glGenerateMipmap(GL_TEXTURE_2D);
 	
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	
 		glBindTexture(GL_TEXTURE_2D, 0);
 	
 		return textureId;
