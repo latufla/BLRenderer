@@ -2,6 +2,7 @@
 #include "Utils.h"
 #include <fstream>
 #include <gtc\type_ptr.hpp>
+#include "exceptions\Exception.h"
 
 using std::vector;
 using std::array;
@@ -146,12 +147,14 @@ namespace br {
 	
 	Texture2d Utils::loadTexture(string path) {
 		vector<uint8_t> buffer = loadFile(path);
+		if(buffer.empty())
+			throw Model3dException(EXCEPTION_INFO, path, "can`t load texture");
 	
 		std::vector<uint8_t> data;
 		unsigned long w, h;
 		int decodeFail = Utils::decodePNG(data, w, h, buffer.empty() ? 0 : &buffer[0], (unsigned long)buffer.size());
-		if (decodeFail)
-			throw std::exception("Utils::loadTexture can`t load texture");
+		if(decodeFail)
+			throw Model3dException(EXCEPTION_INFO, path, "can`t decode texture");
 	
 		Texture2d res{path, data, static_cast<std::int16_t>(w), static_cast<std::int16_t>(h)};
 		return res;

@@ -133,6 +133,10 @@ namespace br {
 		for (uint32_t i = 0; i < nMaterialsAi; i++) {
 			aiMaterial* materialAi = modelAi->mMaterials[i];
 	
+			aiString textureAi;
+			materialAi->GetTexture(aiTextureType_DIFFUSE, 0, &textureAi);
+			Texture2d texture = Utils::loadTexture(dir + textureAi.C_Str());
+
 			aiColor4D emissionAi;
 			aiGetMaterialColor(materialAi, AI_MATKEY_COLOR_EMISSIVE, &emissionAi);
 	
@@ -157,12 +161,7 @@ namespace br {
 			max = 1;
 			aiGetMaterialIntegerArray(materialAi, AI_MATKEY_TWOSIDED, &twoSidedAi, &max);
 			bool twoSided = (twoSidedAi != 0);
-	
-			aiString textureAi;
-			materialAi->GetTexture(aiTextureType_DIFFUSE, 0, &textureAi);
-			
-			Texture2d texture = Utils::loadTexture(dir + textureAi.C_Str());
-			
+
 			Material3d mat{
 				texture,
 				Utils::assimpToGlm(emissionAi),
