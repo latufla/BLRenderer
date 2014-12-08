@@ -32,8 +32,8 @@ namespace br {
 	
 		bool doStep(uint32_t stepMSec);
 		
-		bool playAnimation(uint32_t objId, std::string animName = Animation3d::DEFAULT_ANIMATION_NAME);
-		bool transform(uint32_t objId, const std::array<float, 16> tForm);
+		void playAnimation(uint32_t objId, std::string animName = Animation3d::DEFAULT_ANIMATION_NAME);
+		void transform(uint32_t objId, const std::array<float, 16> tForm);
 	
 		void setCamera(float x, float y, float z);
 	

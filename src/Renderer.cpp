@@ -72,8 +72,8 @@ namespace br {
 	void Renderer::removeObject(uint32_t id){
 		string modelPath = "";
 		try {
-			View& view = idToObject.at(id);
-			modelPath = view.getPath();
+			View& object = idToObject.at(id);
+			modelPath = object.getPath();
 		} catch(std::out_of_range&) {
 			throw InvalidObjectIdException(EXCEPTION_INFO, id);
 		}
@@ -84,16 +84,17 @@ namespace br {
 			deleteModelFromGpu(modelPath);
 	}
 	
-	bool Renderer::playAnimation(uint32_t objId, std::string animName) {
-		auto& it = idToObject.find(objId);
-		if (it == end(idToObject))
-			return false;
+	void Renderer::playAnimation(uint32_t objId, std::string animName) {
+		View* object;
+		try {
+			object = &idToObject.at(objId);
+		} catch(std::out_of_range&) {
+			throw InvalidObjectIdException(EXCEPTION_INFO, objId);
+		}
 		
-		View& object = it->second;
-		Model3d& model = loader->getModelBy(object.getPath());
+		Model3d& model = loader->getModelBy(object->getPath());
 		Animation3d& animation = model.getAnimationBy(animName);
-		object.setAnimation(animName, (uint32_t)(animation.getDuration() * 1000), true);
-		return true;
+		object->setAnimation(animName, (uint32_t)(animation.getDuration() * 1000), true);
 	}
 	
 	void Renderer::setCamera(float x, float y, float z) {
@@ -119,6 +120,7 @@ namespace br {
 		glm::mat4 projection = glm::perspective(45.0f, wWidth / wHeight, 0.1f, 100.0f);
 		glm::mat4 pvMatrix = projection * view;
 	
+		// TODO: don`t do in runtime
 		GLuint posLoc = glGetAttribLocation(defaultProgram, "aPosition");
 		GLuint texPosLoc = glGetAttribLocation(defaultProgram, "aTexCoord");
 		
@@ -128,7 +130,8 @@ namespace br {
 		
 		GLuint samplerLoc = glGetUniformLocation(defaultProgram, "sTexture");
 		GLuint mvpMatrixLoc = glGetUniformLocation(defaultProgram, "mvpMatrix");
-		
+		//
+
 		for (auto& i : idToObject){
 			View& view = i.second;
 			const glm::mat4& modelMtx = view.getTransform();
@@ -315,14 +318,16 @@ namespace br {
 		return res;
 	}
 	
-	bool Renderer::transform(uint32_t objId, const array<float, 16> tForm) {
-		auto& it = idToObject.find(objId);
-		if (it == end(idToObject))
-			return false;
-	
+	void Renderer::transform(uint32_t objId, const array<float, 16> tForm) {
+		View* object;
+		try {
+			object = &idToObject.at(objId);
+		} catch(std::out_of_range&) {
+			throw InvalidObjectIdException(EXCEPTION_INFO, objId);
+		}
+		
 		auto t = glm::make_mat4(tForm.data());
-		it->second.setTransform(t);
-		return true;
+		object->setTransform(t);
 	}
 	
 	
