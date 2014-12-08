@@ -65,6 +65,8 @@ namespace br {
 		auto res = idToObject.emplace(id, object);
 		if(!res.second)
 			throw InvalidObjectIdException(EXCEPTION_INFO, id);
+
+		playAnimation(id, Animation3d::DEFAULT_ANIMATION_NAME); // TODO: find better decision
 	}
 	
 	void Renderer::removeObject(uint32_t id){
