@@ -67,4 +67,15 @@ namespace br {
 		}
 	};
 
+	class Model3dException : public Exception {
+	public:
+		Model3dException(std::string func, uint32_t line, std::string path, std::string reason)
+			: Exception(func, line, "path: " + path + " " + reason) {
+		}
+		~Model3dException() = default;
+
+		const char* what() const override {
+			return "Model3dException";
+		}
+	};
 }

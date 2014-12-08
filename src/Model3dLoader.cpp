@@ -3,6 +3,7 @@
 #include "bones\BoneNodeData.h"
 #include "Utils.h"
 #include <unordered_map>
+#include "exceptions\Exception.h"
 
 using std::string;
 using std::to_string;
@@ -14,48 +15,61 @@ namespace br {
 	const uint8_t Model3dLoader::TRIANGLE_FACE_TYPE = 3;
 	const std::string Model3dLoader::BONES_ROOT_NODE = "Armature";
 	
-	bool Model3dLoader::loadModel(string pathAsKey, string textureDirectory) {
+	void Model3dLoader::loadModel(string pathAsKey, string textureDirectory) {
+		if(pathToModel.find(pathAsKey) != pathToModel.cend())
+			throw Model3dException(EXCEPTION_INFO, pathAsKey, "has same model");
+		
+		
 		const aiScene* modelAi = importer.ReadFile(pathAsKey, aiProcess_Triangulate | aiProcess_FlipUVs);
 		if (!modelAi)
-			throw std::exception("Model3dLoader::loadModel invalid collada model");
-			
+			throw Model3dException(EXCEPTION_INFO, pathAsKey,"invalid collada model");
+		
+		
 		vector<Mesh3d> meshes = collectMeshes(modelAi);
 		if (meshes.empty())
-			throw std::exception("Model3dLoader::loadModel no meshes");
-	
+			throw Model3dException(EXCEPTION_INFO, pathAsKey, "no meshes");
+
+		
 		vector<Material3d> materials = collectMaterials(modelAi, textureDirectory);
-		if (materials.empty())
-			throw std::exception("Model3dLoader::loadModel no materials");
+		if(materials.empty())
+			throw Model3dException(EXCEPTION_INFO, pathAsKey, "no materials");
 	
-		BNode<BoneNodeData> bones = collectBones(modelAi);
+		
+		aiNode* root = modelAi->mRootNode;
+		const aiNode* bonesRoot = root->FindNode(BONES_ROOT_NODE.c_str());
+		BNode<BoneNodeData> bones = collectBones(bonesRoot, pathAsKey);
 		collectBoneWeightsAndOffsets(modelAi, bones, meshes);
 	
-		Animation3d defaultAnimation = collectAnimation(modelAi, bones, Animation3d::DEFAULT_ANIMATION_NAME);
+		
+		Animation3d defaultAnimation = collectAnimation(modelAi, bones, Animation3d::DEFAULT_ANIMATION_NAME, pathAsKey);
 		
 		aiNode* rootAi = modelAi->mRootNode;
 		auto glTrans = Utils::assimpToGlm(rootAi->mTransformation);
 		
 		Model3d model{pathAsKey, meshes, materials, bones, defaultAnimation};
 		model.setGlobalInverseTransform(glTrans);
+
 		pathToModel.emplace(pathAsKey, model);
-		
-		return true;
 	}
 	
-	bool Model3dLoader::attachAnimation(string toModel, string byNameAsKey, string withPath) {
+	void Model3dLoader::attachAnimation(string toModel, string byNameAsKey, string withPath) {
 		const aiScene* animationAi = importer.ReadFile(withPath, aiProcess_Triangulate | aiProcess_FlipUVs);
 		if (!animationAi)
-			throw std::exception("Model3dLoader::attachAnimation invalid collada model");
-	
+			throw Model3dException(EXCEPTION_INFO, withPath, "invalid collada model");
+
 		Model3d& model = getModelBy(toModel);
-		Animation3d animation = collectAnimation(animationAi, model.getBoneTree(), byNameAsKey);
+		Animation3d animation = collectAnimation(animationAi, model.getBoneTree(), byNameAsKey, toModel);
 		model.addAnimation(animation);
-	
-		return true;
 	}
 	
 	Model3d& Model3dLoader::getModelBy(string path) {
-		return pathToModel.at(path);
+ 		Model3d* res;
+		try {
+			res = &pathToModel.at(path);
+		} catch (std::out_of_range&){
+			throw Model3dException(EXCEPTION_INFO, path, "no such model");
+		}
+		return *res;
 	}
 	
 	
@@ -163,13 +177,11 @@ namespace br {
 	}
 	
 	
-	BNode<BoneNodeData> Model3dLoader::collectBones(const aiScene* scene, string bonesRoot) {
-		aiNode* root = scene->mRootNode;
-		aiNode* armature = root->FindNode(bonesRoot.c_str());
-		if (!armature || !armature->mNumChildren)
-			throw std::exception("Model3dLoader::collectBones: no bones");
-	
-		aiNode* rootBone = armature->mChildren[0];	
+	BNode<BoneNodeData> Model3dLoader::collectBones(const aiNode* bonesRoot, string modelPath) {
+		if(!bonesRoot || !bonesRoot->mNumChildren)
+			throw Model3dException(EXCEPTION_INFO, modelPath, "no bones");
+
+		aiNode* rootBone = bonesRoot->mChildren[0];	
 		BNode<BoneNodeData> boneTree = parseBones(rootBone);
 		
 		BNode<BoneNodeData>::ArrangeIds(boneTree);
@@ -191,18 +203,16 @@ namespace br {
 		return bones;
 	}
 	
-	Animation3d Model3dLoader::collectAnimation(const aiScene* scene, BNode<BoneNodeData>& allBones, string name) {
+	Animation3d Model3dLoader::collectAnimation(const aiScene* scene, BNode<BoneNodeData>& allBones, string animName, string modelPath) {
 		uint32_t nAnims = scene->mNumAnimations;
-		if (!nAnims)
-			throw std::exception("Model3dLoader::collectAnimation: no animation");
-	
-		aiAnimation* anim = scene->mAnimations[0];
-	
+		if(!nAnims)
+			throw Model3dException(EXCEPTION_INFO, modelPath, "no animation " + animName);
+
+		aiAnimation* anim = scene->mAnimations[0]; // one scene - one animation
 		uint32_t nChannels = anim->mNumChannels;
 		if (!nChannels)
-			throw std::exception("Model3dLoader::collectAnimation: empty animation");
-	
-		// TODO: drop not bones, wonder am i right
+			throw Model3dException(EXCEPTION_INFO, modelPath, "empty animation " + animName);
+
 		unordered_map<uint32_t, Animation3d::BoneAnimation> idToBoneAnimation;
 		for (uint32_t i = 0; i < nChannels; ++i) {
 			aiNodeAnim* animNode = anim->mChannels[i];
@@ -242,7 +252,7 @@ namespace br {
 			idToBoneAnimation.emplace(boneId, myBoneAnimation);
 		}
 	
-		return{ name, anim->mDuration, anim->mTicksPerSecond, idToBoneAnimation };
+		return{ animName, anim->mDuration, anim->mTicksPerSecond, idToBoneAnimation };
 	}
 	
 	void Model3dLoader::collectBoneWeightsAndOffsets(const aiScene* scene, BNode<BoneNodeData>& boneTree, vector<Mesh3d>& meshes) {

@@ -17,10 +17,10 @@ namespace br {
 		Model3dLoader() {};
 		~Model3dLoader() = default;
 	
-		bool loadModel(std::string pathAsKey, std::string textureDirectory);
+		void loadModel(std::string pathAsKey, std::string textureDirectory);
 	
 		Model3d& getModelBy(std::string path);
-		bool attachAnimation(std::string toModel, std::string byNameAsKey, std::string withPath);
+		void attachAnimation(std::string toModel, std::string byNameAsKey, std::string withPath);
 	
 	private:
 		std::map<std::string, Model3d> pathToModel;
@@ -34,11 +34,11 @@ namespace br {
 		std::vector<Material3d> collectMaterials(const aiScene*, std::string);
 	
 		static const std::string BONES_ROOT_NODE;
-		BNode<BoneNodeData> collectBones(const aiScene*, std::string = BONES_ROOT_NODE);
+		BNode<BoneNodeData> collectBones(const aiNode*, std::string);
 		BNode<BoneNodeData> parseBones(const aiNode*);
 	
 		void collectBoneWeightsAndOffsets(const aiScene*, BNode<BoneNodeData>&, std::vector<Mesh3d>&);
 	
-		Animation3d collectAnimation(const aiScene*, BNode<BoneNodeData>&, std::string name);
+		Animation3d collectAnimation(const aiScene*, BNode<BoneNodeData>&, std::string, std::string);
 	};
 }
