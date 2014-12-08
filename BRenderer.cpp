@@ -8,6 +8,7 @@
 #include "src/Renderer.h"
 #include "Model3dInfo.h"
 #include <memory>
+#include "src/exceptions/Exception.h"
 
 const std::string CUBE = "Cube";
 const std::string GUN = "Gun";
@@ -17,9 +18,22 @@ const std::string STAN_LEE = "StanLee";
 
 std::vector<ObjectBase> objects;
 
-int _tmain(int argc, _TCHAR* argv[]) {
 
- 	objects.push_back({ 42, CUBE });	
+void run();
+void handleExceptions();
+
+int _tmain(int argc, _TCHAR* argv[]) {
+	try {
+		run();
+ 	} catch(...) {
+ 		handleExceptions();
+ 	}
+
+	return 0;
+}
+
+void run() {
+	objects.push_back({42, CUBE});
 
 	std::unordered_map<std::string, std::string> nameToAnimation{
 			{"idle", "CubeIdle.dae"}};
@@ -54,6 +68,22 @@ int _tmain(int argc, _TCHAR* argv[]) {
 		Sleep(step); // TODO: shirt WND 
 		done = !renderer.doStep(step);
 	}
+}
 
-	return 0;
+void handleExceptions() {
+	std::string error = "";
+	try {
+		throw;
+	} catch(br::Exception& e) {
+		error = e.msg();
+	} catch(std::exception& e) {
+		error = e.what();
+	} catch(...) {
+		error = "unknown exception";
+	}
+
+	if(error != "") {
+		std::cout << error;
+		std::exit(1);
+	}
 }

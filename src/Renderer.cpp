@@ -57,27 +57,29 @@ namespace br {
 		}
 	}
 	
-	bool Renderer::addObject(uint32_t id, std::string modelPath){
+	void Renderer::addObject(uint32_t id, std::string modelPath){
 		if (!hasObjectWithModel(modelPath)) // first in
 			loadModelToGpu(modelPath);
 		
 		View object{ id, modelPath };
-		idToObject.emplace(id, object);
-		return true;
+		auto res = idToObject.emplace(id, object);
+		if(!res.second)
+			throw InvalidObjectIdException(EXCEPTION_INFO, id);
 	}
 	
-	bool Renderer::removeObject(uint32_t id){
-		View& view = idToObject.at(id);
-		string modelPath = view.getPath();
-	
-		auto& it = idToObject.find(id);
-		if (it != end(idToObject))
-			idToObject.erase(it);
+	void Renderer::removeObject(uint32_t id){
+		string modelPath = "";
+		try {
+			View& view = idToObject.at(id);
+			modelPath = view.getPath();
+		} catch(std::out_of_range&) {
+			throw InvalidObjectIdException(EXCEPTION_INFO, id);
+		}
+
+		idToObject.erase(id);
 	
 		if (!hasObjectWithModel(modelPath)) // last out
 			deleteModelFromGpu(modelPath);
-		
-		return true;
 	}
 	
 	bool Renderer::playAnimation(uint32_t objId, std::string animName) {

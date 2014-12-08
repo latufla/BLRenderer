@@ -27,8 +27,8 @@ namespace br {
 
 		~Renderer();
 	
-		bool addObject(uint32_t id, std::string modelPath);
-		bool removeObject(uint32_t id);
+		void addObject(uint32_t id, std::string modelPath);
+		void removeObject(uint32_t id);
 	
 		bool doStep(uint32_t stepMSec);
 		

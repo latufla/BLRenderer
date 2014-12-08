@@ -54,4 +54,17 @@ namespace br {
 			return "ShaderException";
 		}
 	};
+
+	class InvalidObjectIdException : public Exception {
+	public:
+		InvalidObjectIdException(std::string func, uint32_t line, uint32_t objId)
+			: Exception(func, line, "id: " + std::to_string(objId)) {
+		}
+		~InvalidObjectIdException() = default;
+
+		const char* what() const override {
+			return "InvalidObjectIdException";
+		}
+	};
+
 }
