@@ -10,28 +10,10 @@
 #include "Model3dLoader.h"
 #include "View.h"
 #include <array>
-#include "bone\BNode.h"
-#include "bone\BoneTransformer.h"
+#include "bones\BNode.h"
+#include "bones\BoneTransformer.h"
 
-namespace br {
-	enum EglError {
-		GET_DISPLAY_FAIL = 0x01,
-		INIT_DISPLAY_FAIL = 0x02,
-		CHOSE_CONFIG_FAIL = 0x04,
-	
-		NATIVE_WINDOW_FAIL = 0x08,
-	
-		CREATE_SURFACE_FAIL = 0x10,
-		CREATE_CONTEXT_FAIL = 0x20,
-		MAKE_CONTEXT_CURRENT_FAIL = 0x40,
-	};
-	
-	enum GlesError {
-		SHADER_LOAD_FAIL = 0x80,
-		PROGRAM_CREATE_FAIL = 0x100,
-		PROGRAM_LINK_FAIL = 0x200
-	};
-	
+namespace br {	
 	class Renderer
 	{
 	public:
@@ -91,8 +73,8 @@ namespace br {
 		
 		int32_t defaultProgram;
 		
-		int32_t initEgl();
-		int32_t initShaders(std::string, std::string);
+		void initEgl();
+		void initShaders(std::string, std::string);
 	
 		uint32_t createShader(uint32_t, const char*);
 		uint32_t loadTextureToGpu(std::vector<uint8_t>&, int16_t, int16_t);

@@ -8,7 +8,7 @@
 #include <assimp/postprocess.h>
 
 #include "Model3d.h"
-#include "bone/BoneNodeData.h"
+#include "bones/BoneNodeData.h"
 #include "Material3d.h"
 
 namespace br {

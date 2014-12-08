@@ -1,6 +1,6 @@
 #include "SharedHeaders.h"
 #include "Model3dLoader.h"
-#include "bone\BoneNodeData.h"
+#include "bones\BoneNodeData.h"
 #include "Utils.h"
 #include <unordered_map>
 

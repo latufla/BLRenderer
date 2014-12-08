@@ -1,6 +1,7 @@
 #include "SharedHeaders.h"
 #include <windows.h>
 #include "WindowVendor.h"
+#include "exceptions\Exception.h"
 
 using std::vector;
 
@@ -25,9 +26,9 @@ namespace br {
 		wClass.lpszClassName = _T("CustomWindow");
 		wClass.hIconSm = LoadIcon(wClass.hInstance, MAKEINTRESOURCE(IDI_APPLICATION));
 	
-		if (!RegisterClassEx(&wClass))
-			return;
-	
+		if(!RegisterClassEx(&wClass))
+			throw br::NativeWindowException(EXCEPTION_INFO, "can`t register window class");
+			
 		RECT wRect{ x, y, w, h };
 		AdjustWindowRect(&wRect, WS_BORDER | WS_DLGFRAME, false);
 			 
@@ -44,8 +45,8 @@ namespace br {
 			);
 	
 		if (!hWnd)
-			return;
-	
+			throw br::NativeWindowException(EXCEPTION_INFO, "can`t create window");
+
 		nativeWindow = hWnd;
 	
 		// TODO: maybe not here

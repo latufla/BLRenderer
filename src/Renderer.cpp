@@ -8,11 +8,12 @@
 #include "Model3d.h"
 #include "Model3dLoader.h"
 #include "Texture2d.h"
-#include "bone/BoneNodeData.h"
+#include "bones/BoneNodeData.h"
 
-#include <gtc\matrix_transform.hpp>
+#include <gtc/matrix_transform.hpp>
 #include <utility>
-#include <gtc\type_ptr.hpp>
+#include <gtc/type_ptr.hpp>
+#include "exceptions/Exception.h"
 
 using std::string;
 using std::vector;
@@ -24,25 +25,17 @@ using std::make_shared;
 
 
 namespace br {
-	// TODO: throw exceptions
 	Renderer::Renderer(std::shared_ptr<Model3dLoader> loader,
 		uint32_t wndX,
 		uint32_t wndY,
 		uint32_t wndW, 
 		uint32_t wndH)
 		: loader(loader) {
+		
 		window = make_shared <WindowVendor>(wndX, wndY, wndW, wndH);
-		if(!window->nativeWindow)
-			return; // EglError::NATIVE_WINDOW_FAIL;
-	
-		int32_t eglFail = initEgl();
-		if(eglFail)
-			return; // eglFail;
-	
-		int32_t shadersFail = initShaders(Utils::defaultVertexShader, Utils::defaultFragmentShader);
-		if(shadersFail)
-			return; // shadersFail;
-	
+		initEgl();
+		initShaders(Utils::defaultVertexShader, Utils::defaultFragmentShader);
+		
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	
 		glEnable(GL_DEPTH_TEST);
@@ -52,8 +45,6 @@ namespace br {
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		glFrontFace(GL_CCW);
-	
-		return; // 0;
 	}
 	
 	Renderer::~Renderer()
@@ -194,18 +185,16 @@ namespace br {
 	
 	// private
 	
-	int32_t Renderer::initEgl(){
+	void Renderer::initEgl(){
 		EGLint minorVersion;
 		EGLint majorVersion;
 	
 		auto display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-		if (display == EGL_NO_DISPLAY)
-			return EglError::GET_DISPLAY_FAIL;
+		if(display == EGL_NO_DISPLAY)
+			throw br::EglException(EXCEPTION_INFO, "can`t get display");
 	
-	
-		if (!eglInitialize(display, &majorVersion, &minorVersion))
-			return EglError::INIT_DISPLAY_FAIL;
-	
+		if(!eglInitialize(display, &majorVersion, &minorVersion))
+			throw br::EglException(EXCEPTION_INFO, "cant init display");	
 	
 		const EGLint cfgAttribs[] = {
 			EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
@@ -223,9 +212,8 @@ namespace br {
 		const EGLint maxConfigs = 2;
 		EGLConfig configs[2];
 		EGLint numConfigs;
-		if (!eglChooseConfig(display, cfgAttribs, configs, maxConfigs, &numConfigs))
-			return EglError::CHOSE_CONFIG_FAIL;
-	
+		if(!eglChooseConfig(display, cfgAttribs, configs, maxConfigs, &numConfigs))
+			throw br::EglException(EXCEPTION_INFO, "can`t choose config");
 	
 		const EGLint srfAttribs[] = {
 			EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
@@ -234,8 +222,8 @@ namespace br {
 	
 		auto surface = eglCreateWindowSurface(display, configs[0], window->nativeWindow, srfAttribs);
 		if (surface == EGL_NO_SURFACE)
-			return EglError::CREATE_SURFACE_FAIL;
-	
+			throw br::EglException(EXCEPTION_INFO, "can`t create window surface");
+
 	
 		const EGLint ctxAttribs[] = {
 			EGL_CONTEXT_CLIENT_VERSION, 2,
@@ -244,29 +232,26 @@ namespace br {
 	
 		auto context = eglCreateContext(display, configs[0], EGL_NO_CONTEXT, ctxAttribs);
 		if (context == EGL_NO_CONTEXT)
-			return EglError::CREATE_CONTEXT_FAIL;
+			throw br::EglException(EXCEPTION_INFO, "can`t create context");
+
 	
-	
-		if (!eglMakeCurrent(display, surface, surface, context))
-			return EglError::MAKE_CONTEXT_CURRENT_FAIL;
+		if(!eglMakeCurrent(display, surface, surface, context))
+			throw br::EglException(EXCEPTION_INFO, "can`t make context current");
 	
 		eglContext.display = display;
 		eglContext.surface = surface;
 		eglContext.context = context;
-		return 0;
 	}
 	
 	
-	int32_t Renderer::initShaders(string vShaderSrc, string fShaderSrc)
+	void Renderer::initShaders(string vShaderSrc, string fShaderSrc)
 	{
 		GLuint vShader = createShader(GL_VERTEX_SHADER, vShaderSrc.c_str());
 		GLuint fShader = createShader(GL_FRAGMENT_SHADER, fShaderSrc.c_str());
-		if (!vShader || !fShader)
-			return GlesError::SHADER_LOAD_FAIL;
 	
 		GLuint pObject = glCreateProgram();
-		if (!pObject)
-			return GlesError::PROGRAM_CREATE_FAIL;
+		if(!pObject)
+			throw br::ShaderException(EXCEPTION_INFO, "can`t create program");
 	
 		glAttachShader(pObject, vShader);
 		glAttachShader(pObject, fShader);
@@ -277,7 +262,7 @@ namespace br {
 		glGetProgramiv(pObject, GL_LINK_STATUS, &linked);
 		if (!linked){
 			glDeleteProgram(pObject);
-			return GlesError::PROGRAM_LINK_FAIL;
+			throw br::ShaderException(EXCEPTION_INFO, "can`t link program");
 		}
 	
 		glDetachShader(pObject, vShader);
@@ -286,19 +271,18 @@ namespace br {
 		glDeleteShader(fShader);
 	
 		defaultProgram = pObject;
-		return 0;
 	}
 	
 	GLuint Renderer::createShader(GLenum shType, const char* shSource){
 		GLboolean hasCompiler;
 		glGetBooleanv(GL_SHADER_COMPILER, &hasCompiler);
-		if (hasCompiler == GL_FALSE)
-			return 0;
-	
+		if(hasCompiler == GL_FALSE)
+			throw br::ShaderException(EXCEPTION_INFO, "no compiler");
+
 		GLuint shader = glCreateShader(shType);
 		if (!shader)
-			return 0;
-	
+			throw br::ShaderException(EXCEPTION_INFO, "can`t create shader");
+
 		glShaderSource(shader, 1, &shSource, NULL);
 		glCompileShader(shader);
 	
@@ -306,7 +290,7 @@ namespace br {
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
 		if (!compiled){
 			glDeleteShader(shader);
-			return 0;
+			throw br::ShaderException(EXCEPTION_INFO, "can`t compile shader");
 		}
 	
 		return shader;
