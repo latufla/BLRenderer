@@ -90,7 +90,7 @@ namespace br {
 		void initShaders(std::string, std::string);
 	
 		uint32_t createShader(uint32_t, const char*);
-		uint32_t loadTextureToGpu(std::vector<uint8_t>&, int16_t, int16_t);
+		uint32_t loadTextureToGpu(Texture2d&);
 		// ---
 		
 		// animation

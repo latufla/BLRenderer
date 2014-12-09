@@ -354,7 +354,7 @@ namespace br {
 			glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &loadedBytes);
 			if(szInBytes != loadedBytes) {
 				glDeleteBuffers(1, &vBuffer);
-				throw GpuException(EXCEPTION_INFO, "can`t load vertices");
+				throw GpuException(EXCEPTION_INFO, modelPath + " can`t load vertices");
 			}
 	
 
@@ -370,14 +370,14 @@ namespace br {
 			glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &loadedBytes);
 			if(szInBytes != loadedBytes) {
 				glDeleteBuffers(1, &iBuffer);
-				throw GpuException(EXCEPTION_INFO, "can`t load indices");
+				throw GpuException(EXCEPTION_INFO, modelPath + " can`t load indices");
 			}
 
 
 			auto& materials = model.getMaterials();
 			Material3d& m = materials.at(s.getMaterialId());
-			Texture2d& t = m.getTexture();
-			uint32_t texture = loadTextureToGpu(t.getData(), t.getWidth(), t.getHeight());
+			uint32_t texture = loadTextureToGpu(m.getTexture());
+
 	
 			string meshName = model.getUniqueMeshName(s);
 			GpuBufferData buffer{ vBuffer, iBuffer, iBufferLength, texture };
@@ -404,15 +404,17 @@ namespace br {
 		}
 	}
 	
-	// TODO: load textures effectively and check load errors
-	GLuint Renderer::loadTextureToGpu(vector<uint8_t>& texture, int16_t width, int16_t height) {
+	GLuint Renderer::loadTextureToGpu(Texture2d& texture) {
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		
 		GLuint textureId;
 		glGenTextures(1, &textureId);
 		glBindTexture(GL_TEXTURE_2D, textureId);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &texture[0]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.getWidth(), texture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, &texture.getData()[0]);
 		
+		if(glGetError() != GL_NO_ERROR)
+			throw GpuException(EXCEPTION_INFO, texture.getPath() + " can`t load texture");
+
 		glGenerateMipmap(GL_TEXTURE_2D);
 	
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -422,5 +424,4 @@ namespace br {
 	
 		return textureId;
 	}
-	//
 }
