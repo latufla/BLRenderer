@@ -71,8 +71,21 @@ namespace br {
 			void* context;
 		} eglContext;
 		
-		int32_t defaultProgram;
+		struct ProgramContext {
+			uint32_t id;
+			
+			uint32_t position;
+			uint32_t texPosition;
+			
+			uint32_t bones;
+			uint32_t boneIds;
+			uint32_t weights;
+
+			uint32_t sampler;
 		
+			uint32_t mvpMatrix;
+		} defaultProgram;
+
 		void initEgl();
 		void initShaders(std::string, std::string);
 	

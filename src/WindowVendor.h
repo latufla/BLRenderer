@@ -15,7 +15,13 @@ namespace br {
 	
 		EGLNativeWindowType nativeWindow;
 	
-		std::vector<float> getRect();
+		struct Rect {
+			float x;
+			float y;
+			float w;
+			float h;
+		};
+		Rect getRect();
 	};
 }
 

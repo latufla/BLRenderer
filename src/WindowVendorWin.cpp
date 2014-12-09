@@ -54,11 +54,11 @@ namespace br {
 		UpdateWindow(hWnd);
 	}
 		
-	vector<float> WindowVendor::getRect()
+	WindowVendor::Rect WindowVendor::getRect()
 	{
 		RECT rect;
 		GetClientRect(nativeWindow, &rect);
-		return vector < float > {
+		return {
 				(float)rect.left,
 				(float)rect.top,
 				(float)rect.right - (float)rect.left,

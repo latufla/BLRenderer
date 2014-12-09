@@ -23,6 +23,12 @@ using std::array;
 using std::shared_ptr;
 using std::make_shared;
 
+using glm::mat4;
+using glm::vec3;
+using glm::make_mat4;
+using glm::lookAt;
+using glm::perspective;
+
 
 namespace br {
 	Renderer::Renderer(std::shared_ptr<Model3dLoader> loader,
@@ -49,7 +55,7 @@ namespace br {
 	
 	Renderer::~Renderer()
 	{
-		glDeleteProgram(defaultProgram);
+		glDeleteProgram(defaultProgram.id);
 	
 		auto allObjects = idToObject;
 		for (auto& i : allObjects) {
@@ -105,45 +111,28 @@ namespace br {
 	
 	bool Renderer::doStep(uint32_t stepMSec)
 	{
-		vector<float> rect = window->getRect();
-		float wWidth = rect[2];
-		float wHeight = rect[3];
-		glViewport(0, 0, (uint32_t)wWidth, (uint32_t)wHeight);
+		auto winSize = window->getRect();
+		glViewport(0, 0, (uint32_t)winSize.w, (uint32_t)winSize.h);
 	
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-		glUseProgram(defaultProgram);
+		glUseProgram(defaultProgram.id);
 	
-		glm::mat4 view = glm::lookAt(glm::vec3{camera.x, camera.y, camera.z},
-			glm::vec3{0, 0, 0},
-			glm::vec3{0, 1, 0});
-		glm::mat4 projection = glm::perspective(45.0f, wWidth / wHeight, 0.1f, 100.0f);
-		glm::mat4 pvMatrix = projection * view;
+		mat4 view = lookAt(vec3{camera.x, camera.y, camera.z}, vec3{0, 0, 0}, vec3{0, 1, 0});
+		mat4 projection = perspective(45.0f, winSize.w / winSize.h, 0.1f, 100.0f);
+		mat4 pvMatrix = projection * view;
 	
-		// TODO: don`t do in runtime
-		GLuint posLoc = glGetAttribLocation(defaultProgram, "aPosition");
-		GLuint texPosLoc = glGetAttribLocation(defaultProgram, "aTexCoord");
-		
-		GLuint bonesLoc = glGetUniformLocation(defaultProgram, "bones");
-		GLuint boneIdLoc = glGetAttribLocation(defaultProgram, "boneIds");
-		GLuint weightsLoc = glGetAttribLocation(defaultProgram, "weights");
-		
-		GLuint samplerLoc = glGetUniformLocation(defaultProgram, "sTexture");
-		GLuint mvpMatrixLoc = glGetUniformLocation(defaultProgram, "mvpMatrix");
-		//
-
 		for (auto& i : idToObject){
-			View& view = i.second;
-			const glm::mat4& modelMtx = view.getTransform();
-			glm::mat4 mvpMtx = pvMatrix * modelMtx;
-			glUniformMatrix4fv(mvpMatrixLoc, 1, GL_FALSE, &mvpMtx[0][0]);
+			View& object = i.second;
+			mat4 mvpMatrix = pvMatrix * object.getTransform();
+			glUniformMatrix4fv(defaultProgram.mvpMatrix, 1, GL_FALSE, &mvpMatrix[0][0]);
 	
-			Model3d& model = loader->getModelBy(view.getPath());
+			Model3d& model = loader->getModelBy(object.getPath());
 			vector<Mesh3d>& meshes = model.getMeshes();
 			for (auto& s : meshes) {
-				auto bonesData = prepareAnimationStep(view, s, stepMSec);
+				auto bonesData = prepareAnimationStep(object, s, stepMSec);
 				for (auto& i : bonesData) {
-					glUniformMatrix4fv(bonesLoc + i.first, 1, GL_FALSE, &(i.second.finalTransform[0][0]));
+					glUniformMatrix4fv(defaultProgram.bones + i.first, 1, GL_FALSE, &(i.second.finalTransform[0][0]));
 				}
 	
 				string meshName = model.getUniqueMeshName(s);
@@ -152,24 +141,25 @@ namespace br {
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.iBuffer);
 	
 				uint8_t offset = 0;
-				glEnableVertexAttribArray(posLoc);
-				glVertexAttribPointer(posLoc, Mesh3d::VERTEX3D_POSITION, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
+				glEnableVertexAttribArray(defaultProgram.position);
+				glVertexAttribPointer(defaultProgram.position, Mesh3d::VERTEX3D_POSITION, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
 	
 				offset += Mesh3d::VERTEX3D_POSITION * sizeof(float);
-				glEnableVertexAttribArray(texPosLoc);
-				glVertexAttribPointer(texPosLoc, Mesh3d::VERTEX3D_TEXTURE, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
+				glEnableVertexAttribArray(defaultProgram.texPosition);
+				glVertexAttribPointer(defaultProgram.texPosition, Mesh3d::VERTEX3D_TEXTURE, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
 	
 				offset += Mesh3d::VERTEX3D_TEXTURE * sizeof(float);
-				glEnableVertexAttribArray(boneIdLoc);
-				glVertexAttribPointer(boneIdLoc, Mesh3d::VERTEX3D_BONEIDS, GL_UNSIGNED_SHORT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
+				glEnableVertexAttribArray(defaultProgram.boneIds);
+				glVertexAttribPointer(defaultProgram.boneIds, Mesh3d::VERTEX3D_BONEIDS, GL_UNSIGNED_SHORT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
 	
 				offset += Mesh3d::VERTEX3D_BONEIDS * sizeof(uint16_t);
-				glEnableVertexAttribArray(weightsLoc);
-				glVertexAttribPointer(weightsLoc, Mesh3d::VERTEX3D_WEIGHTS, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
+				glEnableVertexAttribArray(defaultProgram.weights);
+				glVertexAttribPointer(defaultProgram.weights, Mesh3d::VERTEX3D_WEIGHTS, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
 				
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, buffers.texture);
-				glUniform1i(samplerLoc, 0);
+
+				glUniform1i(defaultProgram.sampler, 0);
 	
 				glDrawElements(GL_TRIANGLES, buffers.iBufferLenght, GL_UNSIGNED_SHORT, (void*)0);
 			}
@@ -178,11 +168,11 @@ namespace br {
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		
-		glDisableVertexAttribArray(posLoc);
-		glDisableVertexAttribArray(texPosLoc);
-		glDisableVertexAttribArray(boneIdLoc);
-		glDisableVertexAttribArray(samplerLoc);
-	
+		glDisableVertexAttribArray(defaultProgram.position);
+		glDisableVertexAttribArray(defaultProgram.texPosition);
+		glDisableVertexAttribArray(defaultProgram.boneIds);
+		glDisableVertexAttribArray(defaultProgram.weights);
+		
 		glUseProgram(0);
 	
 		eglSwapBuffers(eglContext.display, eglContext.surface);
@@ -277,7 +267,17 @@ namespace br {
 		glDetachShader(pObject, fShader);
 		glDeleteShader(fShader);
 	
-		defaultProgram = pObject;
+		defaultProgram.id = pObject;
+
+		defaultProgram.position = glGetAttribLocation(defaultProgram.id, "aPosition");
+		defaultProgram.texPosition = glGetAttribLocation(defaultProgram.id, "aTexCoord");
+
+		defaultProgram.bones = glGetUniformLocation(defaultProgram.id, "bones");
+		defaultProgram.boneIds = glGetAttribLocation(defaultProgram.id, "boneIds");
+		defaultProgram.weights = glGetAttribLocation(defaultProgram.id, "weights");
+
+		defaultProgram.sampler = glGetUniformLocation(defaultProgram.id, "sTexture");
+		defaultProgram.mvpMatrix = glGetUniformLocation(defaultProgram.id, "mvpMatrix");
 	}
 	
 	GLuint Renderer::createShader(GLenum shType, const char* shSource){
@@ -338,7 +338,6 @@ namespace br {
 		return it != cend(idToObject);
 	}
 	
-	// TODO: implement fail checks
 	void Renderer::loadModelToGpu(string modelPath) {
 		Model3d& model = loader->getModelBy(modelPath);
 		vector<Mesh3d>& meshes = model.getMeshes();
@@ -405,6 +404,7 @@ namespace br {
 		}
 	}
 	
+	// TODO: load textures effectively and check load errors
 	GLuint Renderer::loadTextureToGpu(vector<uint8_t>& texture, int16_t width, int16_t height) {
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		
