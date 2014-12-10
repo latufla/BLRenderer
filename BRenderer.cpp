@@ -12,6 +12,7 @@
 
 const std::string CUBE = "Cube";
 const std::string GUN = "Gun";
+const std::string SLIME = "Slime";
 const std::string POKEMON_TRAINER = "PokemonTrainer";
 const std::string SPIDERMAN_SYMBIOTE = "SpidermanSymbiote";
 const std::string STAN_LEE = "StanLee";
@@ -33,12 +34,12 @@ int _tmain(int argc, _TCHAR* argv[]) {
 }
 
 void run() {
-	objects.push_back({42, CUBE});
-
+	objects.push_back({42, SLIME});
+		
 	std::unordered_map<std::string, std::string> nameToAnimation{
-			{"idle", "CubeIdle.dae"}};
+			{"idle", "Idle.dae"}};
 
-	const Model3dInfo info(CUBE, nameToAnimation);
+	const Model3dInfo info(SLIME, nameToAnimation);
 	
 	std::string pathAsKey = info.getModelPath();
 	std::string modelDirectory = info.getModelDirectory();
@@ -51,7 +52,8 @@ void run() {
 	
 	br::Renderer renderer{loader, 0, 0, 1024, 768};
 
- 	renderer.setCamera(7.48f, 6.5f, 5.34f);
+// 	renderer.setCamera(7.48f, 6.5f, 5.34f);
+	renderer.setCamera(7.48f, 1.0f, 5.34f);
 
 	for (auto& s : objects) {
 		uint32_t id = s.getId();
