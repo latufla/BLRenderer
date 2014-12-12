@@ -10,12 +10,13 @@
 #include <memory>
 #include "src/exceptions/Exception.h"
 
-const std::string CUBE = "Cube";
-const std::string GUN = "Gun";
-const std::string SLIME = "Slime";
-const std::string POKEMON_TRAINER = "PokemonTrainer";
-const std::string SPIDERMAN_SYMBIOTE = "SpidermanSymbiote";
-const std::string STAN_LEE = "StanLee";
+const std::string SLIME_WARRIOR = "SlimeRed";
+const std::string SLIME_HEALER = "SlimeBlue";
+const std::string GAME_OBJECT = SLIME_HEALER;
+
+#define FRONT_VIEW 0.0f,1.0f,8.34f
+#define RIGHT_VIEW 7.48f,1.0f,0.0f
+#define DEFAULT_VIEW 7.48f,6.5f,8.34f
 
 std::vector<ObjectBase> objects;
 
@@ -34,12 +35,12 @@ int _tmain(int argc, _TCHAR* argv[]) {
 }
 
 void run() {
-	objects.push_back({42, SLIME});
+	objects.push_back({42, GAME_OBJECT});
 		
 	std::unordered_map<std::string, std::string> nameToAnimation{
-			{"idle", "Idle.dae"}};
+			{"walk", "Walk.dae"}};
 
-	const Model3dInfo info(SLIME, nameToAnimation);
+	const Model3dInfo info(GAME_OBJECT, nameToAnimation);
 	
 	std::string pathAsKey = info.getModelPath();
 	std::string modelDirectory = info.getModelDirectory();
@@ -52,8 +53,7 @@ void run() {
 	
 	br::Renderer renderer{loader, 0, 0, 1024, 768};
 
-// 	renderer.setCamera(7.48f, 6.5f, 5.34f);
-	renderer.setCamera(7.48f, 1.0f, 5.34f);
+ 	renderer.setCamera(FRONT_VIEW);
 
 	for (auto& s : objects) {
 		uint32_t id = s.getId();
@@ -61,7 +61,7 @@ void run() {
 		renderer.transform(id, br::Utils::toArray(s.getOrientation()));
 	}
 
-	renderer.playAnimation(42, "idle");
+	renderer.playAnimation(42, "walk");
 
 	const float fps = 1.0f / 60;
 	const uint32_t step = (uint32_t)(fps * 1000);
