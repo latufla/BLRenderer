@@ -1,5 +1,5 @@
 #pragma once
-#include "../SharedHeaders.h"
+#include "../utils/SharedHeaders.h"
 
 #define EXCEPTION_INFO __FUNCTION__,__LINE__
 
@@ -67,15 +67,15 @@ namespace br {
 		}
 	};
 
-	class Model3dException : public Exception {
+	class AssetException : public Exception {
 	public:
-		Model3dException(std::string func, uint32_t line, std::string path, std::string reason)
+		AssetException(std::string func, uint32_t line, std::string path, std::string reason)
 			: Exception(func, line, "path: " + path + " " + reason) {
 		}
-		~Model3dException() = default;
+		~AssetException() = default;
 
 		const char* what() const override {
-			return "Model3dException";
+			return "AssetException";
 		}
 	};
 

@@ -1,6 +1,6 @@
-#include "SharedHeaders.h"
+#include "utils/SharedHeaders.h"
 #include "Animation3d.h"
-#include "Utils.h"
+#include "utils/Util.h"
 
 using std::string;
 using std::to_string; 
@@ -25,7 +25,7 @@ namespace br {
 	#ifdef FULL_REPORT
 			res += ": { \n";
 			for (auto& j : i.positions) {
-				res += "{Vec3Key time: " + to_string(j.time) + " value: " + Utils::toString(j.value) + "}\n";
+				res += "{Vec3Key time: " + to_string(j.time) + " value: " + Util::toString(j.value) + "}\n";
 			}
 	#endif
 	
@@ -34,7 +34,7 @@ namespace br {
 	#ifdef FULL_REPORT
 			res += ": { \n";
 			for (auto& j : i.rotations) {
-				res += "{Mat4Key time: " + to_string(j.time) + " value: \n" + Utils::toString(j.value) + "}\n";
+				res += "{Mat4Key time: " + to_string(j.time) + " value: \n" + Util::toString(j.value) + "}\n";
 			}
 	#endif 
 			
@@ -43,7 +43,7 @@ namespace br {
 	#ifdef FULL_REPORT
 			res += ": { \n";
 			for (auto& j : i.scalings) {
-				res += "{Vec3Key time: " + to_string(j.time) + " value: " + Utils::toString(j.value) + "}\n";
+				res += "{Vec3Key time: " + to_string(j.time) + " value: " + Util::toString(j.value) + "}\n";
 			}
 	
 	#endif

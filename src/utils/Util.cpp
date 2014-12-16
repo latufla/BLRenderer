@@ -1,8 +1,8 @@
-#include "SharedHeaders.h"
-#include "Utils.h"
+#include "../utils/SharedHeaders.h"
+#include "Util.h"
 #include <fstream>
-#include <gtc\type_ptr.hpp>
-#include "exceptions\Exception.h"
+#include <gtc/type_ptr.hpp>
+#include "../exceptions/Exception.h"
 
 using std::vector;
 using std::array;
@@ -16,38 +16,8 @@ using glm::vec4;
 using glm::vec3;
 
 namespace br {
-	string Utils::defaultVertexShader =
-		"uniform mat4 mvpMatrix;		\n"
-		"uniform mat4 bones[25];		\n"
-		"attribute vec4 aPosition;		\n"
-	
-		"attribute vec2 aTexCoord;		\n"
-	
-		"attribute vec4 boneIds;		\n"
-		"attribute vec4 weights;		\n"
-	
-		"varying vec2 vTexCoord;		\n"
-		"void main(){					\n"
-		"	mat4 boneTransform = bones[int(boneIds.x)] * weights.x;		\n"
-		"	boneTransform += bones[int(boneIds.y)] * weights.y;			\n"
-		"	boneTransform += bones[int(boneIds.z)] * weights.z;			\n"
-		"	boneTransform += bones[int(boneIds.w)] * weights.w;			\n"
-		"   vec4 pos = boneTransform * aPosition;						\n"
-		"   gl_Position = mvpMatrix * pos;								\n"
-		"   vTexCoord = aTexCoord;										\n"
-		"}";
-	
-	
-	string Utils::defaultFragmentShader =
-		"precision mediump float;                           \n"
-		"varying vec2 vTexCoord;                            \n"
-		"uniform sampler2D sTexture;                        \n"
-		"void main(){										\n"                                                  
-		"  gl_FragColor = texture2D( sTexture, vTexCoord ); \n"
-		"}";
-	
-	
-	mat4 Utils::assimpToGlm(const aiMatrix4x4& m) {
+
+	mat4 Util::assimpToGlm(const aiMatrix4x4& m) {
 		return mat4{
 			m.a1, m.b1, m.c1, m.d1,
 			m.a2, m.b2, m.c2, m.d2,
@@ -56,7 +26,7 @@ namespace br {
 		};
 	}
 	
-	mat4 Utils::assimpMat3ToGlm(const aiMatrix3x3& m) {
+	mat4 Util::assimpMat3ToGlm(const aiMatrix3x3& m) {
 		return mat4{
 			m.a1, m.b1, m.c1, 0,
 			m.a2, m.b2, m.c2, 0,
@@ -65,7 +35,7 @@ namespace br {
 		};
 	}
 	
-	aiMatrix4x4 Utils::glmToAssimp(const mat4& m) {
+	aiMatrix4x4 Util::glmToAssimp(const mat4& m) {
 		const float *ms = (const float*)value_ptr(m);
 	
 		return aiMatrix4x4{
@@ -76,7 +46,7 @@ namespace br {
 		};
 	}
 	
-	aiMatrix3x3 Utils::glmToAssimpMat3(const mat4& m) {
+	aiMatrix3x3 Util::glmToAssimpMat3(const mat4& m) {
 		const float *ms = (const float*)value_ptr(m);
 	
 		return aiMatrix3x3{
@@ -87,15 +57,15 @@ namespace br {
 	}
 	
 	
-	vec3 Utils::assimpToGlm(const aiVector3D& v) {
+	vec3 Util::assimpToGlm(const aiVector3D& v) {
 		return vec3{ v.x, v.y, v.z };
 	}
 	
-	vec4 Utils::assimpToGlm(const aiColor4D& v) {
+	vec4 Util::assimpToGlm(const aiColor4D& v) {
 		return vec4{ v.r, v.g, v.b, v.a };
 	}
 	
-	string Utils::toString(const mat4& m) {
+	string Util::toString(const mat4& m) {
 		string res = "{";
 		for (int i = 0; i < 4; ++i) {
 			for (int j = 0; j < 4; ++j) {
@@ -108,11 +78,11 @@ namespace br {
 		return res;
 	}
 	
-	string Utils::toString(const vec3& v) {
+	string Util::toString(const vec3& v) {
 		return "{x: " + to_string(v.x) + " y:" + to_string(v.y) + " z: " + to_string(v.z) + "}";
 	}
 	
-	std::array<float, 16> Utils::toArray(const mat4& m) {
+	std::array<float, 16> Util::toArray(const mat4& m) {
 		array <float, 16> res;
 	
 		const float *pSource = (const float*)value_ptr(m);
@@ -122,7 +92,7 @@ namespace br {
 		return res;
 	}
 	
-	vec3 Utils::interpolate(const vec3& from, const vec3& to, float alpha) {
+	vec3 Util::interpolate(const vec3& from, const vec3& to, float alpha) {
 		vec3 interp;
 	
 		interp.x = to.x * alpha + from.x * (1 - alpha);
@@ -132,7 +102,7 @@ namespace br {
 		return interp;
 	}
 	
-	mat4 Utils::interpolate(const mat4& from, const mat4& to, float alpha) {
+	mat4 Util::interpolate(const mat4& from, const mat4& to, float alpha) {
 		aiMatrix3x3 sm = glmToAssimpMat3(from);
 		aiMatrix3x3 em = glmToAssimpMat3(to);
 		
@@ -145,22 +115,22 @@ namespace br {
 		return assimpMat3ToGlm(res.GetMatrix());
 	}
 	
-	Texture2d Utils::loadTexture(string path) {
+	Texture2d Util::loadTexture(string path) {
 		vector<uint8_t> buffer = loadFile(path);
 		if(buffer.empty())
-			throw Model3dException(EXCEPTION_INFO, path, "can`t load texture");
+			throw AssetException(EXCEPTION_INFO, path, "can`t load texture");
 	
 		std::vector<uint8_t> data;
 		unsigned long w, h;
-		int decodeFail = Utils::decodePNG(data, w, h, buffer.empty() ? 0 : &buffer[0], (unsigned long)buffer.size());
+		int decodeFail = Util::decodePNG(data, w, h, buffer.empty() ? 0 : &buffer[0], (unsigned long)buffer.size());
 		if(decodeFail)
-			throw Model3dException(EXCEPTION_INFO, path, "can`t decode texture");
+			throw AssetException(EXCEPTION_INFO, path, "can`t decode texture");
 	
-		Texture2d res{path, data, static_cast<std::int16_t>(w), static_cast<std::int16_t>(h)};
+		Texture2d res{path, data, (uint32_t)w, (uint32_t)h};
 		return res;
 	}
 	
-	vector<uint8_t> Utils::loadFile(const std::string& filename) {
+	vector<uint8_t> Util::loadFile(const std::string& filename) {
 		std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
 		
 		std::streamsize size = 0;
@@ -177,7 +147,7 @@ namespace br {
 	
 	// picoPNG version 20101224
 	// Copyright (c) 2005-2010 Lode Vandevenne
-	int Utils::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image_width, unsigned long& image_height, const unsigned char* in_png, size_t in_size, bool convert_to_rgba32) {
+	int Util::decodePNG(std::vector<unsigned char>& out_image, unsigned long& image_width, unsigned long& image_height, const unsigned char* in_png, size_t in_size, bool convert_to_rgba32) {
 	
 		static const unsigned long LENBASE[29] = { 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258 };
 		static const unsigned long LENEXTRA[29] = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0 };

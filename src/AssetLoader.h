@@ -10,23 +10,33 @@
 #include "Model3d.h"
 #include "bones/BoneNodeData.h"
 #include "Material3d.h"
+#include "text/FontLoader.h"
 
 namespace br {
-	class Model3dLoader {
+	class AssetLoader {
 	public:
-		Model3dLoader() {};
-		~Model3dLoader() = default;
+		AssetLoader() {};
+		~AssetLoader() = default;
 	
 		void loadModel(std::string pathAsKey, std::string textureDirectory);
-	
+
 		Model3d& getModelBy(std::string path);
 		void attachAnimation(std::string toModel, std::string byNameAsKey, std::string withPath);
-	
+
+		void loadTexture(std::string pathAsKey);
+		Texture2d& getTextureBy(std::string path);
+
+		void loadFont(std::string path, std::string name, uint8_t size);
+		Font getFontBy(std::string name, uint8_t size);
+
 	private:
 		std::map<std::string, Model3d> pathToModel;
-	
+		std::map<std::string, Texture2d> pathToTexture;
+
+		FontLoader fontLoader;
+
 		Assimp::Importer importer;
-	
+		
 		static const uint8_t TRIANGLE_FACE_TYPE;
 		std::vector<Mesh3d> collectMeshes(const aiScene*);
 		void parseMeshes(const aiNode*, aiMesh**, std::vector<Mesh3d>&);

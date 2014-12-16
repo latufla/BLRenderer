@@ -5,13 +5,17 @@
 #include <glm.hpp>
 
 #include "WindowVendor.h"
-#include "Utils.h"
+#include "utils/Util.h"
 
-#include "Model3dLoader.h"
+#include "AssetLoader.h"
 #include "View.h"
 #include <array>
 #include "bones\BNode.h"
 #include "bones\BoneTransformer.h"
+#include "utils\Image.h"
+#include "text\TextField.h"
+#include <utility>
+#include "utils\Shaders.h"
 
 namespace br {	
 	class Renderer
@@ -19,7 +23,7 @@ namespace br {
 	public:
 		Renderer() = delete;
 
-		Renderer(std::shared_ptr<Model3dLoader> loader,
+		Renderer(std::shared_ptr<AssetLoader> loader,
 			uint32_t wndX,
 			uint32_t wndY, 
 			uint32_t wndW, 
@@ -32,16 +36,23 @@ namespace br {
 	
 		bool doStep(uint32_t stepMSec);
 		
-		void playAnimation(uint32_t objId, std::string animName = Animation3d::DEFAULT_ANIMATION_NAME);
-		void transform(uint32_t objId, const std::array<float, 16> tForm);
+		void playAnimation(uint32_t objId, std::string animName = Animation3d::DEFAULT_ANIMATION_NAME, bool loop = true);
+		void transformObject(uint32_t objId, const std::array<float, 16> tForm);
 	
 		void setCamera(float x, float y, float z);
-	
+
+		void addTextField(uint32_t id, std::string text, std::string font, uint8_t fontSize, std::array<float, 4> color, std::pair<float, float> position);
+		void removeTextField(uint32_t id);
+		void translateTextField(uint32_t id, std::pair<float, float> position);
+
+		void addImage(uint32_t id, std::string path, std::pair<float, float> position);
+		void removeImage(uint32_t id);
+
 	private:
 		std::shared_ptr<WindowVendor> window;
 
-		std::shared_ptr<Model3dLoader> loader;
-		
+		std::shared_ptr<AssetLoader> loader;
+
 		struct Camera {
 			float x;
 			float y;
@@ -84,18 +95,45 @@ namespace br {
 			uint32_t sampler;
 		
 			uint32_t mvpMatrix;
-		} defaultProgram;
+			uint32_t color;
+		} modelProgram, imageProgram, textProgram;
 
 		void initEgl();
-		void initShaders(std::string, std::string);
+
+		Shaders shaders;
+		void initShaders();
+		ProgramContext createProgram(std::string, std::string);
 	
 		uint32_t createShader(uint32_t, const char*);
 		uint32_t loadTextureToGpu(Texture2d&);
+		void deleteTextureFromGpu(Texture2d&);
+		
+		// ui
+		void drawUI();
+
+		std::unordered_map<uint32_t, TextField> idToTextField;
+		std::unordered_map<std::string, GpuBufferData> fontToBuffer;
+
+		void loadFontToGpu(Font&);
+		void deleteFontFromGpu(Font&);
+
+		void loadTextFieldToGpu(TextField&);
+		bool hasTextFieldWithFont(Font&);
+
+		void drawTextFields(glm::mat4&);
+
+		std::unordered_map<uint32_t, Image> idToImage;
+		std::unordered_map<std::string, GpuBufferData> textureToBuffer;
+		
+		void loadImageToGpu(Image&);
+		bool hasImageWithTexture(std::string path);
+
+		void drawImages(glm::mat4&);
 		// ---
 		
 		// animation
 		BoneTransformer boneTransformer;
 		BoneTransformer::BonesDataMap prepareAnimationStep(View&, Mesh3d&, uint32_t);
-		//
+		//	
 	};
 }

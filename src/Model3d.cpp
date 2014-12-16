@@ -1,6 +1,6 @@
-#include "SharedHeaders.h"
+#include "utils/SharedHeaders.h"
 #include "Model3d.h"
-#include "Utils.h"
+#include "utils/Util.h"
 
 using std::vector;
 using std::string;

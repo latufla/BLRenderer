@@ -1,9 +1,9 @@
-#include "SharedHeaders.h"
-#include "Model3dLoader.h"
-#include "bones\BoneNodeData.h"
-#include "Utils.h"
+#include "utils/SharedHeaders.h"
+#include "AssetLoader.h"
+#include "bones/BoneNodeData.h"
+#include "utils/Util.h"
 #include <unordered_map>
-#include "exceptions\Exception.h"
+#include "exceptions/Exception.h"
 
 using std::string;
 using std::to_string;
@@ -12,27 +12,27 @@ using std::vector;
 using std::unordered_map;
 
 namespace br {
-	const uint8_t Model3dLoader::TRIANGLE_FACE_TYPE = 3;
-	const std::string Model3dLoader::BONES_ROOT_NODE = "Armature";
+	const uint8_t AssetLoader::TRIANGLE_FACE_TYPE = 3;
+	const std::string AssetLoader::BONES_ROOT_NODE = "Armature";
 	
-	void Model3dLoader::loadModel(string pathAsKey, string textureDirectory) {
+	void AssetLoader::loadModel(string pathAsKey, string textureDirectory) {
 		if(pathToModel.find(pathAsKey) != pathToModel.cend())
-			throw Model3dException(EXCEPTION_INFO, pathAsKey, "has same model");
+			throw AssetException(EXCEPTION_INFO, pathAsKey, "has same model");
 		
 		
 		const aiScene* modelAi = importer.ReadFile(pathAsKey, aiProcess_FlipUVs);
 		if (!modelAi)
-			throw Model3dException(EXCEPTION_INFO, pathAsKey,"invalid collada model");
+			throw AssetException(EXCEPTION_INFO, pathAsKey,"invalid collada model");
 		
 		
 		vector<Mesh3d> meshes = collectMeshes(modelAi);
 		if (meshes.empty())
-			throw Model3dException(EXCEPTION_INFO, pathAsKey, "no meshes");
+			throw AssetException(EXCEPTION_INFO, pathAsKey, "no meshes");
 
 		
 		vector<Material3d> materials = collectMaterials(modelAi, textureDirectory);
 		if(materials.empty())
-			throw Model3dException(EXCEPTION_INFO, pathAsKey, "no materials");
+			throw AssetException(EXCEPTION_INFO, pathAsKey, "no materials");
 	
 		
 		aiNode* root = modelAi->mRootNode;
@@ -44,7 +44,7 @@ namespace br {
 		Animation3d defaultAnimation = collectAnimation(modelAi, bones, Animation3d::DEFAULT_ANIMATION_NAME, pathAsKey);
 		
 		aiNode* rootAi = modelAi->mRootNode;
-		auto glTrans = Utils::assimpToGlm(rootAi->mTransformation);
+		auto glTrans = Util::assimpToGlm(rootAi->mTransformation);
 		
 		Model3d model{pathAsKey, meshes, materials, bones, defaultAnimation};
 		model.setGlobalInverseTransform(glTrans);
@@ -52,34 +52,32 @@ namespace br {
 		pathToModel.emplace(pathAsKey, model);
 	}
 	
-	void Model3dLoader::attachAnimation(string toModel, string byNameAsKey, string withPath) {
+	void AssetLoader::attachAnimation(string toModel, string byNameAsKey, string withPath) {
 		const aiScene* animationAi = importer.ReadFile(withPath, aiProcess_Triangulate | aiProcess_FlipUVs);
 		if (!animationAi)
-			throw Model3dException(EXCEPTION_INFO, withPath, "invalid collada model");
+			throw AssetException(EXCEPTION_INFO, withPath, "invalid collada model");
 
 		Model3d& model = getModelBy(toModel);
 		Animation3d animation = collectAnimation(animationAi, model.getBoneTree(), byNameAsKey, toModel);
 		model.addAnimation(animation);
 	}
 	
-	Model3d& Model3dLoader::getModelBy(string path) {
- 		Model3d* res;
+	Model3d& AssetLoader::getModelBy(string path) {
 		try {
-			res = &pathToModel.at(path);
+			return pathToModel.at(path);
 		} catch (std::out_of_range&){
-			throw Model3dException(EXCEPTION_INFO, path, "no such model");
+			throw AssetException(EXCEPTION_INFO, path, "can`t get model by path");
 		}
-		return *res;
 	}
 	
 	
-	vector<Mesh3d> Model3dLoader::collectMeshes(const aiScene* modelAi) {
+	vector<Mesh3d> AssetLoader::collectMeshes(const aiScene* modelAi) {
 		vector<Mesh3d> outMeshes;
 		parseMeshes(modelAi->mRootNode, modelAi->mMeshes, outMeshes);
 		return outMeshes;
 	}
 	
-	void Model3dLoader::parseMeshes(const aiNode* rNodeAi, aiMesh** meshesAi, std::vector<Mesh3d>& outMeshes) {
+	void AssetLoader::parseMeshes(const aiNode* rNodeAi, aiMesh** meshesAi, std::vector<Mesh3d>& outMeshes) {
 		vector<Vertex3d> vertices;
 		vector<uint16_t> indices;
 		
@@ -127,7 +125,7 @@ namespace br {
 		}
 	}
 	
-	std::vector<Material3d> Model3dLoader::collectMaterials(const aiScene* modelAi, std::string dir) {
+	std::vector<Material3d> AssetLoader::collectMaterials(const aiScene* modelAi, std::string dir) {
 		uint32_t nMaterialsAi = modelAi->mNumMaterials;
 		vector<Material3d> materials;
 		for (uint32_t i = 0; i < nMaterialsAi; i++) {
@@ -135,7 +133,7 @@ namespace br {
 	
 			aiString textureAi;
 			materialAi->GetTexture(aiTextureType_DIFFUSE, 0, &textureAi);
-			Texture2d texture = Utils::loadTexture(dir + textureAi.C_Str());
+			Texture2d texture = Util::loadTexture(dir + textureAi.C_Str());
 
 			aiColor4D emissionAi;
 			aiGetMaterialColor(materialAi, AI_MATKEY_COLOR_EMISSIVE, &emissionAi);
@@ -164,10 +162,10 @@ namespace br {
 
 			Material3d mat{
 				texture,
-				Utils::assimpToGlm(emissionAi),
-				Utils::assimpToGlm(ambientAi),
-				Utils::assimpToGlm(diffuseAi),
-				Utils::assimpToGlm(specularAi),
+				Util::assimpToGlm(emissionAi),
+				Util::assimpToGlm(ambientAi),
+				Util::assimpToGlm(diffuseAi),
+				Util::assimpToGlm(specularAi),
 				shininess, indexOfRefraction, twoSided
 			};
 			materials.push_back(mat);
@@ -176,9 +174,9 @@ namespace br {
 	}
 	
 	
-	BNode<BoneNodeData> Model3dLoader::collectBones(const aiNode* bonesRoot, string modelPath) {
+	BNode<BoneNodeData> AssetLoader::collectBones(const aiNode* bonesRoot, string modelPath) {
 		if(!bonesRoot || !bonesRoot->mNumChildren)
-			throw Model3dException(EXCEPTION_INFO, modelPath, "no bones");
+			throw AssetException(EXCEPTION_INFO, modelPath, "no bones");
 
 		aiNode* rootBone = bonesRoot->mChildren[0];	
 		BNode<BoneNodeData> boneTree = parseBones(rootBone);
@@ -188,8 +186,8 @@ namespace br {
 		return boneTree;
 	}
 	
-	BNode<BoneNodeData> Model3dLoader::parseBones(const aiNode* node) {
-		glm::mat4 transform = Utils::assimpToGlm(node->mTransformation);
+	BNode<BoneNodeData> AssetLoader::parseBones(const aiNode* node) {
+		glm::mat4 transform = Util::assimpToGlm(node->mTransformation);
 		BNode<BoneNodeData> bones{ 0, node->mName.C_Str(), BoneNodeData(transform) };
 		
 		uint32_t nNodes = node->mNumChildren;
@@ -202,15 +200,15 @@ namespace br {
 		return bones;
 	}
 	
-	Animation3d Model3dLoader::collectAnimation(const aiScene* scene, BNode<BoneNodeData>& allBones, string animName, string modelPath) {
+	Animation3d AssetLoader::collectAnimation(const aiScene* scene, BNode<BoneNodeData>& allBones, string animName, string modelPath) {
 		uint32_t nAnims = scene->mNumAnimations;
 		if(!nAnims)
-			throw Model3dException(EXCEPTION_INFO, modelPath, "no animation " + animName);
+			throw AssetException(EXCEPTION_INFO, modelPath, "no animation " + animName);
 
 		aiAnimation* anim = scene->mAnimations[0]; // one scene - one animation
 		uint32_t nChannels = anim->mNumChannels;
 		if (!nChannels)
-			throw Model3dException(EXCEPTION_INFO, modelPath, "empty animation " + animName);
+			throw AssetException(EXCEPTION_INFO, modelPath, "empty animation " + animName);
 
 		unordered_map<uint32_t, Animation3d::BoneAnimation> idToBoneAnimation;
 		for (uint32_t i = 0; i < nChannels; ++i) {
@@ -225,7 +223,7 @@ namespace br {
 			uint32_t nPositions = animNode->mNumPositionKeys;
 			for (uint32_t j = 0; j < nPositions; ++j) {
 				aiVectorKey& posKey = animNode->mPositionKeys[j];
-				Animation3d::Vec3Key myPosKey{ posKey.mTime, Utils::assimpToGlm(posKey.mValue) };
+				Animation3d::Vec3Key myPosKey{ posKey.mTime, Util::assimpToGlm(posKey.mValue) };
 				positions.push_back(myPosKey);			
 			}
 	
@@ -234,7 +232,7 @@ namespace br {
 			for (uint32_t j = 0; j < nRotations; ++j) {
 				aiQuatKey& rotKey = animNode->mRotationKeys[j];
 				aiMatrix4x4 rotMtx(rotKey.mValue.GetMatrix());
-				Animation3d::Mat4Key myRotKey{ rotKey.mTime, Utils::assimpToGlm(rotMtx) };
+				Animation3d::Mat4Key myRotKey{ rotKey.mTime, Util::assimpToGlm(rotMtx) };
 				rotations.push_back(myRotKey);
 			}
 	
@@ -242,7 +240,7 @@ namespace br {
 			uint32_t nScalings = animNode->mNumScalingKeys;
 			for (uint32_t j = 0; j < nScalings; ++j) {
 				aiVectorKey& scaleKey = animNode->mScalingKeys[j];
-				Animation3d::Vec3Key myScaleKey{ scaleKey.mTime, Utils::assimpToGlm(scaleKey.mValue) };
+				Animation3d::Vec3Key myScaleKey{ scaleKey.mTime, Util::assimpToGlm(scaleKey.mValue) };
 				scalings.push_back(myScaleKey);
 			}
 	
@@ -254,7 +252,7 @@ namespace br {
 		return{ animName, anim->mDuration, anim->mTicksPerSecond, idToBoneAnimation };
 	}
 	
-	void Model3dLoader::collectBoneWeightsAndOffsets(const aiScene* scene, BNode<BoneNodeData>& boneTree, vector<Mesh3d>& meshes) {
+	void AssetLoader::collectBoneWeightsAndOffsets(const aiScene* scene, BNode<BoneNodeData>& boneTree, vector<Mesh3d>& meshes) {
 		std::map<string, aiMesh*> nameToMeshAi;
 		uint32_t nMeshAi = scene->mNumMeshes;
 		for (uint32_t i = 0; i < nMeshAi; ++i) {
@@ -273,7 +271,7 @@ namespace br {
 				aiBone* boneAi = meshAi->mBones[j];
 				BNode<BoneNodeData>* myBone = BNode<BoneNodeData>::FindNode(boneTree, boneAi->mName.C_Str());
 				uint32_t myBoneId = myBone->getId();
-				myMesh.setBoneOffset(myBoneId, Utils::assimpToGlm(boneAi->mOffsetMatrix));
+				myMesh.setBoneOffset(myBoneId, Util::assimpToGlm(boneAi->mOffsetMatrix));
 				
 				uint32_t nNumWeightsAi = boneAi->mNumWeights;
 				for (uint32_t k = 0; k < nNumWeightsAi; ++k) {
@@ -283,4 +281,29 @@ namespace br {
 			}
 		}
 	}
+
+	void AssetLoader::loadTexture(string pathAsKey) {
+		if(pathToTexture.find(pathAsKey) != pathToTexture.cend())
+			throw AssetException(EXCEPTION_INFO, pathAsKey, "has same texture");
+
+		Texture2d texture = Util::loadTexture(pathAsKey);
+		pathToTexture.emplace(pathAsKey, texture);
+	}
+
+	Texture2d& AssetLoader::getTextureBy(string path) {
+		try {
+			return pathToTexture.at(path);
+		} catch(std::out_of_range&) {
+			throw AssetException(EXCEPTION_INFO, path, "can`t get texture");
+		}
+	}
+
+	void AssetLoader::loadFont(string path, string name, uint8_t size) {
+		fontLoader.loadFont(path, name, size);
+	}
+
+	Font AssetLoader::getFontBy(string name, uint8_t size) {
+		return fontLoader.getFontBy(name, size);
+	}
+
 }

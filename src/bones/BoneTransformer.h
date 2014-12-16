@@ -50,6 +50,6 @@ namespace br {
 		if (factor > 1)
 			factor = 1;
 	
-		return Utils::interpolate(frame1.value, frame2.value, (float)factor);
+		return Util::interpolate(frame1.value, frame2.value, (float)factor);
 	}
 }

@@ -5,7 +5,7 @@ namespace br {
 	class Texture2d {
 	public:
 		Texture2d() = delete;
-		Texture2d(std::string path, std::vector<uint8_t>& data, int16_t width, int16_t height);
+		Texture2d(std::string path, std::vector<uint8_t>& data, uint32_t width, uint32_t height);
 		
 		~Texture2d() = default;
 	
@@ -13,15 +13,15 @@ namespace br {
 		
 		std::vector<uint8_t>& getData() { return data; }
 		
-		int16_t getWidth() const { return width; }
-		int16_t getHeight() const { return height; }
+		uint32_t getWidth() const { return width; }
+		uint32_t getHeight() const { return height; }
 		
 	private:
 		std::string path;
 	
 		std::vector<uint8_t> data;
-		int16_t width;
-		int16_t height;
+		uint32_t width;
+		uint32_t height;
 	};
 	
 }
