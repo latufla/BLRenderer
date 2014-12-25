@@ -9,7 +9,6 @@
 #include "Model3dInfo.h"
 #include <memory>
 #include "src/exceptions/Exception.h"
-#include <time.h>
 #include <chrono>
 
 const std::string SLIME_WARRIOR = "SlimeRed";
@@ -25,7 +24,7 @@ const std::string GAME_OBJECT = SLIME_WARRIOR;
 std::vector<ObjectBase> objects;
 
 void run();
-uint32_t getElapsedTimeMSec();
+long long getElapsedTimeMSec();
 void handleExceptions();
 
 void runModels(std::shared_ptr<br::AssetLoader>, br::Renderer&);
@@ -50,18 +49,18 @@ void run() {
 	runTarget(loader, renderer);
 	
 	const uint32_t step = 1000 / 60;
-	uint32_t begin = getElapsedTimeMSec();
+	long long begin = getElapsedTimeMSec();
 	bool running = true;
 	while(running) {
-		uint32_t delta = getElapsedTimeMSec() - begin;
-		if(delta >= step) {
-			running = renderer.doStep(delta);
-			begin = getElapsedTimeMSec();
+		long long elapsedTime = getElapsedTimeMSec() - begin;		
+		if(elapsedTime >= step) {
+			running = renderer.doStep(step);
+			begin = getElapsedTimeMSec() - (elapsedTime - step);
 		}
 	}
 }
 
-uint32_t getElapsedTimeMSec() {
+long long getElapsedTimeMSec() {
 	using namespace std::chrono;
 	auto now = high_resolution_clock::now();
 	auto mSec = duration_cast<milliseconds>(now.time_since_epoch());
@@ -90,7 +89,7 @@ void runModels(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) 
 	objects.push_back({42, GAME_OBJECT});
 
 	std::unordered_map<std::string, std::string> nameToAnimation{
-				{"walk", "Walk.dae"}
+	//			{"walk", "Walk.dae"}
 	};
 
 	const Model3dInfo info(GAME_OBJECT, nameToAnimation);
@@ -111,7 +110,7 @@ void runModels(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) 
 		renderer.transformObject(id, br::Util::toArray(s.getOrientation()));
 	}
 
-	renderer.playAnimation(42, "walk");
+	renderer.playAnimation(42, "default");
 }
 
 void runImages(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) {

@@ -15,7 +15,7 @@ namespace br {
 			return true;
 	
 		if (animation.loop) {
-			animation.timeMSec = 0;
+			animation.timeMSec -= animation.durationMSec;
 			return true;
 		}
 			
