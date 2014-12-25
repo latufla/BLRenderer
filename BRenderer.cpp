@@ -9,13 +9,13 @@
 #include "Model3dInfo.h"
 #include <memory>
 #include "src/exceptions/Exception.h"
+#include <time.h>
 #include <chrono>
-#include <thread>
 
 const std::string SLIME_WARRIOR = "SlimeRed";
 const std::string SLIME_HEALER = "SlimeBlue";
 const std::string CURE_FX = "CureFx";
-const std::string GAME_OBJECT = SLIME_HEALER;
+const std::string GAME_OBJECT = SLIME_WARRIOR;
 
 #define FRONT_VIEW 0.0f,1.0f,8.34f
 #define RIGHT_VIEW 7.48f,1.0f,0.0f
@@ -25,6 +25,7 @@ const std::string GAME_OBJECT = SLIME_HEALER;
 std::vector<ObjectBase> objects;
 
 void run();
+uint32_t getElapsedTimeMSec();
 void handleExceptions();
 
 void runModels(std::shared_ptr<br::AssetLoader>, br::Renderer&);
@@ -48,11 +49,23 @@ void run() {
 	
 	runTarget(loader, renderer);
 	
-	uint32_t stepInMSec = 1000 / 60;
-	std::chrono::milliseconds step(stepInMSec);
-	do {
-		std::this_thread::sleep_for(step);
-	} while(renderer.doStep(stepInMSec));
+	const uint32_t step = 1000 / 60;
+	uint32_t begin = getElapsedTimeMSec();
+	bool running = true;
+	while(running) {
+		uint32_t delta = getElapsedTimeMSec() - begin;
+		if(delta >= step) {
+			running = renderer.doStep(delta);
+			begin = getElapsedTimeMSec();
+		}
+	}
+}
+
+uint32_t getElapsedTimeMSec() {
+	using namespace std::chrono;
+	auto now = high_resolution_clock::now();
+	auto mSec = duration_cast<milliseconds>(now.time_since_epoch());
+	return mSec.count();
 }
 
 void handleExceptions() {
@@ -77,7 +90,7 @@ void runModels(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) 
 	objects.push_back({42, GAME_OBJECT});
 
 	std::unordered_map<std::string, std::string> nameToAnimation{
-		//		{"walk", "Walk.dae"}
+				{"walk", "Walk.dae"}
 	};
 
 	const Model3dInfo info(GAME_OBJECT, nameToAnimation);
@@ -98,7 +111,7 @@ void runModels(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) 
 		renderer.transformObject(id, br::Util::toArray(s.getOrientation()));
 	}
 
-	renderer.playAnimation(42, "default");
+	renderer.playAnimation(42, "walk");
 }
 
 void runImages(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) {
@@ -127,4 +140,5 @@ void runTextFields(std::shared_ptr<br::AssetLoader> loader, br::Renderer& render
 //  	renderer.removeTextField(0);
 //  	renderer.removeTextField(1);
 }
+
 
