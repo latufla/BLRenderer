@@ -9,7 +9,10 @@ namespace br {
 		path(path){
 	}
 	
-	bool View::doAnimationStep(uint32_t stepMSec) {
+	bool View::doAnimationStep(long long stepMSec) {
+		if(!animation.play)
+			return false;
+
 		animation.timeMSec += stepMSec; 
 		if (animation.timeMSec <= animation.durationMSec)
 			return true;
@@ -22,9 +25,18 @@ namespace br {
 		return false;
 	}
 	
-	void View::setAnimation(string name, uint32_t durationMSec, bool loop) {
-		animation.name = name; 
-		animation.durationMSec = durationMSec;
-		animation.loop = loop;
+	void View::playAnimation(Animation3d& animation, bool loop) {
+		this->animation.play = true;
+		this->animation.name = animation.getName();
+		this->animation.durationMSec = (long long)(animation.getDuration() * 1000);
+		this->animation.loop = loop;
+	}
+
+	void View::stopAnimation(Animation3d& animation) {
+		this->animation.play = false;
+		this->animation.name = animation.getName();
+		this->animation.durationMSec = (long long)(animation.getDuration() * 1000);
+		this->animation.timeMSec = 0;
+		this->animation.loop = false;
 	}
 }

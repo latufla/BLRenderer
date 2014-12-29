@@ -1,8 +1,6 @@
 #include "FontLoader.h"
-#include "../exceptions/Exception.h"
+#include "../../exceptions/Exception.h"
 #include <algorithm>
-#include "../utils/Image.h"
-#include "../Renderer.h"
 
 using std::string;
 using std::vector;
@@ -94,7 +92,7 @@ namespace br {
 			data.push_back(i.a);
 		}
 
-		Texture2d atlas{path, data, atlasW, atlasH};
+		Texture2d atlas{nameAsKey, data, atlasW, atlasH};
 		Font font{name, size, atlas, codeToCharacter};
 		nameToFont.emplace(nameAsKey, font);
 	}

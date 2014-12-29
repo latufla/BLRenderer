@@ -4,12 +4,13 @@
 #include "exceptions\Exception.h"
 
 using std::vector;
+using std::pair;
 
 namespace br {
 	LRESULT CALLBACK processMessages(HWND, UINT, WPARAM, LPARAM);
 	
 	WindowVendor::WindowVendor(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
-	{
+		: initialSize({(float)x, (float)y, (float)w, (float)h}) {
 		HINSTANCE hInstance = GetModuleHandle(nullptr);
 	
 		WNDCLASSEX wClass;
@@ -54,7 +55,7 @@ namespace br {
 		UpdateWindow(hWnd);
 	}
 		
-	WindowVendor::Rect WindowVendor::getRect()
+	WindowVendor::Rect WindowVendor::getSize()
 	{
 		RECT rect;
 		GetClientRect(nativeWindow, &rect);
@@ -78,7 +79,13 @@ namespace br {
 	
 		return msg.message != WM_QUIT;
 	}
-	
+
+	pair<float, float> WindowVendor::getScaleFactor() {
+		auto size = getSize();
+		return{size.w / initialSize.w, size.h / initialSize.h};
+	}
+
+
 	
 	LRESULT CALLBACK processMessages(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{

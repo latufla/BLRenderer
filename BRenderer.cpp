@@ -10,6 +10,11 @@
 #include <memory>
 #include "src/exceptions/Exception.h"
 #include <chrono>
+#include "src/processors/images/ImageRenderProcessor.h"
+#include "src/utils/Shaders.h"
+#include "src/processors/text/TextRenderProcessor.h"
+#include "src/processors/models/ModelRenderProcessor.h"
+#include "src/utils/Util.h"
 
 const std::string SLIME_WARRIOR = "SlimeRed";
 const std::string SLIME_HEALER = "SlimeBlue";
@@ -104,22 +109,33 @@ void runModels(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) 
 
 	renderer.setCamera(CUSTOM_VIEW);
 
+	br::Shaders shaders;
+	auto program = shaders.getProgram(br::Shaders::MODEL_PROGRAM);
+	auto modelRenderer = std::make_shared<br::ModelRenderProcessor>(loader, program);
+	renderer.addProcessor(modelRenderer);
+
 	for(auto& s : objects) {
 		uint32_t id = s.getId();
-		renderer.addObject(id, pathAsKey); // one model whatever
-		renderer.transformObject(id, br::Util::toArray(s.getOrientation()));
+		modelRenderer->addObject(id, pathAsKey); // one model whatever
+		modelRenderer->transformObject(id, br::Util::toArray(s.getOrientation()));
 	}
 
-	renderer.playAnimation(42, "default");
+	modelRenderer->playAnimation(42, "default");
 }
 
 void runImages(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) {
 	loader->loadTexture("models/cat.png");
-	renderer.addImage(0, "models/cat.png", {0.5f, 0.0f});
-	renderer.addImage(1, "models/cat.png", {-0.2f, 0.0f});
 
-	// 	renderer.removeImage(0);
-	// 	renderer.removeImage(1);
+	br::Shaders shaders;
+	auto program = shaders.getProgram(br::Shaders::IMAGE_PROGRAM);
+	auto imageRenderer = std::make_shared<br::ImageRenderProcessor>(loader, program);
+	renderer.addProcessor(imageRenderer);
+
+	imageRenderer->addImage(0, "models/cat.png", {-1.0f, 0.0f});
+	imageRenderer->addImage(1, "models/cat.png", {0.0f, 0.0f});
+
+// 	imageRenderer->removeImage(0);
+// 	imageRenderer->removeImage(1);
 }
 
 void runTextFields(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) {
@@ -127,17 +143,23 @@ void runTextFields(std::shared_ptr<br::AssetLoader> loader, br::Renderer& render
 
 	std::array<float, 4> color = {0.0f, 0.0f, 1.0f, 1.0f};
 	std::pair<float, float> pos = {0.5f, 0.0f};
-	renderer.addTextField(0, "+20 -150 Decrease Def", "arial", 20, color, pos);
+
+	br::Shaders shaders;
+	auto program = shaders.getProgram(br::Shaders::TEXT_PROGRAM);
+	auto textRenderer = std::make_shared<br::TextRenderProcessor>(loader, program);
+	renderer.addProcessor(textRenderer);
+
+	textRenderer->addTextField(0, "+20 -150 Decrease Def", "arial", 20, color, pos);
 
 	std::array<float, 4> color2 = {1.0f, 0.0f, 1.0f, 1.0f};
 	std::pair<float, float> pos2 = {0.5f, 0.5f};
-	renderer.addTextField(1, "+20 atk", "arial", 20, color2, pos2);
+	textRenderer->addTextField(1, "+20 atk", "arial", 20, color2, pos2);
 
 	std::pair<float, float> pos3 = {-0.5f, 0.0f};
-	renderer.translateTextField(1, pos3);
+	textRenderer->translateTextField(1, pos3);
 
-//  	renderer.removeTextField(0);
-//  	renderer.removeTextField(1);
+// 	textRenderer->removeTextField(0);
+//  textRenderer->removeTextField(1);
 }
 
 

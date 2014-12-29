@@ -14,13 +14,13 @@ namespace br {
 	void BoneTransformer::transform(View& object, Model3d& model, BonesDataMap& outBonesData) {
 		auto& boneTree = model.getBoneTree();
 		auto& anim = model.getAnimationBy(object.getAnimationName());
-		uint32_t animTime = object.getAnimationTime();
+		long long animTime = object.getAnimationTime();
 		auto& gTrans = model.getGlobalInverseTransform();
 		mat4 pTrans;
 		doTransform(boneTree, anim, animTime, gTrans, pTrans, outBonesData);
 	}
 	
-	void BoneTransformer::doTransform(BNode<BoneNodeData>& boneTree, Animation3d& animation, uint32_t animationTime, const mat4& globalInverseTransform, mat4 parentTransform, BonesDataMap& outBonesData) {
+	void BoneTransformer::doTransform(BNode<BoneNodeData>& boneTree, Animation3d& animation, long long animationTime, const mat4& globalInverseTransform, mat4 parentTransform, BonesDataMap& outBonesData) {
 		uint32_t boneId = boneTree.getId();
 		BoneNodeData& bNData = boneTree.getData();
 		mat4 nodeTransform = bNData.getTransform();

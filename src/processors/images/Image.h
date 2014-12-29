@@ -1,13 +1,13 @@
 #pragma once
 #include <array>
-#include "../Mesh3d.h"
-#include "../Texture2d.h"
+#include "../../Mesh3d.h"
+#include "../../Texture2d.h"
 
 namespace br {
 	class Image {
 	public:
 		Image() = delete;
-		Image(std::string path, glm::vec2& position, float w, float h);
+		Image(Texture2d& texture, glm::vec2& position, float sx, float sy);
 		
 		~Image() = default;
 	

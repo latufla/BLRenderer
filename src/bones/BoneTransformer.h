@@ -23,14 +23,14 @@ namespace br {
 	
 	private:
 		// only to hide useless params
-		void doTransform(BNode<BoneNodeData>&, Animation3d&, uint32_t, const glm::mat4&, glm::mat4, BonesDataMap&);
+		void doTransform(BNode<BoneNodeData>&, Animation3d&, long long, const glm::mat4&, glm::mat4, BonesDataMap&);
 		
 		template <class B, class R>
-		B calcTimeInterpolation(uint32_t time, std::vector<R> vecs);
+		B calcTimeInterpolation(long long time, std::vector<R> vecs);
 	};
 	
 	template <class B, class R>
-	B BoneTransformer::calcTimeInterpolation(uint32_t time, std::vector<R> v) {
+	B BoneTransformer::calcTimeInterpolation(long long time, std::vector<R> v) {
 		uint32_t n = v.size() - 1;
 		uint32_t frame1Id = n;
 		uint32_t frame2Id = n;

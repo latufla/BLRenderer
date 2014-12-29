@@ -19,6 +19,16 @@ namespace br {
 		std::string reason;
 	};
 
+	class WeakPtrException : public Exception {
+	public:
+		WeakPtrException(std::string func, uint32_t line) : Exception(func, line, "") {}
+		~WeakPtrException() = default;
+
+		const char* what() const override {
+			return "WeakPtrException";
+		}
+	};
+
 	class NativeWindowException : public Exception {
 	public:
 		NativeWindowException(std::string func, uint32_t line, std::string reason)
@@ -88,6 +98,18 @@ namespace br {
 
 		const char* what() const override {
 			return "GpuException";
+		}
+	};
+
+	class LogicException : public Exception {
+	public:
+		LogicException(std::string func, uint32_t line, std::string reason)
+			: Exception(func, line, reason) {
+		}
+		~LogicException() = default;
+
+		const char* what() const override {
+			return "LogicException";
 		}
 	};
 }

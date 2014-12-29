@@ -1,5 +1,6 @@
 #pragma once
 #include <glm.hpp>
+#include "Animation3d.h"
 
 namespace br {
 	class View {
@@ -15,12 +16,13 @@ namespace br {
 		glm::mat4& getTransform() { return transform; }
 		void setTransform(const glm::mat4& val) { transform = val; }
 	
-		void setAnimation(std::string animName, uint32_t durationMSec, bool loop = false);
+		void playAnimation(Animation3d&, bool loop = false);
+		void stopAnimation(Animation3d&);
 	
 		std::string getAnimationName() const { return animation.name;  }
-		uint32_t getAnimationTime() const { return animation.timeMSec; }
+		long long getAnimationTime() const { return animation.timeMSec; }
 	
-		bool doAnimationStep(uint32_t stepMSec);
+		bool doAnimationStep(long long stepMSec);
 	
 	private:
 		uint32_t id;
@@ -30,9 +32,10 @@ namespace br {
 	
 		struct AnimationData {
 			std::string name;
+			bool play;
 			bool loop;
-			uint32_t durationMSec = 0;
-			uint32_t timeMSec = 0;
+			long long durationMSec = 0;
+			long long timeMSec = 0;
 		} animation;
 	};	
 }

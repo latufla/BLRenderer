@@ -5,9 +5,10 @@ using std::string;
 using std::pair;
 
 namespace br {
-	const string Shaders::MODEL_SHADER = "modelShader";
-	const string Shaders::TEXT_SHADER = "textShader";
-	const string Shaders::IMAGE_SHADER = "imageShader";
+	const string Shaders::MODEL_PROGRAM = "modelProgram";
+	const string Shaders::MODEL_DEBUG_PROGRAM = "modelDebugProgram";
+	const string Shaders::TEXT_PROGRAM = "textProgram";
+	const string Shaders::IMAGE_PROGRAM = "imageProgram";
 
 	Shaders::Shaders() {
 		string modelVS =
@@ -40,18 +41,30 @@ namespace br {
 			"}";
 		
 		pair<string, string> modelShaders{modelVS, modelFS};
-		nameToShaderSrc.emplace(MODEL_SHADER, modelShaders);
+		nameToShaderPair.emplace(MODEL_PROGRAM, modelShaders);
 
+		string modelDebugFS =
+			"precision mediump float;                           \n"
+			"varying vec2 vTexCoord;                            \n"
+			"uniform sampler2D sTexture;                        \n"
+			"void main(){										\n"
+			"  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); \n"
+			"}";
+
+		pair<string, string> modelDebugShaders{modelVS, modelDebugFS};
+		nameToShaderPair.emplace(MODEL_DEBUG_PROGRAM, modelDebugShaders);
 		
+
 		string imageVS =
 			"uniform mat4 mvpMatrix;		\n"
 			"attribute vec4 aPosition;		\n"
 
 			"attribute vec2 aTexCoord;		\n"
+
 			"varying vec2 vTexCoord;		\n"
 			"void main(){					\n"
-			"   gl_Position = mvpMatrix * aPosition;					\n"
-			"   vTexCoord = aTexCoord;									\n"
+			"   gl_Position = mvpMatrix * aPosition;						\n"
+			"   vTexCoord = aTexCoord;										\n"
 			"}";
 
 		string imageFS =
@@ -63,20 +76,9 @@ namespace br {
 			"}";
 
 		pair<string, string> imageShaders{imageVS, imageFS};
-		nameToShaderSrc.emplace(IMAGE_SHADER, imageShaders);
+		nameToShaderPair.emplace(IMAGE_PROGRAM, imageShaders);
 
-
-		string textVS =
-			"uniform mat4 mvpMatrix;		\n"
-			"attribute vec4 aPosition;		\n"
-
-			"attribute vec2 aTexCoord;		\n"
-			"varying vec2 vTexCoord;		\n"
-			"void main(){					\n"
-			"   gl_Position = mvpMatrix * aPosition;								\n"
-			"   vTexCoord = aTexCoord;									\n"
-			"}";
-
+		
 		string textFS =
 			"precision mediump float;                           \n"
 			"varying vec2 vTexCoord;                            \n"
@@ -86,13 +88,13 @@ namespace br {
 			"  gl_FragColor = texture2D( sTexture, vTexCoord ) * color; \n"
 			"}";
 
-		pair<string, string> textShaders{textVS, textFS};
-		nameToShaderSrc.emplace(TEXT_SHADER, textShaders);
+		pair<string, string> textShaders{imageVS, textFS};
+		nameToShaderPair.emplace(TEXT_PROGRAM, textShaders);
 	}
 
-	pair<string, string> Shaders::getShaderSrcBy(const string name) {
+	pair<string, string> Shaders::getProgram(const string name) {
 		try {
-			return nameToShaderSrc.at(name);
+			return nameToShaderPair.at(name);
 		} catch(std::out_of_range&) {
 			throw AssetException(EXCEPTION_INFO, name, "can`t get shader");
 		}

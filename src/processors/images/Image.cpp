@@ -1,8 +1,12 @@
 #include "Image.h"
 
 namespace br{	
-	Image::Image(std::string path, glm::vec2& position, float w, float h) 
-		: position(position), path(path){
+	Image::Image(Texture2d& texture, glm::vec2& position, float sx, float sy) 
+		: path(texture.getPath()), position(position){
+
+		float w = texture.getWidth() * sx;
+		float h = texture.getHeight() * sy;
+
 		vertices[0] = {
 			0, 0, 0,
 			0.0f, 1.0f,

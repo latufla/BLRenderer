@@ -10,7 +10,7 @@
 #include "Model3d.h"
 #include "bones/BoneNodeData.h"
 #include "Material3d.h"
-#include "text/FontLoader.h"
+#include "processors/text/FontLoader.h"
 
 namespace br {
 	class AssetLoader {
