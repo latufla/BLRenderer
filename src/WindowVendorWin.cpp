@@ -71,7 +71,7 @@ namespace br {
 		POINT pos;
 		GetCursorPos(&pos);
 		ScreenToClient(nativeWindow, &pos);
-		std::pair<float, float> res{pos.x, pos.y};
+		std::pair<float, float> res{(float)pos.x, (float)pos.y};
 		return res;
 	}
 
