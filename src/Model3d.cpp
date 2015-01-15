@@ -17,27 +17,24 @@ namespace br {
 		meshes(meshes),
 		materials(materials),
 		boneTree(boneTree) {
+
+		initHitMesh(this->meshes);
 		nameToAnimation.emplace(defaultAnimation.getName(), defaultAnimation);
 	}
 	
-	Model3d::operator string() const {
-		string res = "";
-		res += "{ path : " + path + "\nmeshes: {\n";
-		for (auto& i : meshes) {
-			res += i;
-			res += "\n";
+	Material3d& Model3d::getMaterialBy(Mesh3d& mesh) {
+		auto id = mesh.getMaterialId();
+		try {
+			return materials.at(id);
+		} catch(std::out_of_range&){
+			throw LogicException(EXCEPTION_INFO, "mesh " + mesh.getName() + " has no material");
 		}
-		res += "}";
-	
-		res += "\ntextures: {\n";
-		for (auto& j : materials) {
-			//res += j.getTexture().getName();
-			res += "\n";
-		}
-		res += "}}";
-		return res;
 	}
-	
+
+	Texture2d& Model3d::getTextureBy(Mesh3d& mesh) {
+		return getMaterialBy(mesh).getTexture();
+	}
+
 	string Model3d::getUniqueMeshName(const Mesh3d& mesh) {
 		return path + mesh.getName();
 	}
@@ -55,5 +52,35 @@ namespace br {
 		auto res = nameToAnimation.emplace(name, anim);
 		if(!res.second)
 			throw AssetException(EXCEPTION_INFO, name, "has same animation");
+	}
+
+	Model3d::operator string() const {
+		string res = "";
+		res += "{ path : " + path + "\nmeshes: {\n";
+		for(auto& i : meshes) {
+			res += i;
+			res += "\n";
+		}
+		res += "}";
+
+		res += "\ntextures: {\n";
+		for(auto& j : materials) {
+			//res += j.getTexture().getName();
+			res += "\n";
+		}
+		res += "}}";
+		return res;
+	}
+
+
+	void Model3d::initHitMesh(std::vector<Mesh3d>& meshes) {
+		auto it = find_if(begin(meshes), end(meshes), [](Mesh3d& mesh) {
+			return mesh.getName() == "HitMesh";
+		});
+
+		if(it != end(meshes)) {
+			hitMesh = std::make_shared<Mesh3d>(*it);
+			meshes.erase(it);
+		}
 	}
 }

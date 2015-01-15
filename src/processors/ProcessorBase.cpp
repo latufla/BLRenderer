@@ -8,6 +8,7 @@
 
 using std::pair;
 using std::string;
+using std::shared_ptr;
 
 namespace br {
 	ProcessorBase::ProcessorBase(std::shared_ptr<AssetLoader> loader, std::pair<std::string, std::string> shaders) 
@@ -22,6 +23,24 @@ namespace br {
 			deleteTextureFromGpu(i.first);
 		}
 	}
+
+	void ProcessorBase::addProcessor(shared_ptr<ProcessorBase> val) {
+		auto it = find(cbegin(processors), cend(processors), val);
+		if(it != cend(processors))
+			throw LogicException(EXCEPTION_INFO, "has such processor");
+
+		processors.push_back(val);
+	}
+
+	void ProcessorBase::removeProcessor(shared_ptr<ProcessorBase> val) {
+		auto it = find(cbegin(processors), cend(processors), val);
+		if(it == cend(processors))
+			throw LogicException(EXCEPTION_INFO, "no such processor");
+
+		val->stop(); 
+		processors.erase(it);
+	}
+
 
 	ProcessorBase::ProgramContext ProcessorBase::createProgram(std::pair<std::string, std::string> shaiders) {
 		GLuint vShader = createShader(GL_VERTEX_SHADER, shaiders.first.c_str());
@@ -123,11 +142,19 @@ namespace br {
 		
 		enabled = true;
 		program = createProgram(shaders);
+
+		for(auto s : processors) {
+			s->start(window);
+		}
 	}
 
 	void ProcessorBase::stop() {
 		enabled = false;
 		glDeleteProgram(program.id);
+
+		for(auto s : processors) {
+			s->stop();
+		}
 	}
 
 	void ProcessorBase::tryDoStep(StepData& stepData) {
@@ -138,4 +165,11 @@ namespace br {
 	bool ProcessorBase::canDoStep() {
 		return enabled;
 	}
+
+	void ProcessorBase::doStep(const StepData& stepData) {
+		for(auto& s : processors) {
+			s->doStep(stepData);
+		}
+	}
+
 }

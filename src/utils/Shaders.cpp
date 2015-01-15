@@ -18,17 +18,16 @@ namespace br {
 
 			"attribute vec2 aTexCoord;		\n"
 
-			"attribute vec4 boneIds;		\n"
-			"attribute vec4 weights;		\n"
+ 			"attribute vec4 boneIds;		\n"
+ 			"attribute vec4 weights;		\n"
 
 			"varying vec2 vTexCoord;		\n"
 			"void main(){					\n"
-			"	mat4 boneTransform = bones[int(boneIds.x)] * weights.x;		\n"
-			"	boneTransform += bones[int(boneIds.y)] * weights.y;			\n"
+ 			"	mat4 boneTransform = bones[int(boneIds.x)] * weights.x;		\n"
+ 			"	boneTransform += bones[int(boneIds.y)] * weights.y;			\n"
 			"	boneTransform += bones[int(boneIds.z)] * weights.z;			\n"
-			"	boneTransform += bones[int(boneIds.w)] * weights.w;			\n"
-			"   vec4 pos = boneTransform * aPosition;						\n"
-			"   gl_Position = mvpMatrix * pos;								\n"
+ 			"	boneTransform += bones[int(boneIds.w)] * weights.w;			\n"
+			"   gl_Position = mvpMatrix * boneTransform * aPosition;								\n"
 			"   vTexCoord = aTexCoord;										\n"
 			"}";
 

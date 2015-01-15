@@ -13,6 +13,7 @@ using std::shared_ptr;
 using std::pair;
 using std::vector;
 using std::array;
+using std::unordered_map;
 using std::string;
 using glm::mat4;
 using glm::make_mat4;
@@ -112,7 +113,7 @@ namespace br {
 		return program;
 	}
 
-	void ModelRenderProcessor::doStep(StepData& stepData) {
+	void ModelRenderProcessor::doStep(const StepData& stepData) {
 		glUseProgram(program.id);
 
 		for(auto& i : idToObject) {
@@ -122,8 +123,10 @@ namespace br {
 
 			Model3d& model = loader->getModelBy(object.getPath());
 			vector<Mesh3d>& meshes = model.getMeshes();
+
+			object.doAnimationStep(stepData.stepMSec);
 			for(auto& s : meshes) {
-				auto bonesData = prepareAnimationStep(object, s, stepData.stepMSec);
+				auto bonesData = prepareAnimationStep(object, s);
 				for(auto& i : bonesData) {
 					glUniformMatrix4fv(program.bones + i.first, 1, GL_FALSE, &(i.second.finalTransform[0][0]));
 				}
@@ -167,17 +170,19 @@ namespace br {
 		glDisableVertexAttribArray(program.weights);
 
 		glUseProgram(0);
+
+		StepData step = stepData;
+		step.extraData = &idToObject;
+		__super::doStep(step);
 	}
 
-	BoneTransformer::BonesDataMap ModelRenderProcessor::prepareAnimationStep(View& object, Mesh3d& m, long long stepMSec) {
+	BoneTransformer::BonesDataMap ModelRenderProcessor::prepareAnimationStep(View& object, Mesh3d& m) {
 		BoneTransformer::BonesDataMap res;
 		auto& boneIdToOffset = m.getBoneIdToOffset();
 		for(auto& i : boneIdToOffset) {
 			BoneTransformer::BoneData bData{i.second};
 			res.emplace(i.first, bData);
 		}
-
-		object.doAnimationStep(stepMSec);
 
 		Model3d& model = loader->getModelBy(object.getPath());
 		boneTransformer.transform(object, model, res);
@@ -226,10 +231,7 @@ namespace br {
 				throw GpuException(EXCEPTION_INFO, modelPath + " can`t load indices");
 			}
 
-
-			auto& materials = model.getMaterials();
-			Material3d& m = materials.at(s.getMaterialId());
-			Texture2d& texture = m.getTexture();
+			Texture2d& texture = model.getTextureBy(s);
 			loadTextureToGpu(texture);
 
 			uint32_t textureId = textureToId.at(texture.getPath());
@@ -245,19 +247,23 @@ namespace br {
 	void ModelRenderProcessor::deleteModelFromGpu(string modelPath) {
 		Model3d& model = loader->getModelBy(modelPath);
 		vector<Mesh3d>& meshes = model.getMeshes();
+
+		unordered_map<uint32_t, string> texturesToRemove;
 		for(auto& s : meshes) {
 			string mName = model.getUniqueMeshName(s);
 			GpuBufferData& buffers = meshToBuffer.at(mName);
 
 			glDeleteBuffers(1, &buffers.vBuffer);
 			glDeleteBuffers(1, &buffers.iBuffer);
-
-			auto& materials = model.getMaterials();
-			Material3d& m = materials.at(s.getMaterialId());
-			Texture2d& texture = m.getTexture();
-			deleteTextureFromGpu(texture.getPath());
+			
+			Texture2d& texture = model.getTextureBy(s);
+			texturesToRemove.emplace(s.getMaterialId(), texture.getPath());
 
 			meshToBuffer.erase(mName);
+		}
+
+		for(auto& s : texturesToRemove) {
+			deleteTextureFromGpu(s.second);
 		}
 	}
 }

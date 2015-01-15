@@ -81,6 +81,7 @@ namespace br {
 		vector<Vertex3d> vertices;
 		vector<uint16_t> indices;
 		
+		aiVector3D defaultTexCoords{0.0f, 0.0f, 0.0f};
 		unsigned int* meshAiIds = rNodeAi->mMeshes;
 		uint32_t nMeshesAi = rNodeAi->mNumMeshes;
 		for (uint32_t i = 0; i < nMeshesAi; i++) {
@@ -92,13 +93,14 @@ namespace br {
 			uint32_t nVerticesAi = meshAi->mNumVertices;
 			for (uint32_t j = 0; j < nVerticesAi; j++) {
 				aiVector3D& v = verticesAi[j];
-				aiVector3D& t = textureCoordsAi[j];
-				vertices.push_back({
+				aiVector3D& t = textureCoordsAi ? textureCoordsAi[j] : defaultTexCoords;
+				Vertex3d vertex{
 					v.x, v.y, v.z,
 					t.x, t.y,
-					{ 0, 0, 0, 0 },
-					{ 0.0, 0.0, 0.0, 0.0 }
-				});
+					{0, 0, 0, 0},
+					{0.0, 0.0, 0.0, 0.0}
+				};
+				vertices.push_back(vertex);
 			}
 	
 			uint32_t nFacesAi = meshAi->mNumFaces;

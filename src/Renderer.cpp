@@ -75,10 +75,10 @@ namespace br {
 	
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		mat4 view = lookAt(vec3{camera.x, camera.y, camera.z}, vec3{0, 0, 0}, vec3{0, 1, 0});
-		mat4 projection = perspective(45.0f, winSize.w / winSize.h, 0.1f, 100.0f);
+ 		mat4 view = lookAt(vec3{camera.x, camera.y, camera.z}, vec3{0, 0, 0}, vec3{0, 0, 1});
+ 		mat4 projection = perspective(45.0f, winSize.w / winSize.h, 0.1f, 100.0f);
 		mat4 projectionView = projection * view;
-		
+
 		auto scaleFactor = window->getScaleFactor();
 		float sx = scaleFactor.first;
 		float sy = scaleFactor.second;
@@ -87,7 +87,8 @@ namespace br {
 			ProcessorBase::StepData stepData {
 				stepMSec, 
 				projectionView, 
-				orthoProjection
+				orthoProjection,
+				nullptr
 			};
 			i->tryDoStep(stepData);
 		}

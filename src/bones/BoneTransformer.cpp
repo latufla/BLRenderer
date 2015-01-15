@@ -44,7 +44,7 @@ namespace br {
 	
 		if (outBonesData.find(boneId) != end(outBonesData)) {
 			BoneData& outBData = outBonesData[boneId];
-			outBData.finalTransform = globalInverseTransform * globalTransform * outBData.offset;
+			outBData.finalTransform = globalTransform * outBData.offset;
 		}
 	
 		BNode<BoneNodeData>::ChildrenList& children = boneTree.getChildren();

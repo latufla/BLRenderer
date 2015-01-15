@@ -9,22 +9,28 @@ namespace br {
 		ProcessorBase(std::shared_ptr<AssetLoader> loader, std::pair<std::string, std::string> shaders);
 		virtual ~ProcessorBase();
 
+		void addProcessor(std::shared_ptr<ProcessorBase>);
+		void removeProcessor(std::shared_ptr<ProcessorBase>);
+
 	protected:
 		std::shared_ptr<AssetLoader> loader;
 		std::pair<std::string, std::string> shaders;
 
+		std::vector<std::shared_ptr<ProcessorBase>> processors;
+
 		std::weak_ptr<WindowVendor> window;
 		bool enabled = false;
-		void start(std::weak_ptr<WindowVendor> window);
-		void stop();
+		virtual void start(std::weak_ptr<WindowVendor> window);
+		virtual void stop();
 
 		struct StepData {
 			long long stepMSec;
 			glm::mat4 perspectiveView;
 			glm::mat4 ortho;
+			void* extraData;
 		};
 		void tryDoStep(StepData& stepData);
-		virtual void doStep(StepData& stepData) = 0;
+		virtual void doStep(const StepData& stepData);
 		virtual bool canDoStep();
 
 

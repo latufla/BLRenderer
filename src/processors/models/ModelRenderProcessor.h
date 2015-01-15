@@ -18,7 +18,7 @@ namespace br{
 		void transformObject(uint32_t objId, const std::array<float, 16> tForm);
 
 	private:
-		void doStep(StepData& stepData) override;
+		void doStep(const StepData& stepData) override;
 		ProgramContext fillProgramContext(uint32_t) override;
 
 		std::unordered_map<uint32_t, View> idToObject;
@@ -28,7 +28,7 @@ namespace br{
 		bool hasObjectWithModel(std::string);
 	
 		BoneTransformer boneTransformer;
-		BoneTransformer::BonesDataMap prepareAnimationStep(View&, Mesh3d&, long long);
+		BoneTransformer::BonesDataMap prepareAnimationStep(View&, Mesh3d&);
 	};
 	
 }

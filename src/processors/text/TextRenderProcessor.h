@@ -20,7 +20,7 @@ namespace br {
 		void translateTextField(uint32_t id, std::pair<float, float> position);
 
 	private:
-		void doStep(StepData& stepData) override;
+		void doStep(const StepData& stepData) override;
 		ProgramContext fillProgramContext(uint32_t pObject) override;
 
 		std::unordered_map<uint32_t, TextField> idToTextField;

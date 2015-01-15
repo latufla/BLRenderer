@@ -15,16 +15,17 @@
 #include "src/processors/text/TextRenderProcessor.h"
 #include "src/processors/models/ModelRenderProcessor.h"
 #include "src/utils/Util.h"
+#include "src/processors/models/ModelMouseProcessor.h"
 
 const std::string SLIME_WARRIOR = "SlimeRed";
-const std::string SLIME_HEALER = "SlimeBlue";
-const std::string CURE_FX = "CureFx";
+// TODO: not ready
+// const std::string SLIME_HEALER = "SlimeBlue";
+// const std::string CURE_FX = "CureFx";
 const std::string GAME_OBJECT = SLIME_WARRIOR;
 
-#define FRONT_VIEW 0.0f,1.0f,8.34f
-#define RIGHT_VIEW 7.48f,1.0f,0.0f
-#define CUSTOM_VIEW 7.48f,2.0f,8.34f
-#define DEFAULT_VIEW 7.48f,6.5f,8.34f
+#define FRONT_VIEW 0.0f,-8.0f,0.0f
+#define RIGHT_VIEW 8.0f,0.0f,0.0f
+#define CUSTOM_VIEW 8.0f,-8.0f,2.0f
 
 std::vector<ObjectBase> objects;
 
@@ -44,6 +45,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
  	} catch(...) {
  		handleExceptions();
  	}
+
 	return 0;
 }
 
@@ -91,7 +93,9 @@ void handleExceptions() {
 }
 
 void runModels(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) {
-	objects.push_back({42, GAME_OBJECT});
+	ObjectBase obj{42, GAME_OBJECT};
+	obj.translate(0.0f, 0.0f, 0.0f);
+	objects.push_back(obj);
 
 	std::unordered_map<std::string, std::string> nameToAnimation{
 	//			{"walk", "Walk.dae"}
@@ -107,11 +111,13 @@ void runModels(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) 
 		loader->attachAnimation(pathAsKey, i.first, modelDirectory + i.second);
 	}
 
-	renderer.setCamera(CUSTOM_VIEW);
+	renderer.setCamera(FRONT_VIEW);
 
 	br::Shaders shaders;
 	auto program = shaders.getProgram(br::Shaders::MODEL_PROGRAM);
 	auto modelRenderer = std::make_shared<br::ModelRenderProcessor>(loader, program);
+	auto mouseProcessor = std::make_shared<br::ModelMouseProcessor>(loader, program);
+	modelRenderer->addProcessor(mouseProcessor);
 	renderer.addProcessor(modelRenderer);
 
 	for(auto& s : objects) {

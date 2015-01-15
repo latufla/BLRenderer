@@ -25,6 +25,10 @@ namespace br {
 		Rect getSize();
 
 		std::pair<float, float> getScaleFactor();
+	
+		std::pair<float, float> getMousePosition();
+		bool getMouseDownLeft();
+		bool getMouseDownRight();
 	private:
 		Rect initialSize;
 	};

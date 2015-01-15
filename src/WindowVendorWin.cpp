@@ -67,7 +67,22 @@ namespace br {
 		};
 	}
 	
-	
+	std::pair<float, float> WindowVendor::getMousePosition() {
+		POINT pos;
+		GetCursorPos(&pos);
+		ScreenToClient(nativeWindow, &pos);
+		std::pair<float, float> res{pos.x, pos.y};
+		return res;
+	}
+
+	bool WindowVendor::getMouseDownLeft() {
+		return (GetKeyState(VK_LBUTTON) & 0x80) != 0;
+	}
+
+	bool WindowVendor::getMouseDownRight() {
+		return (GetKeyState(VK_RBUTTON) & 0x80) != 0;
+	}
+
 	bool WindowVendor::doStep() const
 	{
 		MSG msg;
