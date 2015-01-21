@@ -1,8 +1,8 @@
 #pragma once
 #include <vector>
 #include <memory>
-#include "WindowVendor.h"
 #include "AssetLoader.h"
+#include "utils\GraphicsConnector.h"
 
 namespace br {	
 	class ProcessorBase;
@@ -26,9 +26,9 @@ namespace br {
 		void removeProcessor(std::shared_ptr<ProcessorBase> val);
 
 	private:
-		std::shared_ptr<WindowVendor> window;
-
 		std::shared_ptr<AssetLoader> loader;
+	
+		std::shared_ptr<GraphicsConnector> gConnector;
 
 		struct Camera {
 			float x;
@@ -36,14 +36,6 @@ namespace br {
 			float z;
 		} camera;
 	
-		struct EglContext {
-			void* display;
-			void* surface;
-			void* context;
-		} eglContext;
-		
-		void initEgl();
-
 		std::vector<std::shared_ptr<ProcessorBase>> processors;
 	};
 }

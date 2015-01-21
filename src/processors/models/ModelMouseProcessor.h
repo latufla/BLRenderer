@@ -8,14 +8,13 @@ namespace br {
 		ModelMouseProcessor(std::shared_ptr<AssetLoader>loader, std::pair<std::string, std::string> shaders);
 		~ModelMouseProcessor();
 	
-		void start(std::weak_ptr<WindowVendor> window) override;
+		int32_t getMouseOver() const { return mouseOver; }
+	protected:
+		void start(std::weak_ptr<GraphicsConnector> gConnector) override;
 		void stop() override;
 
-		int32_t getMouseOver() const { return mouseOver; }
-
-	protected:
 		void doStep(const StepData& stepData) override;
-	
+
 		BoneTransformer boneTransformer;
 		int32_t mouseOver = -1;
 

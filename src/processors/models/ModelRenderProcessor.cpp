@@ -1,8 +1,6 @@
 #include "../../utils/SharedHeaders.h"
 #include "ModelRenderProcessor.h"
 
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
 #include "../../Model3d.h"
 #include "../../Texture2d.h"
 #include <gtc/matrix_transform.hpp>
@@ -97,79 +95,26 @@ namespace br {
 		object->setTransform(t);
 	}
 	
-	ProcessorBase::ProgramContext ModelRenderProcessor::fillProgramContext(uint32_t pObject) {
-		ProgramContext program = __super::fillProgramContext(pObject);
-
-		program.position = glGetAttribLocation(pObject, "aPosition");
-		program.texPosition = glGetAttribLocation(pObject, "aTexCoord");
-
-		program.bones = glGetUniformLocation(pObject, "bones");
-		program.boneIds = glGetAttribLocation(pObject, "boneIds");
-		program.weights = glGetAttribLocation(pObject, "weights");
-
-		program.sampler = glGetUniformLocation(pObject, "sTexture");
-		program.mvpMatrix = glGetUniformLocation(pObject, "mvpMatrix");
-
-		return program;
-	}
-
 	void ModelRenderProcessor::doStep(const StepData& stepData) {
-		glUseProgram(program.id);
+		auto sGConnector = gConnector.lock();
+		if(!sGConnector)
+			throw WeakPtrException(EXCEPTION_INFO);
 
 		for(auto& i : idToObject) {
 			View& object = i.second;
 			mat4 mvpMatrix = stepData.perspectiveView * object.getTransform();
-			glUniformMatrix4fv(program.mvpMatrix, 1, GL_FALSE, &mvpMatrix[0][0]);
 
 			Model3d& model = loader->getModelBy(object.getPath());
 			vector<Mesh3d>& meshes = model.getMeshes();
 
 			object.doAnimationStep(stepData.stepMSec);
 			for(auto& s : meshes) {
-				auto bonesData = prepareAnimationStep(object, s);
-				for(auto& i : bonesData) {
-					glUniformMatrix4fv(program.bones + i.first, 1, GL_FALSE, &(i.second.finalTransform[0][0]));
-				}
-
+				auto bonesData = prepareAnimationStep(object, s);			
 				string meshName = model.getUniqueMeshName(s);
-				GpuBufferData& buffers = meshToBuffer.at(meshName);
-				glBindBuffer(GL_ARRAY_BUFFER, buffers.vBuffer);
-				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.iBuffer);
-
-				uint8_t offset = 0;
-				glEnableVertexAttribArray(program.position);
-				glVertexAttribPointer(program.position, Mesh3d::VERTEX3D_POSITION, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
-
- 				offset += Mesh3d::VERTEX3D_POSITION * sizeof(float);
-				glEnableVertexAttribArray(program.texPosition);
-				glVertexAttribPointer(program.texPosition, Mesh3d::VERTEX3D_TEXTURE, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
-
-				offset += Mesh3d::VERTEX3D_TEXTURE * sizeof(float);
-				glEnableVertexAttribArray(program.boneIds);
-				glVertexAttribPointer(program.boneIds, Mesh3d::VERTEX3D_BONEIDS, GL_UNSIGNED_SHORT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
-
-				offset += Mesh3d::VERTEX3D_BONEIDS * sizeof(uint16_t);
-				glEnableVertexAttribArray(program.weights);
-				glVertexAttribPointer(program.weights, Mesh3d::VERTEX3D_WEIGHTS, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
-
-				glActiveTexture(GL_TEXTURE0);
-				glBindTexture(GL_TEXTURE_2D, buffers.texture);
-
-				glUniform1i(program.sampler, 0);
-
-				glDrawElements(GL_TRIANGLES, buffers.iBufferLenght, GL_UNSIGNED_SHORT, (void*)0);
+				GpuBufferData& buffer = meshToBuffer.at(meshName);
+				sGConnector->draw(buffer, program, mvpMatrix, bonesData);
 			}
 		}
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-		glDisableVertexAttribArray(program.position);
-		glDisableVertexAttribArray(program.texPosition);
-		glDisableVertexAttribArray(program.boneIds);
-		glDisableVertexAttribArray(program.weights);
-
-		glUseProgram(0);
 
 		StepData step = stepData;
 		step.extraData = &idToObject;
@@ -200,48 +145,15 @@ namespace br {
 		Model3d& model = loader->getModelBy(modelPath);
 		vector<Mesh3d>& meshes = model.getMeshes();
 		for(auto& s : meshes) {
-			uint32_t vBuffer;
-			glGenBuffers(1, &vBuffer);
-			glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
-
-			auto vertices = s.getVertices();
-			GLint szInBytes = sizeof(Vertex3d) * vertices.size();
-			glBufferData(GL_ARRAY_BUFFER, szInBytes, &vertices[0], GL_STATIC_DRAW);
-
-			GLint loadedBytes = 0;
-			glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &loadedBytes);
-			if(szInBytes != loadedBytes) {
-				glDeleteBuffers(1, &vBuffer);
-				throw GpuException(EXCEPTION_INFO, modelPath + " can`t load vertices");
-			}
-
-
-			uint32_t iBuffer;
-			glGenBuffers(1, &iBuffer);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iBuffer);
-
-			auto indices = s.getIndices();
-			uint32_t iBufferLength = indices.size();
-			szInBytes = sizeof(uint16_t) * iBufferLength;
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, szInBytes, &indices[0], GL_STATIC_DRAW);
-
-			glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &loadedBytes);
-			if(szInBytes != loadedBytes) {
-				glDeleteBuffers(1, &iBuffer);
-				throw GpuException(EXCEPTION_INFO, modelPath + " can`t load indices");
-			}
+			string meshName = model.getUniqueMeshName(s);
+			loadGeometryToGpu(meshName, s.getVertices(), s.getIndices());
 
 			Texture2d& texture = model.getTextureBy(s);
 			loadTextureToGpu(texture);
 
-			uint32_t textureId = textureToId.at(texture.getPath());
-			string meshName = model.getUniqueMeshName(s);
-			GpuBufferData buffer{vBuffer, iBuffer, iBufferLength, textureId};
-			meshToBuffer.emplace(meshName, buffer);
+			GpuBufferData& buffer = meshToBuffer.at(meshName);
+			buffer.texture = textureToId.at(texture.getPath());
 		}
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
 	void ModelRenderProcessor::deleteModelFromGpu(string modelPath) {
@@ -251,15 +163,10 @@ namespace br {
 		unordered_map<uint32_t, string> texturesToRemove;
 		for(auto& s : meshes) {
 			string mName = model.getUniqueMeshName(s);
-			GpuBufferData& buffers = meshToBuffer.at(mName);
-
-			glDeleteBuffers(1, &buffers.vBuffer);
-			glDeleteBuffers(1, &buffers.iBuffer);
+			deleteGeometryFromGpu(mName);
 			
 			Texture2d& texture = model.getTextureBy(s);
 			texturesToRemove.emplace(s.getMaterialId(), texture.getPath());
-
-			meshToBuffer.erase(mName);
 		}
 
 		for(auto& s : texturesToRemove) {

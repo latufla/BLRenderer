@@ -28,8 +28,8 @@ namespace br {
 	ModelMouseProcessor::~ModelMouseProcessor() {
 	}
 
-	void ModelMouseProcessor::start(std::weak_ptr<WindowVendor> window) {
-		this->window = window;
+	void ModelMouseProcessor::start(std::weak_ptr<GraphicsConnector> gConnector) {
+		this->gConnector = gConnector;
 		enabled = true;
 	}
 
@@ -39,12 +39,12 @@ namespace br {
 	}
 
 	void ModelMouseProcessor::doStep(const StepData& stepData) {
-		auto sWindow = window.lock();
-		if(!sWindow)
+		auto sGConnector = gConnector.lock();
+		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);
 
-		auto wMousePos = sWindow->getMousePosition();
-		auto wSize = sWindow->getSize();
+		auto wMousePos = sGConnector->getMousePosition();
+		auto wSize = sGConnector->getWindowSize();
 
 		vec2 mouseNDC = vec2{wMousePos.first, wMousePos.second} / vec2{wSize.w, wSize.h} * 2.0f - 1.0f;
 		mouseNDC.y = -mouseNDC.y;

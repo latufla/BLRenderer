@@ -19,7 +19,6 @@ namespace br{
 
 	private:
 		void doStep(const StepData& stepData) override;
-		ProgramContext fillProgramContext(uint32_t) override;
 
 		std::unordered_map<uint32_t, View> idToObject;
 	
