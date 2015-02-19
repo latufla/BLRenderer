@@ -1,12 +1,12 @@
 #pragma once
-#include "utils/SharedHeaders.h"
+#include "../../utils/SharedHeaders.h"
 #include <glm.hpp>
 #include "IWindowVendor.h"
 #include <utility>
-#include "Texture2d.h"
-#include "Mesh3d.h"
-#include "processors/text/TextField.h"
-#include "bones/BoneTransformer.h"
+#include "../../Texture2d.h"
+#include "../../Mesh3d.h"
+#include "../../processors/text/TextField.h"
+#include "../../utils/bones/BoneTransformer.h"
 
 namespace br {
 	class IGraphicsConnector {

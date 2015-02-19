@@ -16,7 +16,7 @@
 #include "src/processors/models/ModelRenderProcessor.h"
 #include "src/utils/Util.h"
 #include "src/processors/models/ModelMouseProcessor.h"
-#include "src/utils/GraphicsConnector.h"
+#include "src/graphics/GraphicsConnector.h"
 
 const std::string SLIME_WARRIOR = "SlimeRed";
 // TODO: not ready

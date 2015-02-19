@@ -81,9 +81,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\IGraphicsConnector.h" />
-    <ClInclude Include="src\IWindowVendor.h" />
-    <ClInclude Include="src\utils\GraphicsConnector.h" />
+    <ClInclude Include="src\graphics\interfaces\IGraphicsConnector.h" />
+    <ClInclude Include="src\graphics\interfaces\IWindowVendor.h" />
+    <ClInclude Include="src\graphics\GraphicsConnector.h" />
     <ClInclude Include="src\processors\models\ModelMouseProcessor.h" />
     <ClInclude Include="src\processors\models\ModelRenderProcessor.h" />
     <ClInclude Include="src\processors\ProcessorBase.h" />
@@ -94,26 +94,26 @@
     <ClInclude Include="Model3dInfo.h" />
     <ClInclude Include="src\exceptions\Exception.h" />
     <ClInclude Include="src\Material3d.h" />
-    <ClInclude Include="src\bones\BoneTransformer.h" />
+    <ClInclude Include="src\utils\bones\BoneTransformer.h" />
     <ClInclude Include="ObjectBase.h" />
     <ClInclude Include="src\Animation3d.h" />
-    <ClInclude Include="src\bones\BoneNodeData.h" />
+    <ClInclude Include="src\utils\bones\BoneNodeData.h" />
     <ClInclude Include="src\Renderer.h" />
     <ClInclude Include="src\utils\SharedHeaders.h" />
     <ClInclude Include="src\Texture2d.h" />
     <ClInclude Include="src\Mesh3d.h" />
     <ClInclude Include="src\Model3d.h" />
     <ClInclude Include="src\AssetLoader.h" />
-    <ClInclude Include="src\bones\BNode.h" />
+    <ClInclude Include="src\utils\bones\BNode.h" />
     <ClInclude Include="src\View.h" />
     <ClInclude Include="src\utils\Util.h" />
-    <ClInclude Include="src\WindowVendorWin.h" />
+    <ClInclude Include="src\graphics\WindowVendorWin.h" />
     <ClInclude Include="src\processors\text\FontLoader.h" />
     <ClInclude Include="src\processors\text\TextField.h" />
     <ClInclude Include="src\processors\text\TextRenderProcessor.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\utils\GraphicsConnector.cpp" />
+    <ClCompile Include="src\graphics\GraphicsConnector.cpp" />
     <ClCompile Include="src\processors\models\ModelMouseProcessor.cpp" />
     <ClCompile Include="src\processors\models\ModelRenderProcessor.cpp" />
     <ClCompile Include="src\processors\ProcessorBase.cpp" />
@@ -123,11 +123,11 @@
     <ClCompile Include="src\processors\images\Image.cpp" />
     <ClCompile Include="Model3dInfo.cpp" />
     <ClCompile Include="src\Material3d.cpp" />
-    <ClCompile Include="src\bones\BoneTransformer.cpp" />
+    <ClCompile Include="src\utils\bones\BoneTransformer.cpp" />
     <ClCompile Include="ObjectBase.cpp" />
     <ClCompile Include="src\Animation3d.cpp" />
     <ClCompile Include="BRenderer.cpp" />
-    <ClCompile Include="src\bones\BoneNodeData.cpp" />
+    <ClCompile Include="src\utils\bones\BoneNodeData.cpp" />
     <ClCompile Include="src\Renderer.cpp" />
     <ClCompile Include="src\Texture2d.cpp" />
     <ClCompile Include="src\Mesh3d.cpp" />
@@ -135,7 +135,7 @@
     <ClCompile Include="src\AssetLoader.cpp" />
     <ClCompile Include="src\View.cpp" />
     <ClCompile Include="src\utils\Util.cpp" />
-    <ClCompile Include="src\WindowVendorWin.cpp" />
+    <ClCompile Include="src\graphics\WindowVendorWin.cpp" />
     <ClCompile Include="src\processors\text\FontLoader.cpp" />
     <ClCompile Include="src\processors\text\TextField.cpp" />
     <ClCompile Include="src\processors\text\TextRenderProcessor.cpp" />

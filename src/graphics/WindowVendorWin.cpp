@@ -1,10 +1,10 @@
-#include "utils/SharedHeaders.h"
+#include "../utils/SharedHeaders.h"
 
 #include <windows.h>
 #include <vector>
 
 #include "WindowVendorWin.h"
-#include "exceptions\Exception.h"
+#include "../exceptions/Exception.h"
 
 using std::vector;
 using std::pair;

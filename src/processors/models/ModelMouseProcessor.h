@@ -1,6 +1,6 @@
 #pragma once
 #include "..\ProcessorBase.h"
-#include "..\..\bones\BoneTransformer.h"
+#include "..\..\utils\bones\BoneTransformer.h"
 
 namespace br {
 	class ModelMouseProcessor : public ProcessorBase{

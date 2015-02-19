@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <glm.hpp>
-#include "..\IGraphicsConnector.h"
+#include "interfaces/IGraphicsConnector.h"
 
 namespace br{
 	class GraphicsConnector : public IGraphicsConnector{

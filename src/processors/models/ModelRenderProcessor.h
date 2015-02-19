@@ -2,7 +2,7 @@
 #include <array>
 #include "../ProcessorBase.h"
 #include "../../View.h"
-#include "../../bones/BoneTransformer.h"
+#include "../../utils/bones/BoneTransformer.h"
 
 namespace br{
 	class ModelRenderProcessor : public ProcessorBase{

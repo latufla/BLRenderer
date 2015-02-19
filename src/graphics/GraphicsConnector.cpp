@@ -1,4 +1,4 @@
-#include "SharedHeaders.h"
+#include "../utils/SharedHeaders.h"
 #include "GraphicsConnector.h"
 
 #include <EGL/egl.h>
@@ -7,7 +7,7 @@
 #include <GLES2/gl2ext.h>
 
 #include "../exceptions/Exception.h"
-#include "../WindowVendorWin.h"
+#include "WindowVendorWin.h"
 
 using std::weak_ptr;
 using std::make_shared;

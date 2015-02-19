@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include "../AssetLoader.h"
-#include "../IGraphicsConnector.h"
+#include "../graphics/interfaces/IGraphicsConnector.h"
 
 namespace br {
 	class ProcessorBase {

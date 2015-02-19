@@ -4,8 +4,8 @@
 #include <unordered_map>
 #include "BNode.h"
 #include "BoneNodeData.h"
-#include "..\View.h"
-#include "..\Model3d.h"
+#include "..\..\View.h"
+#include "..\..\Model3d.h"
 
 namespace br {
 	class BoneTransformer {

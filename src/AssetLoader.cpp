@@ -1,6 +1,6 @@
 #include "utils/SharedHeaders.h"
 #include "AssetLoader.h"
-#include "bones/BoneNodeData.h"
+#include "utils/bones/BoneNodeData.h"
 #include "utils/Util.h"
 #include <unordered_map>
 #include "exceptions/Exception.h"

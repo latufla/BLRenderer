@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IWindowVendor.h"
+#include "interfaces/IWindowVendor.h"
 
 namespace br {
 	class WindowVendorWin : public IWindowVendor {
