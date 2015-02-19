@@ -4,7 +4,7 @@
 namespace br {
 	class IWindowVendor {
 	public:
-		virtual bool doStep() const = 0;
+		virtual bool doStep() = 0;
 		virtual void* getNativeWindow() = 0;
 
 		struct Rect {

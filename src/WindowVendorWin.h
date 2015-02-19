@@ -10,7 +10,7 @@ namespace br {
 
 		virtual ~WindowVendorWin();
 
-		bool doStep() const override;
+		bool doStep() override;
 
 		IWindowVendor::Rect getSize() const override;
 

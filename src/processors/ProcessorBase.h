@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include "../AssetLoader.h"
-#include "../utils/GraphicsConnector.h"
+#include "../IGraphicsConnector.h"
 
 namespace br {
 	class ProcessorBase {
@@ -18,9 +18,9 @@ namespace br {
 
 		std::vector<std::shared_ptr<ProcessorBase>> processors;
 
-		std::weak_ptr<GraphicsConnector> graphics;
+		std::weak_ptr<IGraphicsConnector> graphics;
 		bool enabled = false;
-		virtual void start(std::weak_ptr<GraphicsConnector> graphics);
+		virtual void start(std::weak_ptr<IGraphicsConnector> graphics);
 		virtual void stop();
 
 		struct StepData {
@@ -34,10 +34,10 @@ namespace br {
 		virtual bool canDoStep();
 
 
-		ProgramContext program;
+		IGraphicsConnector::ProgramContext program;
 
 
-		std::unordered_map<std::string, GpuBufferData> meshToBuffer;
+		std::unordered_map<std::string, IGraphicsConnector::GpuBufferData> meshToBuffer;
 		void loadGeometryToGpu(std::string key, std::vector<Vertex3d>& vertices, std::vector<uint16_t>& indices);
 		void deleteGeometryFromGpu(std::string key);
 

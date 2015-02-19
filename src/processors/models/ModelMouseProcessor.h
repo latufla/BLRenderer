@@ -10,7 +10,7 @@ namespace br {
 	
 		int32_t getMouseOver() const { return mouseOver; }
 	protected:
-		void start(std::weak_ptr<GraphicsConnector> graphics) override;
+		void start(std::weak_ptr<IGraphicsConnector> graphics) override;
 		void stop() override;
 
 		void doStep(const StepData& stepData) override;

@@ -82,7 +82,7 @@ namespace br {
 			mat4 translation = translate(mat4(), vec3(object.getPosition(), 0.0f));
 			mat4 mvp = translation * stepData.ortho;
 
-			GpuBufferData& buffer = meshToBuffer.at(object.getPath());
+			auto& buffer = meshToBuffer.at(object.getPath());
 			sGConnector->draw(buffer, program, mvp);
 		}
 
@@ -114,7 +114,7 @@ namespace br {
 		Texture2d& texture = loader->getTextureBy(pathAsKey);
 		loadTextureToGpu(texture);		
 
-		GpuBufferData& buffer = meshToBuffer.at(pathAsKey);
+		auto& buffer = meshToBuffer.at(pathAsKey);
 		buffer.texture = textureToId.at(pathAsKey);
 	}
 

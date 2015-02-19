@@ -14,8 +14,7 @@ using std::make_shared;
 using glm::mat4;
 
 namespace br {
-	GraphicsConnector::GraphicsConnector(uint32_t wndX, uint32_t wndY, uint32_t wndW, uint32_t wndH) {
-		const IWindowVendor::Rect size{wndX, wndY, wndW, wndH};
+	GraphicsConnector::GraphicsConnector(const IWindowVendor::Rect& size){
 		window = make_shared<WindowVendorWin>(size);
 
 		initEgl();
@@ -32,8 +31,13 @@ namespace br {
 		// 		glFrontFace(GL_CCW);
 	}
 
-	void GraphicsConnector::setViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h) {
-		glViewport(x, y, w, h);
+	GraphicsConnector::~GraphicsConnector() {
+
+	}
+
+
+	void GraphicsConnector::setViewport(const IWindowVendor::Rect& size) {
+		glViewport(size.x, size.y, size.w, size.h);
 	}
 
 	void GraphicsConnector::clear() {
@@ -103,11 +107,11 @@ namespace br {
 		eglContext.context = context;
 	}
 
-	WindowVendorWin::Rect GraphicsConnector::getWindowSize() {
+	WindowVendorWin::Rect GraphicsConnector::getWindowSize() const {
 		return window->getSize();
 	}
 
-	glm::vec2 GraphicsConnector::getScaleFactor() {
+	glm::vec2 GraphicsConnector::getScaleFactor() const {
 		return window->getScaleFactor();
 	}
 
@@ -115,7 +119,7 @@ namespace br {
 		return window->doStep();
 	}
 
-	glm::vec2 GraphicsConnector::getMousePosition() {
+	glm::vec2 GraphicsConnector::getMousePosition() const {
 		return window->getMousePosition();
 	}
 
@@ -142,7 +146,7 @@ namespace br {
 		return shader;
 	}
 
-	ProgramContext GraphicsConnector::createProgram(std::pair<std::string, std::string> shaders) {
+	IGraphicsConnector::ProgramContext GraphicsConnector::createProgram(std::pair<std::string, std::string> shaders) {
 		GLuint vShader = createShader(GL_VERTEX_SHADER, shaders.first.c_str());
 		GLuint fShader = createShader(GL_FRAGMENT_SHADER, shaders.second.c_str());
 
@@ -214,7 +218,7 @@ namespace br {
 		glDeleteProgram(program.id);
 	}
 
-	GpuBufferData GraphicsConnector::loadGeometryToGpu(std::vector<Vertex3d>& vertices, std::vector<uint16_t>& indices) {
+	IGraphicsConnector::GpuBufferData GraphicsConnector::loadGeometryToGpu(std::vector<Vertex3d>& vertices, std::vector<uint16_t>& indices) {
 		uint32_t vBuffer;
 		glGenBuffers(1, &vBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
@@ -337,5 +341,4 @@ namespace br {
 
 		glUseProgram(0);
 	}
-
 }

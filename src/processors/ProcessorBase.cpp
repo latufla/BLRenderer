@@ -69,7 +69,7 @@ namespace br {
 		return it != cend(textureToId);
 	}
 
-	void ProcessorBase::start(weak_ptr<GraphicsConnector> graphics) {
+	void ProcessorBase::start(weak_ptr<IGraphicsConnector> graphics) {
 		this->graphics = graphics;
 		enabled = true;
 

@@ -91,7 +91,7 @@ namespace br {
 			mat4 translation = translate(mat4(), vec3(object.getPosition(), 0.0f));
 			mat4 mvp = translation * stepData.ortho;
 
-			GpuBufferData& buffer = meshToBuffer.at(object.getUniqueName());
+			auto& buffer = meshToBuffer.at(object.getUniqueName());
 			sGConnector->draw(object, buffer, program, mvp);
 		}
 
@@ -106,7 +106,7 @@ namespace br {
 		Texture2d& atlas = font.getAtlas();
 		uint32_t textureId = textureToId.at(atlas.getPath());
 		
-		GpuBufferData& buffer = meshToBuffer.at(field.getUniqueName());
+		auto& buffer = meshToBuffer.at(field.getUniqueName());
 		buffer.texture = textureId;
 	}
 

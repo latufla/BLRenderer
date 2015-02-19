@@ -52,7 +52,8 @@ int _tmain(int argc, _TCHAR* argv[]) {
 
 void run() {
 	auto loader = std::make_shared<br::AssetLoader>();
-	auto graphcics = std::make_shared<br::GraphicsConnector>(0.0f, 0.0f, 1024.0f, 768.0f);
+	const br::IWindowVendor::Rect size{0.0f, 0.0f, 1024.0f, 768.0f};
+	auto graphcics = std::make_shared<br::GraphicsConnector>(size);
 	br::Renderer renderer(loader, graphcics);
 	
 	runTarget(loader, renderer);

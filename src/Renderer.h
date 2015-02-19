@@ -2,7 +2,7 @@
 #include <vector>
 #include <memory>
 #include "AssetLoader.h"
-#include "utils\GraphicsConnector.h"
+#include "IGraphicsConnector.h"
 
 namespace br {	
 	class ProcessorBase;
@@ -12,7 +12,7 @@ namespace br {
 		Renderer() = delete;
 		~Renderer() = default;
 
-		Renderer(std::shared_ptr<AssetLoader> loader, std::shared_ptr<GraphicsConnector> graphics);
+		Renderer(std::shared_ptr<AssetLoader> loader, std::shared_ptr<IGraphicsConnector> graphics);
 			
 		bool doStep(long long stepMSec);
 		
@@ -24,7 +24,7 @@ namespace br {
 	private:
 		std::shared_ptr<AssetLoader> loader;
 	
-		std::shared_ptr<GraphicsConnector> graphics;
+		std::shared_ptr<IGraphicsConnector> graphics;
 
 		struct Camera {
 			float x;

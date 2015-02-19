@@ -20,7 +20,7 @@ using glm::ortho;
 
 
 namespace br {
-	Renderer::Renderer(shared_ptr<AssetLoader> loader, shared_ptr<GraphicsConnector> graphics)
+	Renderer::Renderer(shared_ptr<AssetLoader> loader, shared_ptr<IGraphicsConnector> graphics)
 		: loader(loader), graphics(graphics) {
 	}
 
@@ -50,7 +50,7 @@ namespace br {
 
 	bool Renderer::doStep(long long stepMSec) {
 		auto wSize = graphics->getWindowSize();
-		graphics->setViewport(0, 0, (uint32_t)wSize.w, (uint32_t)wSize.h);
+		graphics->setViewport(wSize);
 		graphics->clear();
 	
  		mat4 view = lookAt(vec3{camera.x, camera.y, camera.z}, vec3{0, 0, 0}, vec3{0, 0, 1});

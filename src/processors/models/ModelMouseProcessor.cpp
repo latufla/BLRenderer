@@ -28,7 +28,7 @@ namespace br {
 	ModelMouseProcessor::~ModelMouseProcessor() {
 	}
 
-	void ModelMouseProcessor::start(std::weak_ptr<GraphicsConnector> graphics) {
+	void ModelMouseProcessor::start(std::weak_ptr<IGraphicsConnector> graphics) {
 		this->graphics = graphics;
 		enabled = true;
 	}

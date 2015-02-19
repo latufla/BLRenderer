@@ -111,7 +111,7 @@ namespace br {
 			for(auto& s : meshes) {
 				auto bonesData = prepareAnimationStep(object, s);			
 				string meshName = model.getUniqueMeshName(s);
-				GpuBufferData& buffer = meshToBuffer.at(meshName);
+				auto& buffer = meshToBuffer.at(meshName);
 				sGConnector->draw(buffer, program, mvpMatrix, bonesData);
 			}
 		}
@@ -151,7 +151,7 @@ namespace br {
 			Texture2d& texture = model.getTextureBy(s);
 			loadTextureToGpu(texture);
 
-			GpuBufferData& buffer = meshToBuffer.at(meshName);
+			auto& buffer = meshToBuffer.at(meshName);
 			buffer.texture = textureToId.at(texture.getPath());
 		}
 	}

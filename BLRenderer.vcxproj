@@ -81,6 +81,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\IGraphicsConnector.h" />
     <ClInclude Include="src\IWindowVendor.h" />
     <ClInclude Include="src\utils\GraphicsConnector.h" />
     <ClInclude Include="src\processors\models\ModelMouseProcessor.h" />
