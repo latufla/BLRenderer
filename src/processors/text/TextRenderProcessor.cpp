@@ -31,7 +31,7 @@ namespace br {
 		if(it != cend(idToTextField))
 			throw InvalidObjectIdException(EXCEPTION_INFO, id);
 
-		auto sGConnector = gConnector.lock();
+		auto sGConnector = graphics.lock();
 		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);
 
@@ -79,7 +79,7 @@ namespace br {
 	}
 
 	void TextRenderProcessor::doStep(const StepData& stepData) {
-		auto sGConnector = gConnector.lock();
+		auto sGConnector = graphics.lock();
 		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);
 

@@ -32,7 +32,7 @@ namespace br {
 		if(it != cend(idToImage))
 			throw InvalidObjectIdException(EXCEPTION_INFO, id);
 
-		auto sGConnector = gConnector.lock();
+		auto sGConnector = graphics.lock();
 		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);
 
@@ -70,7 +70,7 @@ namespace br {
 	}
 	
 	void ImageRenderProcessor::doStep(const StepData& stepData) {
-		auto sGConnector = gConnector.lock();
+		auto sGConnector = graphics.lock();
 		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);
 

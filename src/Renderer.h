@@ -12,11 +12,7 @@ namespace br {
 		Renderer() = delete;
 		~Renderer() = default;
 
-		Renderer(std::shared_ptr<AssetLoader> loader,
-			uint32_t wndX,
-			uint32_t wndY, 
-			uint32_t wndW, 
-			uint32_t wndH);
+		Renderer(std::shared_ptr<AssetLoader> loader, std::shared_ptr<GraphicsConnector> graphics);
 			
 		bool doStep(long long stepMSec);
 		
@@ -28,7 +24,7 @@ namespace br {
 	private:
 		std::shared_ptr<AssetLoader> loader;
 	
-		std::shared_ptr<GraphicsConnector> gConnector;
+		std::shared_ptr<GraphicsConnector> graphics;
 
 		struct Camera {
 			float x;

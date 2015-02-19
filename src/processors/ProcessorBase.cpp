@@ -43,7 +43,7 @@ namespace br {
 		if(hasTextureInGpu(texture.getPath()))
 			return;
 
-		auto sGConnector = gConnector.lock();
+		auto sGConnector = graphics.lock();
 		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);
 
@@ -52,7 +52,7 @@ namespace br {
 	}
 
 	void ProcessorBase::deleteTextureFromGpu(string pathAsKey) {
-		auto sGConnector = gConnector.lock();
+		auto sGConnector = graphics.lock();
 		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);
 
@@ -69,25 +69,25 @@ namespace br {
 		return it != cend(textureToId);
 	}
 
-	void ProcessorBase::start(weak_ptr<GraphicsConnector> gConnector) {
-		this->gConnector = gConnector;
+	void ProcessorBase::start(weak_ptr<GraphicsConnector> graphics) {
+		this->graphics = graphics;
 		enabled = true;
 
-		auto sGConnector = gConnector.lock();
+		auto sGConnector = graphics.lock();
 		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);
 
 		program = sGConnector->createProgram(shaders);
 
 		for(auto s : processors) {
-			s->start(gConnector);
+			s->start(graphics);
 		}
 	}
 
 	void ProcessorBase::stop() {
 		enabled = false;
 
-		auto sGConnector = gConnector.lock();
+		auto sGConnector = graphics.lock();
 		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);
 
@@ -114,7 +114,7 @@ namespace br {
 	}
 
 	void ProcessorBase::loadGeometryToGpu(string key, vector<Vertex3d>& vertices, vector<uint16_t>& indices) {
-		auto sGConnector = gConnector.lock();
+		auto sGConnector = graphics.lock();
 		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);
 
@@ -123,7 +123,7 @@ namespace br {
 	}
 
 	void ProcessorBase::deleteGeometryFromGpu(string key) {
-		auto sGConnector = gConnector.lock();
+		auto sGConnector = graphics.lock();
 		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);
 

@@ -1,10 +1,13 @@
 #include "SharedHeaders.h"
 #include "GraphicsConnector.h"
 
+#include <EGL/egl.h>
+
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
 #include "../exceptions/Exception.h"
+#include "../WindowVendorWin.h"
 
 using std::weak_ptr;
 using std::make_shared;
@@ -12,7 +15,8 @@ using glm::mat4;
 
 namespace br {
 	GraphicsConnector::GraphicsConnector(uint32_t wndX, uint32_t wndY, uint32_t wndW, uint32_t wndH) {
-		window = make_shared<WindowVendor>(wndX, wndY, wndW, wndH);
+		const IWindowVendor::Rect size{wndX, wndY, wndW, wndH};
+		window = make_shared<WindowVendorWin>(size);
 
 		initEgl();
 
@@ -76,7 +80,7 @@ namespace br {
 			EGL_NONE
 		};
 
-		auto surface = eglCreateWindowSurface(display, configs[0], window->nativeWindow, srfAttribs);
+		auto surface = eglCreateWindowSurface(display, configs[0], (EGLNativeWindowType)window->getNativeWindow(), srfAttribs);
 		if(surface == EGL_NO_SURFACE)
 			throw EglException(EXCEPTION_INFO, "can`t create window surface");
 
@@ -99,11 +103,11 @@ namespace br {
 		eglContext.context = context;
 	}
 
-	WindowVendor::Rect GraphicsConnector::getWindowSize() {
+	WindowVendorWin::Rect GraphicsConnector::getWindowSize() {
 		return window->getSize();
 	}
 
-	std::pair<float, float> GraphicsConnector::getScaleFactor() {
+	glm::vec2 GraphicsConnector::getScaleFactor() {
 		return window->getScaleFactor();
 	}
 
@@ -111,7 +115,7 @@ namespace br {
 		return window->doStep();
 	}
 
-	std::pair<float, float> GraphicsConnector::getMousePosition() {
+	glm::vec2 GraphicsConnector::getMousePosition() {
 		return window->getMousePosition();
 	}
 

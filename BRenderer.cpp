@@ -16,6 +16,7 @@
 #include "src/processors/models/ModelRenderProcessor.h"
 #include "src/utils/Util.h"
 #include "src/processors/models/ModelMouseProcessor.h"
+#include "src/utils/GraphicsConnector.h"
 
 const std::string SLIME_WARRIOR = "SlimeRed";
 // TODO: not ready
@@ -50,8 +51,9 @@ int _tmain(int argc, _TCHAR* argv[]) {
 }
 
 void run() {
-	std::shared_ptr<br::AssetLoader> loader = std::make_shared<br::AssetLoader>();
-	br::Renderer renderer{loader, 0, 0, 1024, 768};
+	auto loader = std::make_shared<br::AssetLoader>();
+	auto graphcics = std::make_shared<br::GraphicsConnector>(0.0f, 0.0f, 1024.0f, 768.0f);
+	br::Renderer renderer(loader, graphcics);
 	
 	runTarget(loader, renderer);
 	

@@ -3,7 +3,7 @@
 #include <memory>
 #include <glm.hpp>
 
-#include "..\WindowVendor.h"
+#include "..\IWindowVendor.h"
 #include "..\Texture2d.h"
 #include "..\processors\images\Image.h"
 #include "..\processors\text\TextField.h"
@@ -46,10 +46,10 @@ namespace br{
 
 		void swapBuffers();
 
-		WindowVendor::Rect getWindowSize();
-		std::pair<float, float> getScaleFactor();
+		IWindowVendor::Rect getWindowSize();
+		glm::vec2 getScaleFactor();
 
-		std::pair<float, float> getMousePosition();
+		glm::vec2 getMousePosition();
 
 		bool doStep();
 
@@ -69,7 +69,7 @@ namespace br{
 		void draw(GpuBufferData& buffer, ProgramContext& program, glm::mat4& mvp, BoneTransformer::BonesDataMap& bonesData);
 
 	private:
-		std::shared_ptr<WindowVendor> window;
+		std::shared_ptr<IWindowVendor> window;
 
 		struct EglContext {
 			void* display;

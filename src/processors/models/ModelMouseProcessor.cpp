@@ -28,8 +28,8 @@ namespace br {
 	ModelMouseProcessor::~ModelMouseProcessor() {
 	}
 
-	void ModelMouseProcessor::start(std::weak_ptr<GraphicsConnector> gConnector) {
-		this->gConnector = gConnector;
+	void ModelMouseProcessor::start(std::weak_ptr<GraphicsConnector> graphics) {
+		this->graphics = graphics;
 		enabled = true;
 	}
 
@@ -39,14 +39,14 @@ namespace br {
 	}
 
 	void ModelMouseProcessor::doStep(const StepData& stepData) {
-		auto sGConnector = gConnector.lock();
+		auto sGConnector = graphics.lock();
 		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);
 
 		auto wMousePos = sGConnector->getMousePosition();
 		auto wSize = sGConnector->getWindowSize();
 
-		vec2 mouseNDC = vec2{wMousePos.first, wMousePos.second} / vec2{wSize.w, wSize.h} * 2.0f - 1.0f;
+		vec2 mouseNDC = vec2{wMousePos.x, wMousePos.y} / vec2{wSize.w, wSize.h} * 2.0f - 1.0f;
 		mouseNDC.y = -mouseNDC.y;
 
 		mat4 toWorld = inverse(stepData.perspectiveView);

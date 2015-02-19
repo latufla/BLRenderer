@@ -18,9 +18,9 @@ namespace br {
 
 		std::vector<std::shared_ptr<ProcessorBase>> processors;
 
-		std::weak_ptr<GraphicsConnector> gConnector;
+		std::weak_ptr<GraphicsConnector> graphics;
 		bool enabled = false;
-		virtual void start(std::weak_ptr<GraphicsConnector> gConnector);
+		virtual void start(std::weak_ptr<GraphicsConnector> graphics);
 		virtual void stop();
 
 		struct StepData {
