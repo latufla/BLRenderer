@@ -1,7 +1,10 @@
-#include "utils/SharedHeaders.h"
+#include "../utils/SharedHeaders.h"
+
 #include <windows.h>
-#include "WindowVendor.h"
-#include "exceptions\Exception.h"
+#include <vector>
+
+#include "WindowVendorWin.h"
+#include "../exceptions/Exception.h"
 
 using std::vector;
 using std::pair;
@@ -9,8 +12,7 @@ using std::pair;
 namespace br {
 	LRESULT CALLBACK processMessages(HWND, UINT, WPARAM, LPARAM);
 	
-	WindowVendor::WindowVendor(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
-		: initialSize({(float)x, (float)y, (float)w, (float)h}) {
+	WindowVendorWin::WindowVendorWin(const IWindowVendor::Rect& size){
 		HINSTANCE hInstance = GetModuleHandle(nullptr);
 	
 		WNDCLASSEX wClass;
@@ -30,14 +32,14 @@ namespace br {
 		if(!RegisterClassEx(&wClass))
 			throw br::NativeWindowException(EXCEPTION_INFO, "can`t register window class");
 			
-		RECT wRect{ x, y, w, h };
+		RECT wRect{(LONG)size.x, (LONG)size.y, (LONG)size.w, (LONG)size.h};
 		AdjustWindowRect(&wRect, WS_BORDER | WS_DLGFRAME, false);
 			 
-		EGLNativeWindowType hWnd = CreateWindow(
+		auto hWnd = CreateWindow(
 			wClass.lpszClassName,
 			_T("Windows"),
 			WS_OVERLAPPEDWINDOW,
-			x, y,
+			(int32_t)size.x, (int32_t)size.y,
 			wRect.right - wRect.left, wRect.bottom - wRect.top,
 			NULL,
 			NULL,
@@ -49,16 +51,25 @@ namespace br {
 			throw br::NativeWindowException(EXCEPTION_INFO, "can`t create window");
 
 		nativeWindow = hWnd;
-	
-		// TODO: maybe not here
+		deviceContext = GetDC((HWND)nativeWindow);
+
 		ShowWindow(hWnd, true);
 		UpdateWindow(hWnd);
 	}
-		
-	WindowVendor::Rect WindowVendor::getSize()
+
+	WindowVendorWin::~WindowVendorWin() {
+		// destroy window here
+	}
+
+
+	void WindowVendorWin::swapBuffers() {
+		SwapBuffers((HDC)deviceContext);
+	}
+
+	IWindowVendor::Rect WindowVendorWin::getSize() const
 	{
 		RECT rect;
-		GetClientRect(nativeWindow, &rect);
+		GetClientRect((HWND)nativeWindow, &rect);
 		return {
 				(float)rect.left,
 				(float)rect.top,
@@ -67,23 +78,23 @@ namespace br {
 		};
 	}
 	
-	std::pair<float, float> WindowVendor::getMousePosition() {
+	glm::vec2 WindowVendorWin::getMousePosition() const {
 		POINT pos;
 		GetCursorPos(&pos);
-		ScreenToClient(nativeWindow, &pos);
-		std::pair<float, float> res{(float)pos.x, (float)pos.y};
+		ScreenToClient((HWND)nativeWindow, &pos);
+		glm::vec2 res{(float)pos.x, (float)pos.y};
 		return res;
 	}
 
-	bool WindowVendor::getMouseDownLeft() {
+	bool WindowVendorWin::getMouseDownLeft() const {
 		return (GetKeyState(VK_LBUTTON) & 0x80) != 0;
 	}
 
-	bool WindowVendor::getMouseDownRight() {
+	bool WindowVendorWin::getMouseDownRight() const {
 		return (GetKeyState(VK_RBUTTON) & 0x80) != 0;
 	}
 
-	bool WindowVendor::doStep() const
+	bool WindowVendorWin::doStep()
 	{
 		MSG msg;
 		if (!PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
@@ -95,13 +106,16 @@ namespace br {
 		return msg.message != WM_QUIT;
 	}
 
-	pair<float, float> WindowVendor::getScaleFactor() {
-		auto size = getSize();
-		return{size.w / initialSize.w, size.h / initialSize.h};
+	float WindowVendorWin::getAspectRatio() const {
+		auto wSize = getSize();
+		return (float)wSize.w / (float)wSize.h;
+	}
+
+	void* WindowVendorWin::getNativeWindow() {
+		return nativeWindow;
 	}
 
 
-	
 	LRESULT CALLBACK processMessages(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		switch (msg) {

@@ -20,14 +20,8 @@ using glm::ortho;
 
 
 namespace br {
-	Renderer::Renderer(shared_ptr<AssetLoader> loader,
-		uint32_t wndX,
-		uint32_t wndY,
-		uint32_t wndW, 
-		uint32_t wndH)
-		: loader(loader) {
-
-		gConnector = make_shared<GraphicsConnector>(wndX, wndY, wndW, wndH);
+	Renderer::Renderer(shared_ptr<IAssetLoader> loader, shared_ptr<IGraphicsConnector> graphics)
+		: loader(loader), graphics(graphics) {
 	}
 
 	void Renderer::addProcessor(shared_ptr<ProcessorBase> val) {
@@ -35,7 +29,7 @@ namespace br {
 		if(it != cend(processors))
 			throw LogicException(EXCEPTION_INFO, "has such processor");
 
-		val->start(gConnector);
+		val->start(graphics);
 		processors.push_back(val);
 	}
 
@@ -55,18 +49,16 @@ namespace br {
 	}
 
 	bool Renderer::doStep(long long stepMSec) {
-		auto wSize = gConnector->getWindowSize();
-		gConnector->setViewport(0, 0, (uint32_t)wSize.w, (uint32_t)wSize.h);
-		gConnector->clear();
+		auto wSize = graphics->getWindowSize();
+		graphics->setViewport(wSize);
+		graphics->clear();
 	
  		mat4 view = lookAt(vec3{camera.x, camera.y, camera.z}, vec3{0, 0, 0}, vec3{0, 0, 1});
 		mat4 projection = perspective(45.0f, wSize.w / wSize.h, 0.1f, 100.0f);
 		mat4 projectionView = projection * view;
 
-		auto scaleFactor = gConnector->getScaleFactor();
-		float sx = scaleFactor.first;
-		float sy = scaleFactor.second;
-		mat4 orthoProjection = ortho(-sx, sx, -sy, sy);
+		float ratio = (float)wSize.w / (float)wSize.h;
+		mat4 orthoProjection = ortho(-ratio, ratio, -1.f, 1.f);
 		for(auto i : processors) {
 			ProcessorBase::StepData stepData {
 				stepMSec, 
@@ -76,8 +68,8 @@ namespace br {
 			};
 			i->tryDoStep(stepData);
 		}
-		gConnector->swapBuffers();
+		graphics->swapBuffers();
 
-		return gConnector->doStep();
+		return graphics->doStep();
 	}
 }

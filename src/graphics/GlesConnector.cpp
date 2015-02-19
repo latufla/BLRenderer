@@ -1,18 +1,22 @@
-#include "SharedHeaders.h"
-#include "GraphicsConnector.h"
+#include "../utils/SharedHeaders.h"
+#include "GlesConnector.h"
+
+#include <EGL/egl.h>
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
 #include "../exceptions/Exception.h"
+#include "WindowVendorWin.h"
 
 using std::weak_ptr;
+using std::vector;
 using std::make_shared;
 using glm::mat4;
 
 namespace br {
-	GraphicsConnector::GraphicsConnector(uint32_t wndX, uint32_t wndY, uint32_t wndW, uint32_t wndH) {
-		window = make_shared<WindowVendor>(wndX, wndY, wndW, wndH);
+	GlesConnector::GlesConnector(const IWindowVendor::Rect& size){
+		window = make_shared<WindowVendorWin>(size);
 
 		initEgl();
 
@@ -28,20 +32,25 @@ namespace br {
 		// 		glFrontFace(GL_CCW);
 	}
 
-	void GraphicsConnector::setViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h) {
-		glViewport(x, y, w, h);
+	GlesConnector::~GlesConnector() {
+
 	}
 
-	void GraphicsConnector::clear() {
+
+	void GlesConnector::setViewport(const IWindowVendor::Rect& size) {
+		glViewport((GLint)size.x, (GLint)size.y, (GLint)size.w, (GLint)size.h);
+	}
+
+	void GlesConnector::clear() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	void GraphicsConnector::swapBuffers() {
+	void GlesConnector::swapBuffers() {
 		eglSwapBuffers(eglContext.display, eglContext.surface);
 	}
 
 
-	void GraphicsConnector::initEgl() {
+	void GlesConnector::initEgl() {
 		EGLint minorVersion;
 		EGLint majorVersion;
 
@@ -76,7 +85,7 @@ namespace br {
 			EGL_NONE
 		};
 
-		auto surface = eglCreateWindowSurface(display, configs[0], window->nativeWindow, srfAttribs);
+		auto surface = eglCreateWindowSurface(display, configs[0], (EGLNativeWindowType)window->getNativeWindow(), srfAttribs);
 		if(surface == EGL_NO_SURFACE)
 			throw EglException(EXCEPTION_INFO, "can`t create window surface");
 
@@ -99,23 +108,23 @@ namespace br {
 		eglContext.context = context;
 	}
 
-	WindowVendor::Rect GraphicsConnector::getWindowSize() {
+	WindowVendorWin::Rect GlesConnector::getWindowSize() const {
 		return window->getSize();
 	}
 
-	std::pair<float, float> GraphicsConnector::getScaleFactor() {
-		return window->getScaleFactor();
+	float GlesConnector::getAspectRatio() const {
+		return window->getAspectRatio();
 	}
 
-	bool GraphicsConnector::doStep() {
+	bool GlesConnector::doStep() {
 		return window->doStep();
 	}
 
-	std::pair<float, float> GraphicsConnector::getMousePosition() {
+	glm::vec2 GlesConnector::getMousePosition() const {
 		return window->getMousePosition();
 	}
 
-	uint32_t GraphicsConnector::createShader(uint32_t type, const char* source) {
+	uint32_t GlesConnector::createShader(uint32_t type, const char* source) {
 		GLboolean hasCompiler;
 		glGetBooleanv(GL_SHADER_COMPILER, &hasCompiler);
 		if(hasCompiler == GL_FALSE)
@@ -138,7 +147,7 @@ namespace br {
 		return shader;
 	}
 
-	ProgramContext GraphicsConnector::createProgram(std::pair<std::string, std::string> shaders) {
+	IGraphicsConnector::ProgramContext GlesConnector::createProgram(std::pair<std::string, std::string> shaders) {
 		GLuint vShader = createShader(GL_VERTEX_SHADER, shaders.first.c_str());
 		GLuint fShader = createShader(GL_FRAGMENT_SHADER, shaders.second.c_str());
 
@@ -181,16 +190,16 @@ namespace br {
 		return program;
 	}
 
-	uint32_t GraphicsConnector::loadTextureToGpu(Texture2d& texture) {
+	uint32_t GlesConnector::loadTextureToGpu(vector<uint8_t> const& texture, uint32_t width, uint32_t height) {
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 		GLuint textureId;
 		glGenTextures(1, &textureId);
 		glBindTexture(GL_TEXTURE_2D, textureId);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.getWidth(), texture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, &texture.getData()[0]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &texture[0]);
 
 		if(glGetError() != GL_NO_ERROR)
-			throw GpuException(EXCEPTION_INFO, texture.getPath() + " can`t load texture");
+			throw GpuException(EXCEPTION_INFO, "can`t load texture"); // what texture?
 
 		glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -198,24 +207,24 @@ namespace br {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		glBindTexture(GL_TEXTURE_2D, 0);
-		
+
 		return textureId;
 	}
 
-	void GraphicsConnector::deleteTextureFromGpu(uint32_t texture) {
+	void GlesConnector::deleteTextureFromGpu(uint32_t texture) {
 		glDeleteTextures(1, &texture);
 	}
 
-	void GraphicsConnector::deleteProgram(ProgramContext& program) {
+	void GlesConnector::deleteProgram(ProgramContext& program) {
 		glDeleteProgram(program.id);
 	}
 
-	GpuBufferData GraphicsConnector::loadGeometryToGpu(std::vector<Vertex3d>& vertices, std::vector<uint16_t>& indices) {
+	IGraphicsConnector::GpuBufferData GlesConnector::loadGeometryToGpu(std::vector<float>& vertices, std::vector<uint16_t>& indices) {
 		uint32_t vBuffer;
 		glGenBuffers(1, &vBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
 
-		GLint szInBytes = sizeof(Vertex3d) * vertices.size();
+		GLint szInBytes = sizeof(float) * vertices.size();
 		glBufferData(GL_ARRAY_BUFFER, szInBytes, &vertices[0], GL_STATIC_DRAW);
 
 		GLint loadedBytes = 0;
@@ -250,12 +259,12 @@ namespace br {
 		return buffer;
 	}
 
-	void GraphicsConnector::deleteGeometryFromGpu(GpuBufferData& buffer) {
+	void GlesConnector::deleteGeometryFromGpu(GpuBufferData& buffer) {
 		glDeleteBuffers(1, &buffer.vBuffer);
 		glDeleteBuffers(1, &buffer.iBuffer);
 	}
 
-	void GraphicsConnector::setBlending(bool val) {
+	void GlesConnector::setBlending(bool val) {
 		if(val) {
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -264,54 +273,76 @@ namespace br {
 		}
 	}
 
-	void GraphicsConnector::draw(TextField& object, GpuBufferData& buffer, ProgramContext program, mat4 mvp) {
-		glUseProgram(program.id);
-		glUniform4fv(program.color, 1, &object.getColor()[0]);
-		draw(buffer, program, mvp);
-	}
-	
-	void GraphicsConnector::draw(GpuBufferData& buffer, ProgramContext& program, mat4& mvp) {
+	void GlesConnector::draw(GpuBufferData& buffer, ProgramContext program, vector<ProgramParam> params) {
 		BoneTransformer::BonesDataMap bonesData;
-		draw(buffer, program, mvp, bonesData);
+		draw(buffer, program, params, bonesData);
 	}
 
-	void GraphicsConnector::draw(GpuBufferData& buffer, ProgramContext& program, glm::mat4& mvp, BoneTransformer::BonesDataMap& bonesData) {
+	void GlesConnector::draw(GpuBufferData& buffer, ProgramContext& program, std::vector<ProgramParam> params, BoneTransformer::BonesDataMap& bonesData) {
 		glUseProgram(program.id);
-		
-		glUniformMatrix4fv(program.mvp, 1, GL_FALSE, &mvp[0][0]); 
-		
+
+		for(auto& i : params) {
+			if(i.vec4) {
+				glm::vec4& v = *(i.vec4.get());
+				glUniform4fv(i.id, 1, &v[0]);
+			}
+			if(i.mat4) {
+				glm::mat4& m = *(i.mat4.get());
+				glUniformMatrix4fv(i.id, 1, GL_FALSE, &m[0][0]);
+			}
+		}
+
 		if(program.bones != -1) {
 			for(auto& i : bonesData) {
 				glUniformMatrix4fv(program.bones + i.first, 1, GL_FALSE, &(i.second.finalTransform[0][0]));
 			}
 		}
-		
+
 		glBindBuffer(GL_ARRAY_BUFFER, buffer.vBuffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.iBuffer);
 
 		uint8_t offset = 0;
 		if(program.position != -1) {
 			glEnableVertexAttribArray(program.position);
-			glVertexAttribPointer(program.position, Mesh3d::VERTEX3D_POSITION, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
+			glVertexAttribPointer(program.position,
+				Mesh3d::GetRawVertexPosition(),
+				GL_FLOAT,
+				GL_FALSE,
+				Mesh3d::GetRawVertexStride(),
+				(void*)offset);
 		}
 
-		offset += Mesh3d::VERTEX3D_POSITION * sizeof(float);
+		offset += Mesh3d::GetRawVertexPosition() * Mesh3d::GetRawVertexPositionSize();
 
 		if(program.uv != -1) {
 			glEnableVertexAttribArray(program.uv);
-			glVertexAttribPointer(program.uv, Mesh3d::VERTEX3D_TEXTURE, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
+			glVertexAttribPointer(program.uv,
+				Mesh3d::GetRawVertexTexture(),
+				GL_FLOAT,
+				GL_FALSE,
+				Mesh3d::GetRawVertexStride(), (void*)offset);
 		}
 
-		offset += Mesh3d::VERTEX3D_TEXTURE * sizeof(float);
+		offset += Mesh3d::GetRawVertexTexture() * Mesh3d::GetRawVertexTextureSize();
 		if(program.boneIds != -1) {
 			glEnableVertexAttribArray(program.boneIds);
-			glVertexAttribPointer(program.boneIds, Mesh3d::VERTEX3D_BONEIDS, GL_UNSIGNED_SHORT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
+			glVertexAttribPointer(program.boneIds,
+				Mesh3d::GetRawVertexBoneIds(),
+				GL_FLOAT,
+				GL_FALSE,
+				Mesh3d::GetRawVertexStride(),
+				(void*)offset);
 		}
 
-		offset += Mesh3d::VERTEX3D_BONEIDS * sizeof(uint16_t);
+		offset += Mesh3d::GetRawVertexBoneIds() * Mesh3d::GetRawVertexBoneIdsSize();
 		if(program.weights != -1) {
 			glEnableVertexAttribArray(program.weights);
-			glVertexAttribPointer(program.weights, Mesh3d::VERTEX3D_WEIGHTS, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
+			glVertexAttribPointer(program.weights,
+				Mesh3d::GetRawVertexWeights(),
+				GL_FLOAT,
+				GL_FALSE,
+				Mesh3d::GetRawVertexStride(),
+				(void*)offset);
 		}
 
 		if(program.sampler != -1) {
@@ -333,5 +364,4 @@ namespace br {
 
 		glUseProgram(0);
 	}
-
 }

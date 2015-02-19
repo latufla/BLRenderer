@@ -2,13 +2,13 @@
 #include "FontLoader.h"
 #include <vector>
 #include <array>
-#include "../../Mesh3d.h"
+#include "../../assets/Mesh3d.h"
 
 namespace br {
 	class TextField {
 	public:
 		TextField() = delete;
-		TextField(Font& font, std::string text, std::array<float, 4> color, glm::vec2& position, glm::vec2& scaleFactor);
+		TextField(Font& font, std::string text, const glm::vec4& color, const glm::vec2& position, const glm::vec2& scaleFactor);
 		
 		~TextField() = default;
 	
@@ -16,13 +16,14 @@ namespace br {
 		uint8_t getFontSize() const { return fontSize; }
 
 		std::vector<Vertex3d> getVertices() const { return vertices; }
+		std::vector<float>& getRawVertices() { return rawVertices; }
 		std::vector<uint16_t> getIndices() const { return indices; }
 
-		std::array<float, 4>& getColor() { return color; }
+		glm::vec4& getColor() { return color; }
 
 		std::string getText() const { return text; }
 		glm::vec2& getPosition() { return position; }
-		void setPosition(glm::vec2& val) { position = val; }
+		void setPosition(const glm::vec2& val) { position = val; }
 
 		std::string getUniqueName();
 	private:
@@ -31,9 +32,12 @@ namespace br {
 
 		std::string fontName;
 		uint8_t fontSize;
-		std::array<float, 4> color;
+		glm::vec4 color;
 	
 		std::vector<Vertex3d> vertices;
 		std::vector<uint16_t> indices;
+
+		std::vector<float> rawVertices;
+
 	};
 }

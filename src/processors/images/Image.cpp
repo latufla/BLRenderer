@@ -1,7 +1,7 @@
 #include "Image.h"
 
 namespace br{	
-	Image::Image(Texture2d& texture, glm::vec2& position, float sx, float sy) 
+	Image::Image(Texture2d& texture, const glm::vec2& position, float sx, float sy) 
 		: path(texture.getPath()), position(position){
 
 		float w = texture.getWidth() * sx;
@@ -9,27 +9,19 @@ namespace br{
 
 		vertices[0] = {
 			0, 0, 0,
-			0.0f, 1.0f,
-			{0, 0, 0, 0},
-			{0, 0, 0, 0}
+			0.0f, 1.0f
 		};
 		vertices[1] = {
 			0, h, 0,
-			0.0f, 0.0f,
-			{0, 0, 0, 0},
-			{0, 0, 0, 0}
+			0.0f, 0.0f
 		};
 		vertices[2] = {
 			w, h, 0,
-			1.0f, 0.0f,
-			{0, 0, 0, 0},
-			{0, 0, 0, 0}
+			1.0f, 0.0f
 		};
 		vertices[3] = {
 			w, 0, 0,
-			1.0f, 1.0f,
-			{0, 0, 0, 0},
-			{0, 0, 0, 0}
+			1.0f, 1.0f
 		};
 
 		indices[0] = 0;

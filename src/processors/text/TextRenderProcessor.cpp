@@ -5,18 +5,25 @@
 
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
+#include "../../assets/AssetLoader.h"
 
 using std::string;
 using std::array;
 using std::pair;
+using std::out_of_range;
+using std::shared_ptr;
+using std::weak_ptr;
+
 using glm::mat4;
+using glm::vec4;
 using glm::vec3;
 using glm::vec2;
 using glm::translate;
 
 namespace br {
-	TextRenderProcessor::TextRenderProcessor(std::shared_ptr<AssetLoader>loader, std::pair<std::string, std::string> shaders)
-		: ProcessorBase(loader, shaders) {
+	TextRenderProcessor::TextRenderProcessor(shared_ptr<IAssetLoader>loader)
+		: ProcessorBase(loader) {
+		shaders = loader->getProgramBy(AssetLoader::TEXT_PROGRAM);
 	}
 
 	TextRenderProcessor::~TextRenderProcessor() {
@@ -26,12 +33,12 @@ namespace br {
 		}
 	}
 
-	void TextRenderProcessor::addTextField(uint32_t id, string text, string fontName, uint8_t fontSize, array<float, 4> color, pair<float, float> position) {
+	void TextRenderProcessor::addTextField(uint32_t id, string text, string fontName, uint8_t fontSize, const vec4& color, const vec2& position) {
 		auto it = idToTextField.find(id);
 		if(it != cend(idToTextField))
 			throw InvalidObjectIdException(EXCEPTION_INFO, id);
 
-		auto sGConnector = gConnector.lock();
+		auto sGConnector = graphics.lock();
 		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);
 
@@ -40,10 +47,9 @@ namespace br {
 			loadFontToGpu(font);
 
 		auto wSize = sGConnector->getWindowSize();
-		vec2 scaleFactor = {2.0f / wSize.w, 2.0f / wSize.h};
-		vec2 pos = {position.first, position.second};		
+		vec2 scaleFactor = {(2.0f * sGConnector->getAspectRatio()) / wSize.w, 2.0f / wSize.h};
 
-		TextField field{font, text, color, pos, scaleFactor};
+		TextField field{font, text, color, position, scaleFactor};
 		loadTextFieldToGpu(field);
 		
 		idToTextField.emplace(id, field);
@@ -53,7 +59,7 @@ namespace br {
 		TextField* field;
 		try {
 			field = &idToTextField.at(id);
-		} catch(std::out_of_range&) {
+		} catch(out_of_range&) {
 			throw InvalidObjectIdException(EXCEPTION_INFO, id);
 		}
 		 
@@ -66,20 +72,19 @@ namespace br {
 			deleteFontFromGpu(font);
 	}
 
-	void TextRenderProcessor::translateTextField(uint32_t id, std::pair<float, float> position) {
+	void TextRenderProcessor::translateTextField(uint32_t id, const vec2& position) {
 		TextField* field;
 		try {
 			field = &idToTextField.at(id);
-		} catch(std::out_of_range&) {
+		} catch(out_of_range&) {
 			throw InvalidObjectIdException(EXCEPTION_INFO, id);
 		}
 
-		vec2 pos{position.first, position.second};
-		field->setPosition(pos);
+		field->setPosition(position);
 	}
 
 	void TextRenderProcessor::doStep(const StepData& stepData) {
-		auto sGConnector = gConnector.lock();
+		auto sGConnector = graphics.lock();
 		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);
 
@@ -87,12 +92,22 @@ namespace br {
 
 		for(auto& i : idToTextField) {
 			TextField& object = i.second;
+			
+			std::vector<IGraphicsConnector::ProgramParam> params;
 
+			IGraphicsConnector::ProgramParam color;
+			color.id = program.color;
+			color.vec4 = std::make_shared<glm::vec4>(object.getColor());
+			params.push_back(color);
+
+			IGraphicsConnector::ProgramParam mvp;
+			mvp.id = program.mvp;
 			mat4 translation = translate(mat4(), vec3(object.getPosition(), 0.0f));
-			mat4 mvp = translation * stepData.ortho;
-
-			GpuBufferData& buffer = meshToBuffer.at(object.getUniqueName());
-			sGConnector->draw(object, buffer, program, mvp);
+			mvp.mat4 = std::make_shared<glm::mat4>(translation * stepData.ortho);
+			params.push_back(mvp);
+			
+			auto& buffer = meshToBuffer.at(object.getUniqueName());
+			sGConnector->draw(buffer, program, params);
 		}
 
 		sGConnector->setBlending(false);		
@@ -100,13 +115,13 @@ namespace br {
 
 
 	void TextRenderProcessor::loadTextFieldToGpu(TextField& field) {
-		loadGeometryToGpu(field.getUniqueName(), field.getVertices(), field.getIndices());
+		loadGeometryToGpu(field.getUniqueName(), field.getRawVertices(), field.getIndices());
 
 		Font& font = loader->getFontBy(field.getFontName(), field.getFontSize());
 		Texture2d& atlas = font.getAtlas();
 		uint32_t textureId = textureToId.at(atlas.getPath());
 		
-		GpuBufferData& buffer = meshToBuffer.at(field.getUniqueName());
+		auto& buffer = meshToBuffer.at(field.getUniqueName());
 		buffer.texture = textureId;
 	}
 

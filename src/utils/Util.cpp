@@ -82,16 +82,6 @@ namespace br {
 		return "{x: " + to_string(v.x) + " y:" + to_string(v.y) + " z: " + to_string(v.z) + "}";
 	}
 	
-	std::array<float, 16> Util::toArray(const mat4& m) {
-		array <float, 16> res;
-	
-		const float *pSource = (const float*)value_ptr(m);
-		for (int i = 0; i < 16; ++i)
-			res[i] = pSource[i];
-	
-		return res;
-	}
-	
 	vec3 Util::interpolate(const vec3& from, const vec3& to, float alpha) {
 		vec3 interp;
 	
@@ -103,16 +93,12 @@ namespace br {
 	}
 	
 	mat4 Util::interpolate(const mat4& from, const mat4& to, float alpha) {
-		aiMatrix3x3 sm = glmToAssimpMat3(from);
-		aiMatrix3x3 em = glmToAssimpMat3(to);
-		
-		aiQuaternion qs(sm);
-		aiQuaternion qe(em);
-		aiQuaternion res;
-	
-		aiQuaternion::Interpolate(res, qs, qe, alpha);
-		res = res.Normalize();
-		return assimpMat3ToGlm(res.GetMatrix());
+		glm::quat fromQ(from);
+		glm::quat toQ(to);
+
+		glm::quat res = glm::mix(fromQ, toQ, alpha);
+		glm::normalize(res);
+		return glm::mat4_cast(res);
 	}
 	
 	Texture2d Util::loadTexture(string path) {

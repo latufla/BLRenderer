@@ -1,12 +1,11 @@
 #pragma once
 #include <vector>
-#include "../../Mesh3d.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
 #include <unordered_map>
-#include "../../Texture2d.h"
+#include "../../assets/Texture2d.h"
 #include "Font.h"
 
 namespace br {
@@ -16,7 +15,7 @@ namespace br {
 		~FontLoader() = default;
 
 		void loadFont(std::string path, std::string name, uint8_t size = 20);
-		Font getFontBy(std::string name, uint8_t size);
+		Font& getFontBy(std::string name, uint8_t size);
 
 	private:
 		FT_Library library;

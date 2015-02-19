@@ -1,4 +1,4 @@
-#include "../utils/SharedHeaders.h"
+#include "../SharedHeaders.h"
 #include "BoneNodeData.h"
 
 using std::string;

@@ -11,11 +11,15 @@
 #include "src/exceptions/Exception.h"
 #include <chrono>
 #include "src/processors/images/ImageRenderProcessor.h"
-#include "src/utils/Shaders.h"
 #include "src/processors/text/TextRenderProcessor.h"
 #include "src/processors/models/ModelRenderProcessor.h"
 #include "src/utils/Util.h"
 #include "src/processors/models/ModelMouseProcessor.h"
+
+#include "src/graphics/GlConnector.h"
+
+#include <thread>
+#include "src/assets/AssetLoader.h"
 
 const std::string SLIME_WARRIOR = "SlimeRed";
 // TODO: not ready
@@ -50,20 +54,19 @@ int _tmain(int argc, _TCHAR* argv[]) {
 }
 
 void run() {
-	std::shared_ptr<br::AssetLoader> loader = std::make_shared<br::AssetLoader>();
-	br::Renderer renderer{loader, 0, 0, 1024, 768};
+	auto loader = std::make_shared<br::AssetLoader>();
+	const br::IWindowVendor::Rect size{0.0f, 0.0f, 1024.0f, 768.0f};
+	auto graphcics = std::make_shared<br::GlConnector>(size);
+	br::Renderer renderer(loader, graphcics);
 	
 	runTarget(loader, renderer);
-	
-	const uint32_t step = 1000 / 60;
-	long long begin = getElapsedTimeMSec();
+
+	long long step = 1000 / 60;
 	bool running = true;
 	while(running) {
-		long long elapsedTime = getElapsedTimeMSec() - begin;		
-		if(elapsedTime >= step) {
-			running = renderer.doStep(step);
-			begin = getElapsedTimeMSec() - (elapsedTime - step);
-		}
+		long long startTime = getElapsedTimeMSec();
+		running = renderer.doStep(step);
+ 		step = getElapsedTimeMSec() - startTime;
 	}
 }
 
@@ -108,22 +111,20 @@ void runModels(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) 
 
 	loader->loadModel(pathAsKey, modelDirectory);
 	for(auto& i : nameToAnimation) {
-		loader->attachAnimation(pathAsKey, i.first, modelDirectory + i.second);
+		loader->loadAnimation(pathAsKey, i.first, modelDirectory + i.second);
 	}
 
 	renderer.setCamera(FRONT_VIEW);
 
-	br::Shaders shaders;
-	auto program = shaders.getProgram(br::Shaders::MODEL_PROGRAM);
-	auto modelRenderer = std::make_shared<br::ModelRenderProcessor>(loader, program);
-	auto mouseProcessor = std::make_shared<br::ModelMouseProcessor>(loader, program);
-	modelRenderer->addProcessor(mouseProcessor);
+	auto modelRenderer = std::make_shared<br::ModelRenderProcessor>(loader);
+// 	auto mouseProcessor = std::make_shared<br::ModelMouseProcessor>(loader, program);
+// 	modelRenderer->addProcessor(mouseProcessor);
 	renderer.addProcessor(modelRenderer);
 
 	for(auto& s : objects) {
 		uint32_t id = s.getId();
 		modelRenderer->addObject(id, pathAsKey); // one model whatever
-		modelRenderer->transformObject(id, br::Util::toArray(s.getOrientation()));
+		modelRenderer->transformObject(id, s.getOrientation());
 	}
 
 	modelRenderer->playAnimation(42, "default");
@@ -132,9 +133,7 @@ void runModels(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) 
 void runImages(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) {
 	loader->loadTexture("models/cat.png");
 
-	br::Shaders shaders;
-	auto program = shaders.getProgram(br::Shaders::IMAGE_PROGRAM);
-	auto imageRenderer = std::make_shared<br::ImageRenderProcessor>(loader, program);
+	auto imageRenderer = std::make_shared<br::ImageRenderProcessor>(loader);
 	renderer.addProcessor(imageRenderer);
 
 	imageRenderer->addImage(0, "models/cat.png", {-1.0f, 0.0f});
@@ -147,21 +146,19 @@ void runImages(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) 
 void runTextFields(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) {
 	loader->loadFont("fonts/arial.ttf", "arial", 20);
 
-	std::array<float, 4> color = {0.0f, 0.0f, 1.0f, 1.0f};
-	std::pair<float, float> pos = {0.5f, 0.0f};
+	const glm::vec4 color{0.0f, 0.0f, 1.0f, 1.0f};
+	const glm::vec2 pos{0.5f, 0.0f};
 
-	br::Shaders shaders;
-	auto program = shaders.getProgram(br::Shaders::TEXT_PROGRAM);
-	auto textRenderer = std::make_shared<br::TextRenderProcessor>(loader, program);
+	auto textRenderer = std::make_shared<br::TextRenderProcessor>(loader);
 	renderer.addProcessor(textRenderer);
 
 	textRenderer->addTextField(0, "+20 -150 Decrease Def", "arial", 20, color, pos);
 
-	std::array<float, 4> color2 = {1.0f, 0.0f, 1.0f, 1.0f};
-	std::pair<float, float> pos2 = {0.5f, 0.5f};
+	const glm::vec4 color2 = {1.0f, 0.0f, 1.0f, 1.0f};
+	const glm::vec2 pos2 = {0.5f, 0.5f};
 	textRenderer->addTextField(1, "+20 atk", "arial", 20, color2, pos2);
 
-	std::pair<float, float> pos3 = {-0.5f, 0.0f};
+	const glm::vec2 pos3 = {-0.5f, 0.0f};
 	textRenderer->translateTextField(1, pos3);
 
 // 	textRenderer->removeTextField(0);

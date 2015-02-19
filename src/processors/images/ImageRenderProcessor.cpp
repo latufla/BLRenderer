@@ -4,17 +4,23 @@
 #include "../../exceptions/Exception.h"
 
 #include <gtc/matrix_transform.hpp>
+#include "../../assets/AssetLoader.h"
 
 using std::pair;
+using std::string;
+using std::shared_ptr;
+using std::vector;
+using std::out_of_range;
+
 using glm::mat4;
 using glm::vec3;
 using glm::vec2;
 using glm::translate;
-using std::string;
 
 namespace br {
-	ImageRenderProcessor::ImageRenderProcessor(std::shared_ptr<AssetLoader>loader, std::pair<std::string, std::string> shaders)
-		: ProcessorBase(loader, shaders) {
+	ImageRenderProcessor::ImageRenderProcessor(shared_ptr<IAssetLoader>loader)
+		: ProcessorBase(loader) {
+		shaders = loader->getProgramBy(AssetLoader::IMAGE_PROGRAM);
 	}
 
 	ImageRenderProcessor::~ImageRenderProcessor() {
@@ -24,7 +30,7 @@ namespace br {
 		}
 	}
 
-	void ImageRenderProcessor::addImage(uint32_t id, std::string path, std::pair<float, float> position) {
+	void ImageRenderProcessor::addImage(uint32_t id, string path, const vec2& position) {
 		if(!enabled)
 			throw LogicException(EXCEPTION_INFO, "ImageRenderProcessor not added to Renderer");
 
@@ -32,17 +38,16 @@ namespace br {
 		if(it != cend(idToImage))
 			throw InvalidObjectIdException(EXCEPTION_INFO, id);
 
-		auto sGConnector = gConnector.lock();
+		auto sGConnector = graphics.lock();
 		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);
 
 		auto wSize = sGConnector->getWindowSize();
-		float sx = 2.0f / wSize.w;
+		float sx = (2.0f * sGConnector->getAspectRatio()) / wSize.w;
 		float sy = 2.0f / wSize.h;
 
-		vec2 pos{position.first, position.second};
 		Texture2d& texture = loader->getTextureBy(path);
-		Image image{texture, pos, sx, sy};
+		Image image{texture, position, sx, sy};
 
 		if(!hasImageWithTexture(path))
 			loadImageToGpu(image);
@@ -57,7 +62,7 @@ namespace br {
 		Image* image;
 		try {
 			image = &idToImage.at(id);
-		} catch(std::out_of_range&) {
+		} catch(out_of_range&) {
 			throw InvalidObjectIdException(EXCEPTION_INFO, id);
 		}
 
@@ -70,7 +75,7 @@ namespace br {
 	}
 	
 	void ImageRenderProcessor::doStep(const StepData& stepData) {
-		auto sGConnector = gConnector.lock();
+		auto sGConnector = graphics.lock();
 		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);
 
@@ -82,8 +87,8 @@ namespace br {
 			mat4 translation = translate(mat4(), vec3(object.getPosition(), 0.0f));
 			mat4 mvp = translation * stepData.ortho;
 
-			GpuBufferData& buffer = meshToBuffer.at(object.getPath());
-			sGConnector->draw(buffer, program, mvp);
+			auto& buffer = meshToBuffer.at(object.getPath());
+		//	sGConnector->draw(buffer, program, mvp);
 		}
 
 		sGConnector->setBlending(false);
@@ -98,23 +103,23 @@ namespace br {
 	}
 
 	void ImageRenderProcessor::loadImageToGpu(Image& image) {
-		std::vector<Vertex3d> vertices;
+		vector<Vertex3d> vertices;
 		for(auto& i : image.getVertices()) {
 			vertices.push_back(i);
 		}
 
-		std::vector<uint16_t> indices;
+		vector<uint16_t> indices;
 		for(auto& i : image.getIndices()) {
 			indices.push_back(i);
 		}
 
 		string pathAsKey = image.getPath();		
-		loadGeometryToGpu(pathAsKey, vertices, indices);
+		//loadGeometryToGpu(pathAsKey, vertices, indices);
 
 		Texture2d& texture = loader->getTextureBy(pathAsKey);
 		loadTextureToGpu(texture);		
 
-		GpuBufferData& buffer = meshToBuffer.at(pathAsKey);
+		auto& buffer = meshToBuffer.at(pathAsKey);
 		buffer.texture = textureToId.at(pathAsKey);
 	}
 

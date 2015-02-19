@@ -1,6 +1,6 @@
-#include "utils/SharedHeaders.h"
+#include "../utils/SharedHeaders.h"
 #include "Animation3d.h"
-#include "utils/Util.h"
+#include "../utils/Util.h"
 
 using std::string;
 using std::to_string; 

@@ -6,7 +6,7 @@ using std::to_string;
 using std::array;
 
 namespace br {
-	TextField::TextField(Font& font, string text, array<float, 4> color, glm::vec2& position, glm::vec2& scaleFactor)
+	TextField::TextField(Font& font, string text, const glm::vec4& color, const glm::vec2& position, const glm::vec2& scaleFactor)
 		: fontName(font.getName()),
 		fontSize(font.getSize()),
 		text(text),
@@ -42,30 +42,39 @@ namespace br {
 
 			vertices.push_back({
 				x + w, y - h, 0,
-				nextCharTexX, nextCharTexY,
-				{0, 0, 0, 0},
-				{0, 0, 0, 0}
+				nextCharTexX, nextCharTexY
 			});
 			vertices.push_back({
 				x + w, y, 0,
-				nextCharTexX, 0,
-				{0, 0, 0, 0},
-				{0, 0, 0, 0}
+				nextCharTexX, 0
 			});
 			vertices.push_back({
 				x, y, 0,
-				ch.texOffsetX, 0,
-				{0, 0, 0, 0},
-				{0, 0, 0, 0}
+				ch.texOffsetX, 0
 			});
 			vertices.push_back({
 				x, y - h, 0,
-				ch.texOffsetX, nextCharTexY,
-				{0, 0, 0, 0},
-				{0, 0, 0, 0}
+				ch.texOffsetX, nextCharTexY
 			});
 		}
 
+		for(auto& i : vertices) {
+			rawVertices.push_back(i.x);
+			rawVertices.push_back(i.y);
+			rawVertices.push_back(i.z);
+			rawVertices.push_back(i.s);
+			rawVertices.push_back(i.t);
+
+			rawVertices.push_back(0.0f);
+			rawVertices.push_back(0.0f);
+			rawVertices.push_back(0.0f);
+			rawVertices.push_back(0.0f);
+		
+			rawVertices.push_back(0.0f);
+			rawVertices.push_back(0.0f);
+			rawVertices.push_back(0.0f);
+			rawVertices.push_back(0.0f);
+		}
 	}
 
 	string TextField::getUniqueName() {

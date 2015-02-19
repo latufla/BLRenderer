@@ -1,9 +1,10 @@
-#include "../utils/SharedHeaders.h"
+#include "../SharedHeaders.h"
 #include <gtc/matrix_transform.hpp>
 #include "BoneTransformer.h"
-#include "../utils/Util.h"
+#include "../Util.h"
 
 using std::vector;
+using std::shared_ptr;
 using glm::mat4;
 using glm::vec3;
 
@@ -11,16 +12,15 @@ using glm::translate;
 using glm::scale;
 
 namespace br {
-	void BoneTransformer::transform(View& object, Model3d& model, BonesDataMap& outBonesData) {
-		auto& boneTree = model.getBoneTree();
-		auto& anim = model.getAnimationBy(object.getAnimationName());
+	void BoneTransformer::transform(View& object, shared_ptr<IModel3d> model, BonesDataMap& outBonesData) {
+		auto& boneTree = model->getBoneTree();
+		auto& anim = model->getAnimationBy(object.getAnimationName());
 		long long animTime = object.getAnimationTime();
-		auto& gTrans = model.getGlobalInverseTransform();
 		mat4 pTrans;
-		doTransform(boneTree, anim, animTime, gTrans, pTrans, outBonesData);
+		doTransform(boneTree, anim, animTime, pTrans, outBonesData);
 	}
 	
-	void BoneTransformer::doTransform(BNode<BoneNodeData>& boneTree, Animation3d& animation, long long animationTime, const mat4& globalInverseTransform, mat4 parentTransform, BonesDataMap& outBonesData) {
+	void BoneTransformer::doTransform(BNode<BoneNodeData>& boneTree, Animation3d& animation, long long animationTime, mat4 parentTransform, BonesDataMap& outBonesData) {
 		uint32_t boneId = boneTree.getId();
 		BoneNodeData& bNData = boneTree.getData();
 		mat4 nodeTransform = bNData.getTransform();
@@ -50,7 +50,7 @@ namespace br {
 		BNode<BoneNodeData>::ChildrenList& children = boneTree.getChildren();
 		uint32_t nChildren = children.size();
 		for (uint32_t i = 0; i < nChildren; ++i) {
-			doTransform(children[i], animation, animationTime, globalInverseTransform, globalTransform, outBonesData);
+			doTransform(children[i], animation, animationTime, globalTransform, outBonesData);
 		}
 	}
 }

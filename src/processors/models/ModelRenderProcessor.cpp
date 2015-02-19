@@ -1,24 +1,27 @@
 #include "../../utils/SharedHeaders.h"
 #include "ModelRenderProcessor.h"
 
-#include "../../Model3d.h"
-#include "../../Texture2d.h"
+#include "../../assets/Model3d.h"
+#include "../../assets/Texture2d.h"
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 #include "../../exceptions/Exception.h"
+#include "../../assets/AssetLoader.h"
 
 using std::shared_ptr;
+using std::weak_ptr;
 using std::pair;
 using std::vector;
-using std::array;
 using std::unordered_map;
 using std::string;
+using std::out_of_range;
+
 using glm::mat4;
 using glm::make_mat4;
 
 namespace br {
-	ModelRenderProcessor::ModelRenderProcessor(shared_ptr<AssetLoader>loader, pair<std::string, std::string> shaders) 
-		: ProcessorBase(loader, shaders){
+	ModelRenderProcessor::ModelRenderProcessor(shared_ptr<IAssetLoader>loader) 
+		: ProcessorBase(loader){
 	}
 	
 	ModelRenderProcessor::~ModelRenderProcessor() {
@@ -35,7 +38,7 @@ namespace br {
 
 		if(!hasObjectWithModel(modelPath)) // first in
 			loadModelToGpu(modelPath);
-
+		
 		View object{id, modelPath};
 		idToObject.emplace(id, object);	
 
@@ -46,7 +49,7 @@ namespace br {
 		View* object;
 		try {
 			object = &idToObject.at(id);
-		} catch(std::out_of_range&) {
+		} catch(out_of_range&) {
 			throw InvalidObjectIdException(EXCEPTION_INFO, id);
 		}
 
@@ -57,62 +60,71 @@ namespace br {
 			deleteModelFromGpu(modelPath);
 	}
 
-	void ModelRenderProcessor::playAnimation(uint32_t objId, std::string animName, bool loop) {
+	void ModelRenderProcessor::playAnimation(uint32_t objId, string animName, bool loop) {
 		View* object;
 		try {
 			object = &idToObject.at(objId);
-		} catch(std::out_of_range&) {
+		} catch(out_of_range&) {
 			throw InvalidObjectIdException(EXCEPTION_INFO, objId);
 		}
 
-		Model3d& model = loader->getModelBy(object->getPath());
-		Animation3d& animation = model.getAnimationBy(animName);
+		auto model = loader->getModelBy(object->getPath());
+		Animation3d& animation = model->getAnimationBy(animName);
 		object->playAnimation(animation, loop);
 	}
 
-	void ModelRenderProcessor::stopAnimation(uint32_t objId, std::string animName) {
+	void ModelRenderProcessor::stopAnimation(uint32_t objId, string animName) {
 		View* object;
 		try {
 			object = &idToObject.at(objId);
-		} catch(std::out_of_range&) {
+		} catch(out_of_range&) {
 			throw InvalidObjectIdException(EXCEPTION_INFO, objId);
 		}
 
-		Model3d& model = loader->getModelBy(object->getPath());
-		Animation3d& animation = model.getAnimationBy(animName);
+		auto model = loader->getModelBy(object->getPath());
+		Animation3d& animation = model->getAnimationBy(animName);
 		object->stopAnimation(animation);
 	}
 
-	void ModelRenderProcessor::transformObject(uint32_t objId, const array<float, 16> tForm) {
+	void ModelRenderProcessor::transformObject(uint32_t objId, const mat4& transform) {
 		View* object;
 		try {
 			object = &idToObject.at(objId);
-		} catch(std::out_of_range&) {
+		} catch(out_of_range&) {
 			throw InvalidObjectIdException(EXCEPTION_INFO, objId);
 		}
-
-		auto t = make_mat4(tForm.data());
-		object->setTransform(t);
+		object->setTransform(transform);
 	}
 	
 	void ModelRenderProcessor::doStep(const StepData& stepData) {
-		auto sGConnector = gConnector.lock();
+		auto sGConnector = graphics.lock();
 		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);
 
 		for(auto& i : idToObject) {
 			View& object = i.second;
+			object.doAnimationStep(stepData.stepMSec);
+
 			mat4 mvpMatrix = stepData.perspectiveView * object.getTransform();
 
-			Model3d& model = loader->getModelBy(object.getPath());
-			vector<Mesh3d>& meshes = model.getMeshes();
-
-			object.doAnimationStep(stepData.stepMSec);
+			auto model = loader->getModelBy(object.getPath());
+			vector<Mesh3d>& meshes = model->getMeshes();
 			for(auto& s : meshes) {
+				auto material = model->getMaterialBy(s);
+				auto programName = material.getProgramName();
+				auto programContext = nameToProgramContext.at(programName);
+
+				std::vector<IGraphicsConnector::ProgramParam> params;
+				IGraphicsConnector::ProgramParam mvp;
+				mvp.id = programContext.mvp;
+				mvp.mat4 = std::make_shared<glm::mat4>(mvpMatrix);
+				params.push_back(mvp);
+
 				auto bonesData = prepareAnimationStep(object, s);			
-				string meshName = model.getUniqueMeshName(s);
-				GpuBufferData& buffer = meshToBuffer.at(meshName);
-				sGConnector->draw(buffer, program, mvpMatrix, bonesData);
+				string meshName = model->getUniqueMeshName(s);
+				auto& buffer = meshToBuffer.at(meshName);
+
+				sGConnector->draw(buffer, programContext, params, bonesData);
 			}
 		}
 
@@ -129,7 +141,7 @@ namespace br {
 			res.emplace(i.first, bData);
 		}
 
-		Model3d& model = loader->getModelBy(object.getPath());
+		auto model = loader->getModelBy(object.getPath());
 		boneTransformer.transform(object, model, res);
 		return res;
 	}
@@ -142,35 +154,65 @@ namespace br {
 	}
 
 	void ModelRenderProcessor::loadModelToGpu(string modelPath) {
-		Model3d& model = loader->getModelBy(modelPath);
-		vector<Mesh3d>& meshes = model.getMeshes();
-		for(auto& s : meshes) {
-			string meshName = model.getUniqueMeshName(s);
-			loadGeometryToGpu(meshName, s.getVertices(), s.getIndices());
+		auto model = loader->getModelBy(modelPath);
+		auto materials = model->getMaterials();
+		for(auto& i : materials) {
+			auto program = loader->getProgramBy(i.getProgramName());
+			auto programName = program->getName();
+			if(!hasMaterialWithProgram(programName))
+				loadProgramToGpu(programName, program->getVertexShader(), program->getFragmentShader());
+		}
 
-			Texture2d& texture = model.getTextureBy(s);
+		vector<Mesh3d>& meshes = model->getMeshes();
+		for(auto& s : meshes) {
+			string meshName = model->getUniqueMeshName(s);
+
+			loadGeometryToGpu(meshName, s.getRawVertices(), s.getIndices());
+
+			Texture2d& texture = model->getTextureBy(s);
 			loadTextureToGpu(texture);
 
-			GpuBufferData& buffer = meshToBuffer.at(meshName);
+			auto& buffer = meshToBuffer.at(meshName);
 			buffer.texture = textureToId.at(texture.getPath());
 		}
 	}
 
 	void ModelRenderProcessor::deleteModelFromGpu(string modelPath) {
-		Model3d& model = loader->getModelBy(modelPath);
-		vector<Mesh3d>& meshes = model.getMeshes();
+		auto model = loader->getModelBy(modelPath);
+		auto materials = model->getMaterials();
+		for(auto& i : materials) {
+			auto program = loader->getProgramBy(i.getProgramName());
+			auto programName = program->getName();
+			
+			if(!hasMaterialWithProgram(programName))
+				deleteProgramFromGpu(programName);
+		}
 
+		vector<Mesh3d>& meshes = model->getMeshes();
 		unordered_map<uint32_t, string> texturesToRemove;
 		for(auto& s : meshes) {
-			string mName = model.getUniqueMeshName(s);
+			string mName = model->getUniqueMeshName(s);
 			deleteGeometryFromGpu(mName);
 			
-			Texture2d& texture = model.getTextureBy(s);
+			Texture2d& texture = model->getTextureBy(s);
 			texturesToRemove.emplace(s.getMaterialId(), texture.getPath());
 		}
 
 		for(auto& s : texturesToRemove) {
 			deleteTextureFromGpu(s.second);
 		}
+	}
+
+	bool ModelRenderProcessor::hasMaterialWithProgram(std::string name) {
+		for(auto& i : idToObject) {
+			View& object = i.second;
+			auto model = loader->getModelBy(object.getPath());
+			auto materials = model->getMaterials();
+			for(auto& j : materials) {
+				if(j.getProgramName() == name)
+					return true;
+			}
+		}
+		return false;
 	}
 }

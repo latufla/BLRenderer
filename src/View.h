@@ -1,6 +1,6 @@
 #pragma once
 #include <glm.hpp>
-#include "Animation3d.h"
+#include "assets/Animation3d.h"
 
 namespace br {
 	class View {

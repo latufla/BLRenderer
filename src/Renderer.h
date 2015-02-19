@@ -1,8 +1,8 @@
 #pragma once
 #include <vector>
 #include <memory>
-#include "AssetLoader.h"
-#include "utils\GraphicsConnector.h"
+#include "graphics/interfaces/IGraphicsConnector.h"
+#include "assets/interfaces/IAssetLoader.h"
 
 namespace br {	
 	class ProcessorBase;
@@ -12,11 +12,7 @@ namespace br {
 		Renderer() = delete;
 		~Renderer() = default;
 
-		Renderer(std::shared_ptr<AssetLoader> loader,
-			uint32_t wndX,
-			uint32_t wndY, 
-			uint32_t wndW, 
-			uint32_t wndH);
+		Renderer(std::shared_ptr<IAssetLoader> loader, std::shared_ptr<IGraphicsConnector> graphics);
 			
 		bool doStep(long long stepMSec);
 		
@@ -26,9 +22,9 @@ namespace br {
 		void removeProcessor(std::shared_ptr<ProcessorBase> val);
 
 	private:
-		std::shared_ptr<AssetLoader> loader;
+		std::shared_ptr<IAssetLoader> loader;
 	
-		std::shared_ptr<GraphicsConnector> gConnector;
+		std::shared_ptr<IGraphicsConnector> graphics;
 
 		struct Camera {
 			float x;

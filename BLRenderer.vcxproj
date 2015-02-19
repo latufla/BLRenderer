@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{CF4E7990-F4FD-4B94-8F60-B949558E9177}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>BLRenderer</RootNamespace>
+    <ProjectName>BRenderer</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>GLEW_STATIC;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\projects\cppLibs\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>D:\projects\cppLibs\glew\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;OpenGL32.lib;libEGL.lib;libGLESv2.lib;assimp.lib;Box2D.lib;libyaml-cppmdd.lib;freetype.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>GLEW_STATIC;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>D:\projects\cppLibs\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>D:\projects\cppLibs\glew\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;OpenGL32.lib;libEGL.lib;libGLESv2.lib;assimp.lib;Box2D.lib;libyaml-cppmdd.lib;freetype.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="src\assets\interfaces\IProgram3d.h" />
+    <ClInclude Include="src\assets\Program3d.h" />
+    <ClInclude Include="src\assets\interfaces\IAssetLoader.h" />
+    <ClInclude Include="src\assets\interfaces\IModel3d.h" />
+    <ClInclude Include="src\graphics\GlConnector.h" />
+    <ClInclude Include="src\graphics\GlesConnector.h" />
+    <ClInclude Include="src\graphics\interfaces\IGraphicsConnector.h" />
+    <ClInclude Include="src\graphics\interfaces\IWindowVendor.h" />
+    <ClInclude Include="src\processors\models\ModelMouseProcessor.h" />
+    <ClInclude Include="src\processors\models\ModelRenderProcessor.h" />
+    <ClInclude Include="src\processors\ProcessorBase.h" />
+    <ClInclude Include="src\processors\images\ImageRenderProcessor.h" />
+    <ClInclude Include="src\processors\text\Font.h" />
+    <ClInclude Include="src\processors\images\Image.h" />
+    <ClInclude Include="Model3dInfo.h" />
+    <ClInclude Include="src\exceptions\Exception.h" />
+    <ClInclude Include="src\assets\Material3d.h" />
+    <ClInclude Include="src\utils\bones\BoneTransformer.h" />
+    <ClInclude Include="ObjectBase.h" />
+    <ClInclude Include="src\assets\Animation3d.h" />
+    <ClInclude Include="src\utils\bones\BoneNodeData.h" />
+    <ClInclude Include="src\Renderer.h" />
+    <ClInclude Include="src\utils\SharedHeaders.h" />
+    <ClInclude Include="src\assets\Texture2d.h" />
+    <ClInclude Include="src\assets\Mesh3d.h" />
+    <ClInclude Include="src\assets\Model3d.h" />
+    <ClInclude Include="src\assets\AssetLoader.h" />
+    <ClInclude Include="src\utils\bones\BNode.h" />
+    <ClInclude Include="src\View.h" />
+    <ClInclude Include="src\utils\Util.h" />
+    <ClInclude Include="src\graphics\WindowVendorWin.h" />
+    <ClInclude Include="src\processors\text\FontLoader.h" />
+    <ClInclude Include="src\processors\text\TextField.h" />
+    <ClInclude Include="src\processors\text\TextRenderProcessor.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\assets\Program3d.cpp" />
+    <ClCompile Include="src\graphics\GlConnector.cpp" />
+    <ClCompile Include="src\graphics\GlesConnector.cpp" />
+    <ClCompile Include="src\processors\models\ModelMouseProcessor.cpp" />
+    <ClCompile Include="src\processors\models\ModelRenderProcessor.cpp" />
+    <ClCompile Include="src\processors\ProcessorBase.cpp" />
+    <ClCompile Include="src\processors\images\ImageRenderProcessor.cpp" />
+    <ClCompile Include="src\processors\text\Font.cpp" />
+    <ClCompile Include="src\processors\images\Image.cpp" />
+    <ClCompile Include="Model3dInfo.cpp" />
+    <ClCompile Include="src\assets\Material3d.cpp" />
+    <ClCompile Include="src\utils\bones\BoneTransformer.cpp" />
+    <ClCompile Include="ObjectBase.cpp" />
+    <ClCompile Include="src\assets\Animation3d.cpp" />
+    <ClCompile Include="BRenderer.cpp" />
+    <ClCompile Include="src\utils\bones\BoneNodeData.cpp" />
+    <ClCompile Include="src\Renderer.cpp" />
+    <ClCompile Include="src\assets\Texture2d.cpp" />
+    <ClCompile Include="src\assets\Mesh3d.cpp" />
+    <ClCompile Include="src\assets\Model3d.cpp" />
+    <ClCompile Include="src\assets\AssetLoader.cpp" />
+    <ClCompile Include="src\View.cpp" />
+    <ClCompile Include="src\utils\Util.cpp" />
+    <ClCompile Include="src\graphics\WindowVendorWin.cpp" />
+    <ClCompile Include="src\processors\text\FontLoader.cpp" />
+    <ClCompile Include="src\processors\text\TextField.cpp" />
+    <ClCompile Include="src\processors\text\TextRenderProcessor.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
+    <None Include="README.md" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

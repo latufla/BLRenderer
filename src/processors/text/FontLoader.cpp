@@ -97,7 +97,7 @@ namespace br {
 		nameToFont.emplace(nameAsKey, font);
 	}
 
-	Font FontLoader::getFontBy(string name, uint8_t size) {
+	Font& FontLoader::getFontBy(string name, uint8_t size) {
 		std::string nameAsKey = Font::getUniqueName(name, size);
 		try {
 			return nameToFont.at(nameAsKey);

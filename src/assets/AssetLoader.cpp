@@ -1,20 +1,36 @@
-#include "utils/SharedHeaders.h"
 #include "AssetLoader.h"
-#include "bones/BoneNodeData.h"
-#include "utils/Util.h"
-#include <unordered_map>
-#include "exceptions/Exception.h"
+#include "../utils/Util.h"
+#include "../exceptions/Exception.h"
+#include "Model3d.h"
+#include <memory>
+#include "Program3d.h"
 
 using std::string;
 using std::to_string;
-using std::map;
 using std::vector;
+using std::shared_ptr;
+using std::make_shared;
 using std::unordered_map;
+using std::out_of_range;
 
 namespace br {
+	const string AssetLoader::MODEL_PROGRAM = "modelProgram";
+	const string AssetLoader::MODEL_DEBUG_PROGRAM = "modelDebugProgram";
+	const string AssetLoader::TEXT_PROGRAM = "textProgram";
+	const string AssetLoader::IMAGE_PROGRAM = "imageProgram";
+
 	const uint8_t AssetLoader::TRIANGLE_FACE_TYPE = 3;
-	const std::string AssetLoader::BONES_ROOT_NODE = "Armature";
-	
+	const string AssetLoader::BONES_ROOT_NODE = "Armature";
+
+	AssetLoader::AssetLoader() {
+		initDefaultShaders();
+	}
+
+	AssetLoader::~AssetLoader() {
+
+	}
+
+
 	void AssetLoader::loadModel(string pathAsKey, string textureDirectory) {
 		if(pathToModel.find(pathAsKey) != pathToModel.cend())
 			throw AssetException(EXCEPTION_INFO, pathAsKey, "has same model");
@@ -40,44 +56,85 @@ namespace br {
 		BNode<BoneNodeData> bones = collectBones(bonesRoot, pathAsKey);
 		collectBoneWeightsAndOffsets(modelAi, bones, meshes);
 	
+		for(auto& i : meshes) {
+			i.buildRawVertices();
+		}
 		
 		Animation3d defaultAnimation = collectAnimation(modelAi, bones, Animation3d::DEFAULT_ANIMATION_NAME, pathAsKey);
 		
 		aiNode* rootAi = modelAi->mRootNode;
 		auto glTrans = Util::assimpToGlm(rootAi->mTransformation);
 		
-		Model3d model{pathAsKey, meshes, materials, bones, defaultAnimation};
-		model.setGlobalInverseTransform(glTrans);
-
+		auto model = make_shared<Model3d>(pathAsKey, meshes, materials, bones, defaultAnimation);
 		pathToModel.emplace(pathAsKey, model);
 	}
+
+	shared_ptr<IModel3d> AssetLoader::getModelBy(string path) {
+		try {
+			return pathToModel.at(path);
+		} catch(out_of_range&) {
+			throw AssetException(EXCEPTION_INFO, path, "can`t get model by path");
+		}
+	}
+
 	
-	void AssetLoader::attachAnimation(string toModel, string byNameAsKey, string withPath) {
+	void AssetLoader::loadAnimation(string toModel, string byNameAsKey, string withPath) {
 		const aiScene* animationAi = importer.ReadFile(withPath, aiProcess_Triangulate | aiProcess_FlipUVs);
 		if (!animationAi)
 			throw AssetException(EXCEPTION_INFO, withPath, "invalid collada model");
 
-		Model3d& model = getModelBy(toModel);
-		Animation3d animation = collectAnimation(animationAi, model.getBoneTree(), byNameAsKey, toModel);
-		model.addAnimation(animation);
+		auto model = getModelBy(toModel);
+		Animation3d animation = collectAnimation(animationAi, model->getBoneTree(), byNameAsKey, toModel);
+		model->addAnimation(animation);
 	}
 	
-	Model3d& AssetLoader::getModelBy(string path) {
+
+	void AssetLoader::loadTexture(string pathAsKey) {
+		if(pathToTexture.find(pathAsKey) != pathToTexture.cend())
+			throw AssetException(EXCEPTION_INFO, pathAsKey, "has same texture");
+
+		Texture2d texture = Util::loadTexture(pathAsKey);
+		pathToTexture.emplace(pathAsKey, texture);
+	}
+
+	Texture2d& AssetLoader::getTextureBy(string path) {
 		try {
-			return pathToModel.at(path);
-		} catch (std::out_of_range&){
-			throw AssetException(EXCEPTION_INFO, path, "can`t get model by path");
+			return pathToTexture.at(path);
+		} catch(out_of_range&) {
+			throw AssetException(EXCEPTION_INFO, path, "can`t get texture");
 		}
 	}
-	
-	
+
+
+	void AssetLoader::loadProgram(string name, string vShaderPath, string fShaderPath) {
+		// TODO: tmp stub
+	}
+
+	shared_ptr<IProgram3d>& AssetLoader::getProgramBy(string name) {
+		try {
+			return nameToProgram.at(name);
+		} catch(std::out_of_range&) {
+			throw AssetException(EXCEPTION_INFO, name, "can`t get shader");
+		}
+	}
+
+
+	void AssetLoader::loadFont(string path, string name, uint8_t size) {
+		fontLoader.loadFont(path, name, size);
+	}
+
+	Font& AssetLoader::getFontBy(string name, uint8_t size) {
+		return fontLoader.getFontBy(name, size);
+	}
+
+
 	vector<Mesh3d> AssetLoader::collectMeshes(const aiScene* modelAi) {
 		vector<Mesh3d> outMeshes;
 		parseMeshes(modelAi->mRootNode, modelAi->mMeshes, outMeshes);
 		return outMeshes;
 	}
 	
-	void AssetLoader::parseMeshes(const aiNode* rNodeAi, aiMesh** meshesAi, std::vector<Mesh3d>& outMeshes) {
+	void AssetLoader::parseMeshes(const aiNode* rNodeAi, aiMesh** meshesAi, vector<Mesh3d>& outMeshes) {
 		vector<Vertex3d> vertices;
 		vector<uint16_t> indices;
 		
@@ -96,9 +153,7 @@ namespace br {
 				aiVector3D& t = textureCoordsAi ? textureCoordsAi[j] : defaultTexCoords;
 				Vertex3d vertex{
 					v.x, v.y, v.z,
-					t.x, t.y,
-					{0, 0, 0, 0},
-					{0.0, 0.0, 0.0, 0.0}
+					t.x, t.y
 				};
 				vertices.push_back(vertex);
 			}
@@ -127,7 +182,7 @@ namespace br {
 		}
 	}
 	
-	std::vector<Material3d> AssetLoader::collectMaterials(const aiScene* modelAi, std::string dir) {
+	vector<Material3d> AssetLoader::collectMaterials(const aiScene* modelAi, string dir) {
 		uint32_t nMaterialsAi = modelAi->mNumMaterials;
 		vector<Material3d> materials;
 		for (uint32_t i = 0; i < nMaterialsAi; i++) {
@@ -170,6 +225,7 @@ namespace br {
 				Util::assimpToGlm(specularAi),
 				shininess, indexOfRefraction, twoSided
 			};
+			mat.setProgramName(MODEL_PROGRAM); // TODO: default program
 			materials.push_back(mat);
 		}
 		return materials;
@@ -255,7 +311,7 @@ namespace br {
 	}
 	
 	void AssetLoader::collectBoneWeightsAndOffsets(const aiScene* scene, BNode<BoneNodeData>& boneTree, vector<Mesh3d>& meshes) {
-		std::map<string, aiMesh*> nameToMeshAi;
+		unordered_map<string, aiMesh*> nameToMeshAi;
 		uint32_t nMeshAi = scene->mNumMeshes;
 		for (uint32_t i = 0; i < nMeshAi; ++i) {
 			aiMesh* meshAi = scene->mMeshes[i];
@@ -278,34 +334,90 @@ namespace br {
 				uint32_t nNumWeightsAi = boneAi->mNumWeights;
 				for (uint32_t k = 0; k < nNumWeightsAi; ++k) {
 					aiVertexWeight& weightAi = boneAi->mWeights[k];
-					myMesh.setVertexBoneInfo(weightAi.mVertexId, myBoneId, weightAi.mWeight);
+					myMesh.setBoneWeight(weightAi.mVertexId, myBoneId, weightAi.mWeight);
 				}
 			}
 		}
 	}
 
-	void AssetLoader::loadTexture(string pathAsKey) {
-		if(pathToTexture.find(pathAsKey) != pathToTexture.cend())
-			throw AssetException(EXCEPTION_INFO, pathAsKey, "has same texture");
+	void AssetLoader::initDefaultShaders() {
+		string modelVS =
+			"uniform mat4 mvpMatrix;		\n"
+			"uniform mat4 bones[25];		\n"
+			"attribute vec4 aPosition;		\n"
 
-		Texture2d texture = Util::loadTexture(pathAsKey);
-		pathToTexture.emplace(pathAsKey, texture);
+			"attribute vec2 aTexCoord;		\n"
+
+			"attribute vec4 boneIds;		\n"
+			"attribute vec4 weights;		\n"
+
+			"varying vec2 vTexCoord;		\n"
+			"void main(){					\n"
+			"	mat4 boneTransform = bones[int(boneIds.x)] * weights.x;		\n"
+			"	boneTransform += bones[int(boneIds.y)] * weights.y;			\n"
+			"	boneTransform += bones[int(boneIds.z)] * weights.z;			\n"
+			"	boneTransform += bones[int(boneIds.w)] * weights.w;			\n"
+			"   gl_Position = mvpMatrix * boneTransform * aPosition;								\n"
+			"   vTexCoord = aTexCoord;										\n"
+			"}";
+
+		string modelFS =
+			"precision mediump float;                           \n"
+			"varying vec2 vTexCoord;                            \n"
+			"uniform sampler2D sTexture;                        \n"
+			"void main(){										\n"
+			"  gl_FragColor = texture2D( sTexture, vTexCoord ); \n"
+			"}";
+
+		auto program = std::make_shared<Program3d>(MODEL_PROGRAM, modelVS, modelFS);
+		nameToProgram.emplace(program->getName(), program);
+
+		string modelDebugFS =
+			"precision mediump float;                           \n"
+			"varying vec2 vTexCoord;                            \n"
+			"uniform sampler2D sTexture;                        \n"
+			"void main(){										\n"
+			"  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); \n"
+			"}";
+
+		program = std::make_shared<Program3d>(MODEL_DEBUG_PROGRAM, modelVS, modelDebugFS);
+		nameToProgram.emplace(program->getName(), program);
+
+
+		string imageVS =
+			"uniform mat4 mvpMatrix;		\n"
+			"attribute vec4 aPosition;		\n"
+
+			"attribute vec2 aTexCoord;		\n"
+
+			"varying vec2 vTexCoord;		\n"
+			"void main(){					\n"
+			"   gl_Position = mvpMatrix * aPosition;						\n"
+			"   vTexCoord = aTexCoord;										\n"
+			"}";
+
+		string imageFS =
+			"precision mediump float;                           \n"
+			"varying vec2 vTexCoord;                            \n"
+			"uniform sampler2D sTexture;                        \n"
+			"void main(){										\n"
+			"  gl_FragColor = texture2D( sTexture, vTexCoord ); \n"
+			"}";
+
+		program = std::make_shared<Program3d>(IMAGE_PROGRAM, imageVS, imageFS);
+		nameToProgram.emplace(program->getName(), program);
+
+
+		string textFS =
+			"precision mediump float;                           \n"
+			"varying vec2 vTexCoord;                            \n"
+			"uniform sampler2D sTexture;                        \n"
+			"uniform vec4 color;"
+			"void main(){										\n"
+			"  gl_FragColor = texture2D( sTexture, vTexCoord ) * color; \n"
+			"}";
+
+		program = std::make_shared<Program3d>(TEXT_PROGRAM, imageVS, imageFS);
+		nameToProgram.emplace(program->getName(), program);
 	}
-
-	Texture2d& AssetLoader::getTextureBy(string path) {
-		try {
-			return pathToTexture.at(path);
-		} catch(std::out_of_range&) {
-			throw AssetException(EXCEPTION_INFO, path, "can`t get texture");
-		}
-	}
-
-	void AssetLoader::loadFont(string path, string name, uint8_t size) {
-		fontLoader.loadFont(path, name, size);
-	}
-
-	Font AssetLoader::getFontBy(string name, uint8_t size) {
-		return fontLoader.getFontBy(name, size);
-	}
-
 }

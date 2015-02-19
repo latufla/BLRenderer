@@ -1,26 +1,26 @@
 #pragma once
 #include <memory>
-#include "../AssetLoader.h"
-#include "../utils/GraphicsConnector.h"
+#include "../assets/interfaces/IAssetLoader.h"
+#include "../graphics/interfaces/IGraphicsConnector.h"
 
 namespace br {
 	class ProcessorBase {
 	public:
-		ProcessorBase(std::shared_ptr<AssetLoader> loader, std::pair<std::string, std::string> shaders);
+		ProcessorBase(std::shared_ptr<IAssetLoader> loader);
 		virtual ~ProcessorBase();
 
 		void addProcessor(std::shared_ptr<ProcessorBase>);
 		void removeProcessor(std::shared_ptr<ProcessorBase>);
 
 	protected:
-		std::shared_ptr<AssetLoader> loader;
-		std::pair<std::string, std::string> shaders;
+		std::shared_ptr<IAssetLoader> loader;
+		std::weak_ptr<IProgram3d> shaders;
 
 		std::vector<std::shared_ptr<ProcessorBase>> processors;
 
-		std::weak_ptr<GraphicsConnector> gConnector;
+		std::weak_ptr<IGraphicsConnector> graphics;
 		bool enabled = false;
-		virtual void start(std::weak_ptr<GraphicsConnector> gConnector);
+		virtual void start(std::weak_ptr<IGraphicsConnector> graphics);
 		virtual void stop();
 
 		struct StepData {
@@ -34,11 +34,11 @@ namespace br {
 		virtual bool canDoStep();
 
 
-		ProgramContext program;
+		IGraphicsConnector::ProgramContext program;
 
 
-		std::unordered_map<std::string, GpuBufferData> meshToBuffer;
-		void loadGeometryToGpu(std::string key, std::vector<Vertex3d>& vertices, std::vector<uint16_t>& indices);
+		std::unordered_map<std::string, IGraphicsConnector::GpuBufferData> meshToBuffer;
+		void loadGeometryToGpu(std::string key, std::vector<float>& vertices, std::vector<uint16_t>& indices);
 		void deleteGeometryFromGpu(std::string key);
 
 		std::unordered_map<std::string, uint32_t> textureToId;
@@ -46,6 +46,11 @@ namespace br {
 		void loadTextureToGpu(Texture2d& texture);
 		void deleteTextureFromGpu(std::string pathAsKey);
 		bool hasTextureInGpu(std::string pathAsKey);
+
+		std::unordered_map<std::string, IGraphicsConnector::ProgramContext> nameToProgramContext;
+		void loadProgramToGpu(std::string key, std::string vertexShader, std::string fragmentShader);
+		void deleteProgramFromGpu(std::string key);
+		bool hasProgramInGpu(std::string key);
 
 		friend class Renderer;
 	};
