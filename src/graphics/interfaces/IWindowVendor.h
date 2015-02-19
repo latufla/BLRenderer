@@ -7,6 +7,8 @@ namespace br {
 		virtual bool doStep() = 0;
 		virtual void* getNativeWindow() = 0;
 
+		virtual void swapBuffers() = 0;
+
 		struct Rect {
 			float x;
 			float y;

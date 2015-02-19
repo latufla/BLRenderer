@@ -33,14 +33,14 @@ namespace br {
 		if(!RegisterClassEx(&wClass))
 			throw br::NativeWindowException(EXCEPTION_INFO, "can`t register window class");
 			
-		RECT wRect{size.x, size.y, size.w, size.h};
+		RECT wRect{(LONG)size.x, (LONG)size.y, (LONG)size.w, (LONG)size.h};
 		AdjustWindowRect(&wRect, WS_BORDER | WS_DLGFRAME, false);
 			 
 		auto hWnd = CreateWindow(
 			wClass.lpszClassName,
 			_T("Windows"),
 			WS_OVERLAPPEDWINDOW,
-			size.x, size.y,
+			(int32_t)size.x, (int32_t)size.y,
 			wRect.right - wRect.left, wRect.bottom - wRect.top,
 			NULL,
 			NULL,
@@ -60,7 +60,13 @@ namespace br {
 	WindowVendorWin::~WindowVendorWin() {
 		// destroy window here
 	}
-		
+
+
+	void WindowVendorWin::swapBuffers() {
+		HDC device = GetDC((HWND)nativeWindow);
+		SwapBuffers(device);
+	}
+
 	IWindowVendor::Rect WindowVendorWin::getSize() const
 	{
 		RECT rect;

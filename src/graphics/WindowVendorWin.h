@@ -12,6 +12,8 @@ namespace br {
 
 		bool doStep() override;
 
+		void swapBuffers() override;
+
 		IWindowVendor::Rect getSize() const override;
 
 		glm::vec2 getScaleFactor() const override;

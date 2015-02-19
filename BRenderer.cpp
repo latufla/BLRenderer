@@ -16,7 +16,8 @@
 #include "src/processors/models/ModelRenderProcessor.h"
 #include "src/utils/Util.h"
 #include "src/processors/models/ModelMouseProcessor.h"
-#include "src/graphics/GraphicsConnector.h"
+
+#include "src/graphics/GlConnector.h"
 
 const std::string SLIME_WARRIOR = "SlimeRed";
 // TODO: not ready
@@ -53,7 +54,7 @@ int _tmain(int argc, _TCHAR* argv[]) {
 void run() {
 	auto loader = std::make_shared<br::AssetLoader>();
 	const br::IWindowVendor::Rect size{0.0f, 0.0f, 1024.0f, 768.0f};
-	auto graphcics = std::make_shared<br::GraphicsConnector>(size);
+	auto graphcics = std::make_shared<br::GlConnector>(size);
 	br::Renderer renderer(loader, graphcics);
 	
 	runTarget(loader, renderer);
@@ -119,8 +120,8 @@ void runModels(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) 
 	br::Shaders shaders;
 	auto program = shaders.getProgram(br::Shaders::MODEL_PROGRAM);
 	auto modelRenderer = std::make_shared<br::ModelRenderProcessor>(loader, program);
-	auto mouseProcessor = std::make_shared<br::ModelMouseProcessor>(loader, program);
-	modelRenderer->addProcessor(mouseProcessor);
+// 	auto mouseProcessor = std::make_shared<br::ModelMouseProcessor>(loader, program);
+// 	modelRenderer->addProcessor(mouseProcessor);
 	renderer.addProcessor(modelRenderer);
 
 	for(auto& s : objects) {

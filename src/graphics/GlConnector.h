@@ -1,16 +1,15 @@
 #pragma once
-
 #include <memory>
 #include <glm.hpp>
-#include "interfaces/IGraphicsConnector.h"
+#include "interfaces\IGraphicsConnector.h"
 
-namespace br{
-	class GraphicsConnector : public IGraphicsConnector{
+namespace br {
+	class GlConnector : public IGraphicsConnector {
 	public:
-		GraphicsConnector() = delete;
-		virtual ~GraphicsConnector();
+		GlConnector() = delete;
+		GlConnector(const IWindowVendor::Rect& size);
 
-		GraphicsConnector(const IWindowVendor::Rect& size);
+		virtual ~GlConnector();
 		
 		void setViewport(const IWindowVendor::Rect& size) override;
 		void clear() override;
@@ -26,7 +25,7 @@ namespace br{
 
 		ProgramContext createProgram(std::pair<std::string, std::string> shaders) override;
 		void deleteProgram(ProgramContext&) override;
-		
+
 		uint32_t loadTextureToGpu(Texture2d&) override;
 		void deleteTextureFromGpu(uint32_t) override;
 
@@ -42,13 +41,8 @@ namespace br{
 	private:
 		std::shared_ptr<IWindowVendor> window;
 
-		struct EglContext {
-			void* display;
-			void* surface;
-			void* context;
-		} eglContext;
-		void initEgl();
-	
+		void initWgl();
+
 		uint32_t createShader(uint32_t type, const char* source);
 
 	};

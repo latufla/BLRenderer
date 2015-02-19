@@ -1,10 +1,8 @@
 #include "../utils/SharedHeaders.h"
-#include "GraphicsConnector.h"
+#include "GlConnector.h"
 
-#include <EGL/egl.h>
-
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
+#include <GL/glew.h>
+#include <windows.h>
 
 #include "../exceptions/Exception.h"
 #include "WindowVendorWin.h"
@@ -14,10 +12,10 @@ using std::make_shared;
 using glm::mat4;
 
 namespace br {
-	GraphicsConnector::GraphicsConnector(const IWindowVendor::Rect& size){
+	GlConnector::GlConnector(const IWindowVendor::Rect& size) {
 		window = make_shared<WindowVendorWin>(size);
 
-		initEgl();
+		initWgl();
 
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -31,104 +29,84 @@ namespace br {
 		// 		glFrontFace(GL_CCW);
 	}
 
-	GraphicsConnector::~GraphicsConnector() {
+	GlConnector::~GlConnector() {
 
 	}
 
 
-	void GraphicsConnector::setViewport(const IWindowVendor::Rect& size) {
-		glViewport(size.x, size.y, size.w, size.h);
+	void GlConnector::initWgl() {
+		PIXELFORMATDESCRIPTOR pfd = {
+			sizeof(PIXELFORMATDESCRIPTOR),    // size of this pfd 
+			1,                                // version number 
+			PFD_DRAW_TO_WINDOW |              // support window 
+			PFD_SUPPORT_OPENGL |              // support OpenGL 
+			PFD_DOUBLEBUFFER,                 // double buffered 
+			PFD_TYPE_RGBA,                    // RGBA type 
+			24,                               // 24-bit color depth 
+			0, 0, 0, 0, 0, 0,                 // color bits ignored 
+			0,                                // no alpha buffer 
+			0,                                // shift bit ignored 
+			0,                                // no accumulation buffer 
+			0, 0, 0, 0,                       // accum bits ignored 
+			32,                               // 32-bit z-buffer     
+			0,                                // no stencil buffer 
+			0,                                // no auxiliary buffer 
+			PFD_MAIN_PLANE,                   // main layer 
+			0,                                // reserved 
+			0, 0, 0                           // layer masks ignored 
+		};
+
+		int32_t  iPixelFormat;
+		HDC deviceContext = GetDC((HWND)window->getNativeWindow());
+		if((iPixelFormat = ChoosePixelFormat(deviceContext, &pfd)) == 0)
+			throw Exception(EXCEPTION_INFO, "can`t choose pixel format");
+
+
+		if(SetPixelFormat(deviceContext, iPixelFormat, &pfd) == FALSE)
+			throw Exception(EXCEPTION_INFO, "can`t set pixel format");
+
+		HGLRC renderContext;
+		if((renderContext = wglCreateContext(deviceContext)) == NULL)
+			throw Exception(EXCEPTION_INFO, "can`t create context");
+
+		if((wglMakeCurrent(deviceContext, renderContext)) == NULL)
+			throw Exception(EXCEPTION_INFO, "can`t make current context");
+
+		GLenum glew_status = glewInit();
+		if(glew_status != GLEW_OK)
+			throw Exception(EXCEPTION_INFO, "can`t init glew");
 	}
 
-	void GraphicsConnector::clear() {
+
+	void GlConnector::setViewport(const IWindowVendor::Rect& size) {
+		glViewport((GLint)size.x, (GLint)size.y, (GLint)size.w, (GLint)size.h);
+	}
+
+	void GlConnector::clear() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	void GraphicsConnector::swapBuffers() {
-		eglSwapBuffers(eglContext.display, eglContext.surface);
+	void GlConnector::swapBuffers() {
+		window->swapBuffers();
 	}
 
-
-	void GraphicsConnector::initEgl() {
-		EGLint minorVersion;
-		EGLint majorVersion;
-
-		auto display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-		if(display == EGL_NO_DISPLAY)
-			throw EglException(EXCEPTION_INFO, "can`t get display");
-
-		if(!eglInitialize(display, &majorVersion, &minorVersion))
-			throw EglException(EXCEPTION_INFO, "cant init display");
-
-		const EGLint cfgAttribs[] = {
-			EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-			EGL_RED_SIZE, 5,
-			EGL_GREEN_SIZE, 6,
-			EGL_BLUE_SIZE, 5,
-			EGL_ALPHA_SIZE, 8,
-			EGL_DEPTH_SIZE, 8,
-			EGL_STENCIL_SIZE, 8,
-			// EGL_SAMPLE_BUFFERS, 1,
-			EGL_NONE
-		};
-
-
-		const EGLint maxConfigs = 2;
-		EGLConfig configs[2];
-		EGLint numConfigs;
-		if(!eglChooseConfig(display, cfgAttribs, configs, maxConfigs, &numConfigs))
-			throw EglException(EXCEPTION_INFO, "can`t choose config");
-
-		const EGLint srfAttribs[] = {
-			EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
-			EGL_NONE
-		};
-
-		auto surface = eglCreateWindowSurface(display, configs[0], (EGLNativeWindowType)window->getNativeWindow(), srfAttribs);
-		if(surface == EGL_NO_SURFACE)
-			throw EglException(EXCEPTION_INFO, "can`t create window surface");
-
-
-		const EGLint ctxAttribs[] = {
-			EGL_CONTEXT_CLIENT_VERSION, 2,
-			EGL_NONE
-		};
-
-		auto context = eglCreateContext(display, configs[0], EGL_NO_CONTEXT, ctxAttribs);
-		if(context == EGL_NO_CONTEXT)
-			throw EglException(EXCEPTION_INFO, "can`t create context");
-
-
-		if(!eglMakeCurrent(display, surface, surface, context))
-			throw EglException(EXCEPTION_INFO, "can`t make context current");
-
-		eglContext.display = display;
-		eglContext.surface = surface;
-		eglContext.context = context;
-	}
-
-	WindowVendorWin::Rect GraphicsConnector::getWindowSize() const {
+	WindowVendorWin::Rect GlConnector::getWindowSize() const {
 		return window->getSize();
 	}
 
-	glm::vec2 GraphicsConnector::getScaleFactor() const {
+	glm::vec2 GlConnector::getScaleFactor() const {
 		return window->getScaleFactor();
 	}
 
-	bool GraphicsConnector::doStep() {
+	bool GlConnector::doStep() {
 		return window->doStep();
 	}
 
-	glm::vec2 GraphicsConnector::getMousePosition() const {
+	glm::vec2 GlConnector::getMousePosition() const {
 		return window->getMousePosition();
 	}
 
-	uint32_t GraphicsConnector::createShader(uint32_t type, const char* source) {
-		GLboolean hasCompiler;
-		glGetBooleanv(GL_SHADER_COMPILER, &hasCompiler);
-		if(hasCompiler == GL_FALSE)
-			throw br::ShaderException(EXCEPTION_INFO, "no compiler");
-
+	uint32_t GlConnector::createShader(uint32_t type, const char* source) {
 		GLuint shader = glCreateShader(type);
 		if(!shader)
 			throw br::ShaderException(EXCEPTION_INFO, "can`t create shader");
@@ -146,7 +124,7 @@ namespace br {
 		return shader;
 	}
 
-	IGraphicsConnector::ProgramContext GraphicsConnector::createProgram(std::pair<std::string, std::string> shaders) {
+	IGraphicsConnector::ProgramContext GlConnector::createProgram(std::pair<std::string, std::string> shaders) {
 		GLuint vShader = createShader(GL_VERTEX_SHADER, shaders.first.c_str());
 		GLuint fShader = createShader(GL_FRAGMENT_SHADER, shaders.second.c_str());
 
@@ -189,7 +167,7 @@ namespace br {
 		return program;
 	}
 
-	uint32_t GraphicsConnector::loadTextureToGpu(Texture2d& texture) {
+	uint32_t GlConnector::loadTextureToGpu(Texture2d& texture) {
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 		GLuint textureId;
@@ -206,19 +184,19 @@ namespace br {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		glBindTexture(GL_TEXTURE_2D, 0);
-		
+
 		return textureId;
 	}
 
-	void GraphicsConnector::deleteTextureFromGpu(uint32_t texture) {
+	void GlConnector::deleteTextureFromGpu(uint32_t texture) {
 		glDeleteTextures(1, &texture);
 	}
 
-	void GraphicsConnector::deleteProgram(ProgramContext& program) {
+	void GlConnector::deleteProgram(ProgramContext& program) {
 		glDeleteProgram(program.id);
 	}
 
-	IGraphicsConnector::GpuBufferData GraphicsConnector::loadGeometryToGpu(std::vector<Vertex3d>& vertices, std::vector<uint16_t>& indices) {
+	IGraphicsConnector::GpuBufferData GlConnector::loadGeometryToGpu(std::vector<Vertex3d>& vertices, std::vector<uint16_t>& indices) {
 		uint32_t vBuffer;
 		glGenBuffers(1, &vBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
@@ -250,20 +228,20 @@ namespace br {
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		
+
 		GpuBufferData buffer;
 		buffer.vBuffer = vBuffer;
 		buffer.iBuffer = iBuffer;
-		buffer.iBufferLenght = iBufferLength;		
+		buffer.iBufferLenght = iBufferLength;
 		return buffer;
 	}
 
-	void GraphicsConnector::deleteGeometryFromGpu(GpuBufferData& buffer) {
+	void GlConnector::deleteGeometryFromGpu(GpuBufferData& buffer) {
 		glDeleteBuffers(1, &buffer.vBuffer);
 		glDeleteBuffers(1, &buffer.iBuffer);
 	}
 
-	void GraphicsConnector::setBlending(bool val) {
+	void GlConnector::setBlending(bool val) {
 		if(val) {
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -272,28 +250,28 @@ namespace br {
 		}
 	}
 
-	void GraphicsConnector::draw(TextField& object, GpuBufferData& buffer, ProgramContext program, mat4 mvp) {
+	void GlConnector::draw(TextField& object, GpuBufferData& buffer, ProgramContext program, mat4 mvp) {
 		glUseProgram(program.id);
 		glUniform4fv(program.color, 1, &object.getColor()[0]);
 		draw(buffer, program, mvp);
 	}
-	
-	void GraphicsConnector::draw(GpuBufferData& buffer, ProgramContext& program, mat4& mvp) {
+
+	void GlConnector::draw(GpuBufferData& buffer, ProgramContext& program, mat4& mvp) {
 		BoneTransformer::BonesDataMap bonesData;
 		draw(buffer, program, mvp, bonesData);
 	}
 
-	void GraphicsConnector::draw(GpuBufferData& buffer, ProgramContext& program, glm::mat4& mvp, BoneTransformer::BonesDataMap& bonesData) {
+	void GlConnector::draw(GpuBufferData& buffer, ProgramContext& program, glm::mat4& mvp, BoneTransformer::BonesDataMap& bonesData) {
 		glUseProgram(program.id);
-		
-		glUniformMatrix4fv(program.mvp, 1, GL_FALSE, &mvp[0][0]); 
-		
+
+		glUniformMatrix4fv(program.mvp, 1, GL_FALSE, &mvp[0][0]);
+
 		if(program.bones != -1) {
 			for(auto& i : bonesData) {
 				glUniformMatrix4fv(program.bones + i.first, 1, GL_FALSE, &(i.second.finalTransform[0][0]));
 			}
 		}
-		
+
 		glBindBuffer(GL_ARRAY_BUFFER, buffer.vBuffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.iBuffer);
 
@@ -341,4 +319,5 @@ namespace br {
 
 		glUseProgram(0);
 	}
+
 }
