@@ -24,7 +24,7 @@ namespace br {
 		}
 	}
 
-	void ImageRenderProcessor::addImage(uint32_t id, std::string path, std::pair<float, float> position) {
+	void ImageRenderProcessor::addImage(uint32_t id, std::string path, const glm::vec2& position) {
 		if(!enabled)
 			throw LogicException(EXCEPTION_INFO, "ImageRenderProcessor not added to Renderer");
 
@@ -40,9 +40,8 @@ namespace br {
 		float sx = 2.0f / wSize.w;
 		float sy = 2.0f / wSize.h;
 
-		vec2 pos{position.first, position.second};
 		Texture2d& texture = loader->getTextureBy(path);
-		Image image{texture, pos, sx, sy};
+		Image image{texture, position, sx, sy};
 
 		if(!hasImageWithTexture(path))
 			loadImageToGpu(image);

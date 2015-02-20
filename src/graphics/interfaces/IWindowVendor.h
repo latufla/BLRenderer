@@ -20,7 +20,7 @@ namespace br {
 		virtual glm::vec2 getScaleFactor() const = 0;
 		
 		virtual glm::vec2 getMousePosition() const = 0;
-
+	
 		virtual bool getMouseDownLeft() const = 0;
 		virtual bool getMouseDownRight() const = 0;
 	};

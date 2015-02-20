@@ -6,7 +6,7 @@ using std::to_string;
 using std::array;
 
 namespace br {
-	TextField::TextField(Font& font, string text, array<float, 4> color, glm::vec2& position, glm::vec2& scaleFactor)
+	TextField::TextField(Font& font, string text, const glm::vec4& color, const glm::vec2& position, const glm::vec2& scaleFactor)
 		: fontName(font.getName()),
 		fontSize(font.getSize()),
 		text(text),

@@ -15,7 +15,7 @@ namespace br{
 
 		void playAnimation(uint32_t objId, std::string animName = Animation3d::DEFAULT_ANIMATION_NAME, bool loop = true);
 		void stopAnimation(uint32_t objId, std::string animName = Animation3d::DEFAULT_ANIMATION_NAME);
-		void transformObject(uint32_t objId, const std::array<float, 16> tForm);
+		void transformObject(uint32_t objId, const glm::mat4& transform);
 
 	private:
 		void doStep(const StepData& stepData) override;

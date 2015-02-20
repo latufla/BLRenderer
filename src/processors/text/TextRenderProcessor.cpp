@@ -10,6 +10,7 @@ using std::string;
 using std::array;
 using std::pair;
 using glm::mat4;
+using glm::vec4;
 using glm::vec3;
 using glm::vec2;
 using glm::translate;
@@ -26,7 +27,7 @@ namespace br {
 		}
 	}
 
-	void TextRenderProcessor::addTextField(uint32_t id, string text, string fontName, uint8_t fontSize, array<float, 4> color, pair<float, float> position) {
+	void TextRenderProcessor::addTextField(uint32_t id, string text, string fontName, uint8_t fontSize, const vec4& color, const vec2& position) {
 		auto it = idToTextField.find(id);
 		if(it != cend(idToTextField))
 			throw InvalidObjectIdException(EXCEPTION_INFO, id);
@@ -41,9 +42,8 @@ namespace br {
 
 		auto wSize = sGConnector->getWindowSize();
 		vec2 scaleFactor = {2.0f / wSize.w, 2.0f / wSize.h};
-		vec2 pos = {position.first, position.second};		
 
-		TextField field{font, text, color, pos, scaleFactor};
+		TextField field{font, text, color, position, scaleFactor};
 		loadTextFieldToGpu(field);
 		
 		idToTextField.emplace(id, field);
@@ -66,7 +66,7 @@ namespace br {
 			deleteFontFromGpu(font);
 	}
 
-	void TextRenderProcessor::translateTextField(uint32_t id, std::pair<float, float> position) {
+	void TextRenderProcessor::translateTextField(uint32_t id, const glm::vec2& position) {
 		TextField* field;
 		try {
 			field = &idToTextField.at(id);
@@ -74,8 +74,7 @@ namespace br {
 			throw InvalidObjectIdException(EXCEPTION_INFO, id);
 		}
 
-		vec2 pos{position.first, position.second};
-		field->setPosition(pos);
+		field->setPosition(position);
 	}
 
 	void TextRenderProcessor::doStep(const StepData& stepData) {

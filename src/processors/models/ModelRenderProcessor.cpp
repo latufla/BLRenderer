@@ -83,16 +83,14 @@ namespace br {
 		object->stopAnimation(animation);
 	}
 
-	void ModelRenderProcessor::transformObject(uint32_t objId, const array<float, 16> tForm) {
+	void ModelRenderProcessor::transformObject(uint32_t objId, const glm::mat4& transform) {
 		View* object;
 		try {
 			object = &idToObject.at(objId);
 		} catch(std::out_of_range&) {
 			throw InvalidObjectIdException(EXCEPTION_INFO, objId);
 		}
-
-		auto t = make_mat4(tForm.data());
-		object->setTransform(t);
+		object->setTransform(transform);
 	}
 	
 	void ModelRenderProcessor::doStep(const StepData& stepData) {

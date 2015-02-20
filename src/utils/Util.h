@@ -23,8 +23,6 @@ namespace br {
 		static glm::vec3 Util::assimpToGlm(const aiVector3D&);
 		static glm::vec4 Util::assimpToGlm(const aiColor4D&);
 		
-		static std::array<float, 16> Util::toArray(const glm::mat4&);
-	
 		static std::string Util::toString(const glm::mat4&);
 		static std::string Util::toString(const glm::vec3&);
 	

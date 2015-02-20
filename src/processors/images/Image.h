@@ -7,7 +7,7 @@ namespace br {
 	class Image {
 	public:
 		Image() = delete;
-		Image(Texture2d& texture, glm::vec2& position, float sx, float sy);
+		Image(Texture2d& texture, const glm::vec2& position, float sx, float sy);
 		
 		~Image() = default;
 	

@@ -39,7 +39,7 @@ void runModels(std::shared_ptr<br::AssetLoader>, br::Renderer&);
 void runImages(std::shared_ptr<br::AssetLoader>, br::Renderer&);
 void runTextFields(std::shared_ptr<br::AssetLoader>, br::Renderer&);
 
-auto runTarget = runModels;
+auto runTarget = runImages;
 
 int _tmain(int argc, _TCHAR* argv[]) {
 	try {
@@ -127,7 +127,7 @@ void runModels(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) 
 	for(auto& s : objects) {
 		uint32_t id = s.getId();
 		modelRenderer->addObject(id, pathAsKey); // one model whatever
-		modelRenderer->transformObject(id, br::Util::toArray(s.getOrientation()));
+		modelRenderer->transformObject(id, s.getOrientation());
 	}
 
 	modelRenderer->playAnimation(42, "default");
@@ -151,8 +151,8 @@ void runImages(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) 
 void runTextFields(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) {
 	loader->loadFont("fonts/arial.ttf", "arial", 20);
 
-	std::array<float, 4> color = {0.0f, 0.0f, 1.0f, 1.0f};
-	std::pair<float, float> pos = {0.5f, 0.0f};
+	const glm::vec4 color{0.0f, 0.0f, 1.0f, 1.0f};
+	const glm::vec2 pos{0.5f, 0.0f};
 
 	br::Shaders shaders;
 	auto program = shaders.getProgram(br::Shaders::TEXT_PROGRAM);
@@ -161,11 +161,11 @@ void runTextFields(std::shared_ptr<br::AssetLoader> loader, br::Renderer& render
 
 	textRenderer->addTextField(0, "+20 -150 Decrease Def", "arial", 20, color, pos);
 
-	std::array<float, 4> color2 = {1.0f, 0.0f, 1.0f, 1.0f};
-	std::pair<float, float> pos2 = {0.5f, 0.5f};
+	const glm::vec4 color2 = {1.0f, 0.0f, 1.0f, 1.0f};
+	const glm::vec2 pos2 = {0.5f, 0.5f};
 	textRenderer->addTextField(1, "+20 atk", "arial", 20, color2, pos2);
 
-	std::pair<float, float> pos3 = {-0.5f, 0.0f};
+	const glm::vec2 pos3 = {-0.5f, 0.0f};
 	textRenderer->translateTextField(1, pos3);
 
 // 	textRenderer->removeTextField(0);

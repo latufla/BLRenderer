@@ -1,7 +1,7 @@
 #include "Image.h"
 
 namespace br{	
-	Image::Image(Texture2d& texture, glm::vec2& position, float sx, float sy) 
+	Image::Image(Texture2d& texture, const glm::vec2& position, float sx, float sy) 
 		: path(texture.getPath()), position(position){
 
 		float w = texture.getWidth() * sx;
