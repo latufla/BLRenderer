@@ -1,3 +1,4 @@
+#include "SharedHeaders.h"
 #include "Shaders.h"
 #include "..\exceptions\Exception.h"
 

@@ -8,9 +8,9 @@
 #include <assimp/postprocess.h>
 
 #include "Model3d.h"
-#include "utils/bones/BoneNodeData.h"
+#include "../utils/bones/BoneNodeData.h"
 #include "Material3d.h"
-#include "processors/text/FontLoader.h"
+#include "../processors/text/FontLoader.h"
 
 namespace br {
 	class AssetLoader {

@@ -1,12 +1,11 @@
 #pragma once
 #include <vector>
-#include "../../Mesh3d.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
 #include <unordered_map>
-#include "../../Texture2d.h"
+#include "../../assets/Texture2d.h"
 #include "Font.h"
 
 namespace br {

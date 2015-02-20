@@ -1,9 +1,9 @@
-#include "utils/SharedHeaders.h"
+#include "../utils/SharedHeaders.h"
 #include "AssetLoader.h"
-#include "utils/bones/BoneNodeData.h"
-#include "utils/Util.h"
+#include "../utils/bones/BoneNodeData.h"
+#include "../utils/Util.h"
 #include <unordered_map>
-#include "exceptions/Exception.h"
+#include "../exceptions/Exception.h"
 
 using std::string;
 using std::to_string;

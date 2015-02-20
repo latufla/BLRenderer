@@ -1,8 +1,8 @@
 #include "../../utils/SharedHeaders.h"
 #include "ModelRenderProcessor.h"
 
-#include "../../Model3d.h"
-#include "../../Texture2d.h"
+#include "../../assets/Model3d.h"
+#include "../../assets/Texture2d.h"
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 #include "../../exceptions/Exception.h"

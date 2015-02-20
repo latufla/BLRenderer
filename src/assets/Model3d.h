@@ -1,9 +1,9 @@
 #pragma once
 #include <vector>
 #include "Mesh3d.h"
-#include "utils\bones\BNode.h"
+#include "../utils/bones/BNode.h"
 #include "Animation3d.h"
-#include "utils\bones\BoneNodeData.h"
+#include "../utils/bones/BoneNodeData.h"
 #include <unordered_map>
 #include "Material3d.h"
 #include <memory>

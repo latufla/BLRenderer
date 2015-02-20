@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <memory>
-#include "AssetLoader.h"
+#include "assets/AssetLoader.h"
 #include "graphics/interfaces/IGraphicsConnector.h"
 
 namespace br {	

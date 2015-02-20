@@ -2,7 +2,7 @@
 #include "FontLoader.h"
 #include <vector>
 #include <array>
-#include "../../Mesh3d.h"
+#include "../../assets/Mesh3d.h"
 
 namespace br {
 	class TextField {

@@ -1,7 +1,7 @@
 #pragma once
 #include <array>
-#include "../../Mesh3d.h"
-#include "../../Texture2d.h"
+#include "../../assets/Mesh3d.h"
+#include "../../assets/Texture2d.h"
 
 namespace br {
 	class Image {

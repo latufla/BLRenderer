@@ -3,8 +3,8 @@
 #include <glm.hpp>
 #include "IWindowVendor.h"
 #include <utility>
-#include "../../Texture2d.h"
-#include "../../Mesh3d.h"
+#include "../../assets/Texture2d.h"
+#include "../../assets/Mesh3d.h"
 #include "../../processors/text/TextField.h"
 #include "../../utils/bones/BoneTransformer.h"
 
