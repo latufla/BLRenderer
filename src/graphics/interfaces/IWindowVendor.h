@@ -17,7 +17,7 @@ namespace br {
 		};
 		virtual Rect getSize() const = 0;
 
-		virtual glm::vec2 getScaleFactor() const = 0;
+		virtual float getAspectRatio() const = 0;
 		
 		virtual glm::vec2 getMousePosition() const = 0;
 	

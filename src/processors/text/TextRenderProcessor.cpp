@@ -41,7 +41,7 @@ namespace br {
 			loadFontToGpu(font);
 
 		auto wSize = sGConnector->getWindowSize();
-		vec2 scaleFactor = {2.0f / wSize.w, 2.0f / wSize.h};
+		vec2 scaleFactor = {(2.0f * sGConnector->getAspectRatio()) / wSize.w, 2.0f / wSize.h};
 
 		TextField field{font, text, color, position, scaleFactor};
 		loadTextFieldToGpu(field);

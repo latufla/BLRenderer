@@ -37,7 +37,7 @@ namespace br {
 			throw WeakPtrException(EXCEPTION_INFO);
 
 		auto wSize = sGConnector->getWindowSize();
-		float sx = 2.0f / wSize.w;
+		float sx = (2.0f * sGConnector->getAspectRatio()) / wSize.w;
 		float sy = 2.0f / wSize.h;
 
 		Texture2d& texture = loader->getTextureBy(path);

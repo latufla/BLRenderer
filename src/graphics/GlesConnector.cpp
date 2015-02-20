@@ -111,8 +111,8 @@ namespace br {
 		return window->getSize();
 	}
 
-	glm::vec2 GlesConnector::getScaleFactor() const {
-		return window->getScaleFactor();
+	float GlesConnector::getAspectRatio() const {
+		return window->getAspectRatio();
 	}
 
 	bool GlesConnector::doStep() {
@@ -342,4 +342,5 @@ namespace br {
 
 		glUseProgram(0);
 	}
+
 }

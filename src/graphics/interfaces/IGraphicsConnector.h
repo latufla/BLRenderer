@@ -41,7 +41,7 @@ namespace br {
 		virtual void swapBuffers() = 0;
 
 		virtual IWindowVendor::Rect getWindowSize() const = 0;
-		virtual glm::vec2 getScaleFactor() const = 0;
+		virtual float getAspectRatio() const = 0;
 
 		virtual glm::vec2 getMousePosition() const = 0;
 

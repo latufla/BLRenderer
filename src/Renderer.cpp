@@ -57,10 +57,8 @@ namespace br {
 		mat4 projection = perspective(45.0f, wSize.w / wSize.h, 0.1f, 100.0f);
 		mat4 projectionView = projection * view;
 
-		auto scaleFactor = graphics->getScaleFactor();
-		float sx = scaleFactor.x;
-		float sy = scaleFactor.y;
-		mat4 orthoProjection = ortho(-sx, sx, -sy, sy);
+		float ratio = (float)wSize.w / (float)wSize.h;
+		mat4 orthoProjection = ortho(-ratio, ratio, -1.f, 1.f);
 		for(auto i : processors) {
 			ProcessorBase::StepData stepData {
 				stepMSec, 

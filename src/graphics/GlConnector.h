@@ -17,7 +17,7 @@ namespace br {
 		void swapBuffers() override;
 
 		IWindowVendor::Rect getWindowSize() const override;
-		glm::vec2 getScaleFactor() const override;
+		float getAspectRatio() const override;
 
 		glm::vec2 getMousePosition() const override;
 

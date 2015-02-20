@@ -107,9 +107,9 @@ namespace br {
 		return msg.message != WM_QUIT;
 	}
 
-	glm::vec2 WindowVendorWin::getScaleFactor() const {
-		auto size = getSize();
-		return{size.w / initialSize.w, size.h / initialSize.h};
+	float WindowVendorWin::getAspectRatio() const {
+		auto wSize = getSize();
+		return (float)wSize.w / (float)wSize.h;
 	}
 
 	void* WindowVendorWin::getNativeWindow() {

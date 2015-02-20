@@ -94,8 +94,8 @@ namespace br {
 		return window->getSize();
 	}
 
-	glm::vec2 GlConnector::getScaleFactor() const {
-		return window->getScaleFactor();
+	float GlConnector::getAspectRatio() const {
+		return window->getAspectRatio();
 	}
 
 	bool GlConnector::doStep() {
