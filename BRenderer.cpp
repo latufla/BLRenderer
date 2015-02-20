@@ -19,6 +19,8 @@
 
 #include "src/graphics/GlConnector.h"
 
+#include <thread>
+
 const std::string SLIME_WARRIOR = "SlimeRed";
 // TODO: not ready
 // const std::string SLIME_HEALER = "SlimeBlue";
@@ -34,12 +36,13 @@ std::vector<ObjectBase> objects;
 void run();
 long long getElapsedTimeMSec();
 void handleExceptions();
+void sleep(long long interval);
 
 void runModels(std::shared_ptr<br::AssetLoader>, br::Renderer&);
 void runImages(std::shared_ptr<br::AssetLoader>, br::Renderer&);
 void runTextFields(std::shared_ptr<br::AssetLoader>, br::Renderer&);
 
-auto runTarget = runImages;
+auto runTarget = runModels;
 
 int _tmain(int argc, _TCHAR* argv[]) {
 	try {
@@ -60,13 +63,15 @@ void run() {
 	runTarget(loader, renderer);
 	
 	const uint32_t step = 1000 / 60;
-	long long begin = getElapsedTimeMSec();
+	long long lastStepTime = getElapsedTimeMSec();
 	bool running = true;
 	while(running) {
-		long long elapsedTime = getElapsedTimeMSec() - begin;		
+		long long elapsedTime = getElapsedTimeMSec() - lastStepTime;
 		if(elapsedTime >= step) {
 			running = renderer.doStep(step);
-			begin = getElapsedTimeMSec() - (elapsedTime - step);
+			lastStepTime = getElapsedTimeMSec() - (elapsedTime - step);
+		} else {
+			sleep(step - elapsedTime);
 		}
 	}
 }
@@ -95,6 +100,11 @@ void handleExceptions() {
 		std::exit(1);
 	}
 }
+
+void sleep(long long interval) {
+	std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+}
+
 
 void runModels(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) {
 	ObjectBase obj{42, GAME_OBJECT};
