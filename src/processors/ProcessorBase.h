@@ -1,19 +1,19 @@
 #pragma once
 #include <memory>
-#include "../assets/AssetLoader.h"
+#include "../assets/interfaces/IAssetLoader.h"
 #include "../graphics/interfaces/IGraphicsConnector.h"
 
 namespace br {
 	class ProcessorBase {
 	public:
-		ProcessorBase(std::shared_ptr<AssetLoader> loader, std::pair<std::string, std::string> shaders);
+		ProcessorBase(std::shared_ptr<IAssetLoader> loader, std::pair<std::string, std::string> shaders);
 		virtual ~ProcessorBase();
 
 		void addProcessor(std::shared_ptr<ProcessorBase>);
 		void removeProcessor(std::shared_ptr<ProcessorBase>);
 
 	protected:
-		std::shared_ptr<AssetLoader> loader;
+		std::shared_ptr<IAssetLoader> loader;
 		std::pair<std::string, std::string> shaders;
 
 		std::vector<std::shared_ptr<ProcessorBase>> processors;

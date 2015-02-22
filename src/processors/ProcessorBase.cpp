@@ -9,7 +9,7 @@ using std::shared_ptr;
 using std::weak_ptr;
 
 namespace br {
-	ProcessorBase::ProcessorBase(shared_ptr<AssetLoader> loader, pair<string, string> shaders)
+	ProcessorBase::ProcessorBase(shared_ptr<IAssetLoader> loader, pair<string, string> shaders)
 		: loader(loader), shaders(shaders) {
 	}
 

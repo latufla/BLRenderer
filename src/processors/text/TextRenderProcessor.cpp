@@ -9,6 +9,9 @@
 using std::string;
 using std::array;
 using std::pair;
+using std::out_of_range;
+using std::shared_ptr;
+
 using glm::mat4;
 using glm::vec4;
 using glm::vec3;
@@ -16,7 +19,7 @@ using glm::vec2;
 using glm::translate;
 
 namespace br {
-	TextRenderProcessor::TextRenderProcessor(std::shared_ptr<AssetLoader>loader, std::pair<std::string, std::string> shaders)
+	TextRenderProcessor::TextRenderProcessor(shared_ptr<IAssetLoader>loader, pair<string, string> shaders)
 		: ProcessorBase(loader, shaders) {
 	}
 
@@ -53,7 +56,7 @@ namespace br {
 		TextField* field;
 		try {
 			field = &idToTextField.at(id);
-		} catch(std::out_of_range&) {
+		} catch(out_of_range&) {
 			throw InvalidObjectIdException(EXCEPTION_INFO, id);
 		}
 		 
@@ -66,11 +69,11 @@ namespace br {
 			deleteFontFromGpu(font);
 	}
 
-	void TextRenderProcessor::translateTextField(uint32_t id, const glm::vec2& position) {
+	void TextRenderProcessor::translateTextField(uint32_t id, const vec2& position) {
 		TextField* field;
 		try {
 			field = &idToTextField.at(id);
-		} catch(std::out_of_range&) {
+		} catch(out_of_range&) {
 			throw InvalidObjectIdException(EXCEPTION_INFO, id);
 		}
 

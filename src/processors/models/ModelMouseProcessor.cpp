@@ -4,8 +4,10 @@
 
 using std::pair;
 using std::vector;
+using std::unordered_map;
 using std::string;
 using std::shared_ptr;
+using std::weak_ptr;
 
 using std::numeric_limits;
 
@@ -21,14 +23,14 @@ using glm::normalize;
 namespace br {
 	const float ModelMouseProcessor::MAX_DISTANCE = numeric_limits<float>::max();
 
-	ModelMouseProcessor::ModelMouseProcessor(shared_ptr<AssetLoader>loader, pair<string, string> shaders) 
+	ModelMouseProcessor::ModelMouseProcessor(shared_ptr<IAssetLoader>loader, pair<string, string> shaders) 
 		: ProcessorBase(loader, shaders){	
 	}
 	
 	ModelMouseProcessor::~ModelMouseProcessor() {
 	}
 
-	void ModelMouseProcessor::start(std::weak_ptr<IGraphicsConnector> graphics) {
+	void ModelMouseProcessor::start(weak_ptr<IGraphicsConnector> graphics) {
 		this->graphics = graphics;
 		enabled = true;
 	}
@@ -60,8 +62,8 @@ namespace br {
 		vec3 ray{to.x - from.x, to.y - from.y, to.z - from.z};
 		ray = normalize(ray);
 
-		std::pair<View*, float> minDistData{nullptr, MAX_DISTANCE};
-		auto objects = (std::unordered_map<uint32_t, View>*) stepData.extraData;
+		pair<View*, float> minDistData{nullptr, MAX_DISTANCE};
+		auto objects = (unordered_map<uint32_t, View>*) stepData.extraData;
 		for(auto& i : *objects) {
 			View& object = i.second;
 
@@ -107,7 +109,7 @@ namespace br {
 		mouseOver = minDistData.second != MAX_DISTANCE ? minDistData.first->getId() : -1;
 	}
 
-	float ModelMouseProcessor::calcDistance(vec3& start, vec3& dir, Triangle& triangle) {
+	float ModelMouseProcessor::calcDistance(vec3& start, vec3& dir, const Triangle& triangle) {
 		vec3 trCros = cross(triangle.b - triangle.a, triangle.c - triangle.a);
 
 		// intersects with plane

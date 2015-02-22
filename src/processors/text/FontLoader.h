@@ -15,7 +15,7 @@ namespace br {
 		~FontLoader() = default;
 
 		void loadFont(std::string path, std::string name, uint8_t size = 20);
-		Font getFontBy(std::string name, uint8_t size);
+		Font& getFontBy(std::string name, uint8_t size);
 
 	private:
 		FT_Library library;

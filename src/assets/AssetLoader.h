@@ -1,37 +1,35 @@
 #pragma once
-#include <map>
-#include <iostream>
+#include <unordered_map>
 #include <vector>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "Model3d.h"
 #include "../utils/bones/BoneNodeData.h"
-#include "Material3d.h"
 #include "../processors/text/FontLoader.h"
+#include "interfaces/IAssetLoader.h"
 
 namespace br {
-	class AssetLoader {
+	class AssetLoader : public IAssetLoader {
 	public:
-		AssetLoader() {};
-		~AssetLoader() = default;
+		AssetLoader() = default;
+		virtual ~AssetLoader();
 	
-		void loadModel(std::string pathAsKey, std::string textureDirectory);
+		virtual void loadModel(std::string pathAsKey, std::string textureDirectory) override;
+		virtual Model3d& getModelBy(std::string pathAsKey) override;
 
-		Model3d& getModelBy(std::string path);
-		void attachAnimation(std::string toModel, std::string byNameAsKey, std::string withPath);
+		virtual void loadAnimation(std::string toModel, std::string byNameAsKey, std::string withPath) override;
 
-		void loadTexture(std::string pathAsKey);
-		Texture2d& getTextureBy(std::string path);
+		virtual void loadTexture(std::string pathAsKey) override;
+		virtual Texture2d& getTextureBy(std::string pathAsKey) override;
 
-		void loadFont(std::string path, std::string name, uint8_t size);
-		Font getFontBy(std::string name, uint8_t size);
+		virtual void loadFont(std::string path, std::string name, uint8_t size) override;
+		virtual Font& getFontBy(std::string name, uint8_t size) override;
 
 	private:
-		std::map<std::string, Model3d> pathToModel;
-		std::map<std::string, Texture2d> pathToTexture;
+		std::unordered_map<std::string, Model3d> pathToModel;
+		std::unordered_map<std::string, Texture2d> pathToTexture;
 
 		FontLoader fontLoader;
 

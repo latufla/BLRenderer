@@ -20,7 +20,7 @@ using glm::ortho;
 
 
 namespace br {
-	Renderer::Renderer(shared_ptr<AssetLoader> loader, shared_ptr<IGraphicsConnector> graphics)
+	Renderer::Renderer(shared_ptr<IAssetLoader> loader, shared_ptr<IGraphicsConnector> graphics)
 		: loader(loader), graphics(graphics) {
 	}
 

@@ -5,7 +5,7 @@
 namespace br{
 	class ImageRenderProcessor : public ProcessorBase {
 	public:
-		ImageRenderProcessor(std::shared_ptr<AssetLoader>loader, std::pair<std::string, std::string> shaders);
+		ImageRenderProcessor(std::shared_ptr<IAssetLoader>loader, std::pair<std::string, std::string> shaders);
 		~ImageRenderProcessor();
 	
 		void addImage(uint32_t id, std::string path,  const glm::vec2& position);

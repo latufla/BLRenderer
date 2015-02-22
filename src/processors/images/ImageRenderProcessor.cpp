@@ -6,14 +6,18 @@
 #include <gtc/matrix_transform.hpp>
 
 using std::pair;
+using std::string;
+using std::shared_ptr;
+using std::vector;
+using std::out_of_range;
+
 using glm::mat4;
 using glm::vec3;
 using glm::vec2;
 using glm::translate;
-using std::string;
 
 namespace br {
-	ImageRenderProcessor::ImageRenderProcessor(std::shared_ptr<AssetLoader>loader, std::pair<std::string, std::string> shaders)
+	ImageRenderProcessor::ImageRenderProcessor(shared_ptr<IAssetLoader>loader, pair<string, string> shaders)
 		: ProcessorBase(loader, shaders) {
 	}
 
@@ -24,7 +28,7 @@ namespace br {
 		}
 	}
 
-	void ImageRenderProcessor::addImage(uint32_t id, std::string path, const glm::vec2& position) {
+	void ImageRenderProcessor::addImage(uint32_t id, string path, const vec2& position) {
 		if(!enabled)
 			throw LogicException(EXCEPTION_INFO, "ImageRenderProcessor not added to Renderer");
 
@@ -56,7 +60,7 @@ namespace br {
 		Image* image;
 		try {
 			image = &idToImage.at(id);
-		} catch(std::out_of_range&) {
+		} catch(out_of_range&) {
 			throw InvalidObjectIdException(EXCEPTION_INFO, id);
 		}
 
@@ -97,12 +101,12 @@ namespace br {
 	}
 
 	void ImageRenderProcessor::loadImageToGpu(Image& image) {
-		std::vector<Vertex3d> vertices;
+		vector<Vertex3d> vertices;
 		for(auto& i : image.getVertices()) {
 			vertices.push_back(i);
 		}
 
-		std::vector<uint16_t> indices;
+		vector<uint16_t> indices;
 		for(auto& i : image.getIndices()) {
 			indices.push_back(i);
 		}

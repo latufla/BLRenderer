@@ -20,6 +20,7 @@
 #include "src/graphics/GlConnector.h"
 
 #include <thread>
+#include "src/assets/AssetLoader.h"
 
 const std::string SLIME_WARRIOR = "SlimeRed";
 // TODO: not ready
@@ -122,7 +123,7 @@ void runModels(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) 
 
 	loader->loadModel(pathAsKey, modelDirectory);
 	for(auto& i : nameToAnimation) {
-		loader->attachAnimation(pathAsKey, i.first, modelDirectory + i.second);
+		loader->loadAnimation(pathAsKey, i.first, modelDirectory + i.second);
 	}
 
 	renderer.setCamera(FRONT_VIEW);

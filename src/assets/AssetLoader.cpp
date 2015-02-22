@@ -1,20 +1,21 @@
-#include "../utils/SharedHeaders.h"
 #include "AssetLoader.h"
-#include "../utils/bones/BoneNodeData.h"
 #include "../utils/Util.h"
-#include <unordered_map>
 #include "../exceptions/Exception.h"
 
 using std::string;
 using std::to_string;
-using std::map;
 using std::vector;
 using std::unordered_map;
+using std::out_of_range;
 
 namespace br {
 	const uint8_t AssetLoader::TRIANGLE_FACE_TYPE = 3;
-	const std::string AssetLoader::BONES_ROOT_NODE = "Armature";
+	const string AssetLoader::BONES_ROOT_NODE = "Armature";
 	
+	AssetLoader::~AssetLoader() {
+
+	}
+
 	void AssetLoader::loadModel(string pathAsKey, string textureDirectory) {
 		if(pathToModel.find(pathAsKey) != pathToModel.cend())
 			throw AssetException(EXCEPTION_INFO, pathAsKey, "has same model");
@@ -51,8 +52,17 @@ namespace br {
 
 		pathToModel.emplace(pathAsKey, model);
 	}
+
+	Model3d& AssetLoader::getModelBy(string path) {
+		try {
+			return pathToModel.at(path);
+		} catch(out_of_range&) {
+			throw AssetException(EXCEPTION_INFO, path, "can`t get model by path");
+		}
+	}
+
 	
-	void AssetLoader::attachAnimation(string toModel, string byNameAsKey, string withPath) {
+	void AssetLoader::loadAnimation(string toModel, string byNameAsKey, string withPath) {
 		const aiScene* animationAi = importer.ReadFile(withPath, aiProcess_Triangulate | aiProcess_FlipUVs);
 		if (!animationAi)
 			throw AssetException(EXCEPTION_INFO, withPath, "invalid collada model");
@@ -62,22 +72,40 @@ namespace br {
 		model.addAnimation(animation);
 	}
 	
-	Model3d& AssetLoader::getModelBy(string path) {
+
+	void AssetLoader::loadTexture(string pathAsKey) {
+		if(pathToTexture.find(pathAsKey) != pathToTexture.cend())
+			throw AssetException(EXCEPTION_INFO, pathAsKey, "has same texture");
+
+		Texture2d texture = Util::loadTexture(pathAsKey);
+		pathToTexture.emplace(pathAsKey, texture);
+	}
+
+	Texture2d& AssetLoader::getTextureBy(string path) {
 		try {
-			return pathToModel.at(path);
-		} catch (std::out_of_range&){
-			throw AssetException(EXCEPTION_INFO, path, "can`t get model by path");
+			return pathToTexture.at(path);
+		} catch(out_of_range&) {
+			throw AssetException(EXCEPTION_INFO, path, "can`t get texture");
 		}
 	}
-	
-	
+
+
+	void AssetLoader::loadFont(string path, string name, uint8_t size) {
+		fontLoader.loadFont(path, name, size);
+	}
+
+	Font& AssetLoader::getFontBy(string name, uint8_t size) {
+		return fontLoader.getFontBy(name, size);
+	}
+
+
 	vector<Mesh3d> AssetLoader::collectMeshes(const aiScene* modelAi) {
 		vector<Mesh3d> outMeshes;
 		parseMeshes(modelAi->mRootNode, modelAi->mMeshes, outMeshes);
 		return outMeshes;
 	}
 	
-	void AssetLoader::parseMeshes(const aiNode* rNodeAi, aiMesh** meshesAi, std::vector<Mesh3d>& outMeshes) {
+	void AssetLoader::parseMeshes(const aiNode* rNodeAi, aiMesh** meshesAi, vector<Mesh3d>& outMeshes) {
 		vector<Vertex3d> vertices;
 		vector<uint16_t> indices;
 		
@@ -127,7 +155,7 @@ namespace br {
 		}
 	}
 	
-	std::vector<Material3d> AssetLoader::collectMaterials(const aiScene* modelAi, std::string dir) {
+	vector<Material3d> AssetLoader::collectMaterials(const aiScene* modelAi, string dir) {
 		uint32_t nMaterialsAi = modelAi->mNumMaterials;
 		vector<Material3d> materials;
 		for (uint32_t i = 0; i < nMaterialsAi; i++) {
@@ -255,7 +283,7 @@ namespace br {
 	}
 	
 	void AssetLoader::collectBoneWeightsAndOffsets(const aiScene* scene, BNode<BoneNodeData>& boneTree, vector<Mesh3d>& meshes) {
-		std::map<string, aiMesh*> nameToMeshAi;
+		unordered_map<string, aiMesh*> nameToMeshAi;
 		uint32_t nMeshAi = scene->mNumMeshes;
 		for (uint32_t i = 0; i < nMeshAi; ++i) {
 			aiMesh* meshAi = scene->mMeshes[i];
@@ -283,29 +311,4 @@ namespace br {
 			}
 		}
 	}
-
-	void AssetLoader::loadTexture(string pathAsKey) {
-		if(pathToTexture.find(pathAsKey) != pathToTexture.cend())
-			throw AssetException(EXCEPTION_INFO, pathAsKey, "has same texture");
-
-		Texture2d texture = Util::loadTexture(pathAsKey);
-		pathToTexture.emplace(pathAsKey, texture);
-	}
-
-	Texture2d& AssetLoader::getTextureBy(string path) {
-		try {
-			return pathToTexture.at(path);
-		} catch(std::out_of_range&) {
-			throw AssetException(EXCEPTION_INFO, path, "can`t get texture");
-		}
-	}
-
-	void AssetLoader::loadFont(string path, string name, uint8_t size) {
-		fontLoader.loadFont(path, name, size);
-	}
-
-	Font AssetLoader::getFontBy(string name, uint8_t size) {
-		return fontLoader.getFontBy(name, size);
-	}
-
 }

@@ -13,11 +13,13 @@ using std::vector;
 using std::array;
 using std::unordered_map;
 using std::string;
+using std::out_of_range;
+
 using glm::mat4;
 using glm::make_mat4;
 
 namespace br {
-	ModelRenderProcessor::ModelRenderProcessor(shared_ptr<AssetLoader>loader, pair<std::string, std::string> shaders) 
+	ModelRenderProcessor::ModelRenderProcessor(shared_ptr<IAssetLoader>loader, pair<string, string> shaders) 
 		: ProcessorBase(loader, shaders){
 	}
 	
@@ -46,7 +48,7 @@ namespace br {
 		View* object;
 		try {
 			object = &idToObject.at(id);
-		} catch(std::out_of_range&) {
+		} catch(out_of_range&) {
 			throw InvalidObjectIdException(EXCEPTION_INFO, id);
 		}
 
@@ -57,11 +59,11 @@ namespace br {
 			deleteModelFromGpu(modelPath);
 	}
 
-	void ModelRenderProcessor::playAnimation(uint32_t objId, std::string animName, bool loop) {
+	void ModelRenderProcessor::playAnimation(uint32_t objId, string animName, bool loop) {
 		View* object;
 		try {
 			object = &idToObject.at(objId);
-		} catch(std::out_of_range&) {
+		} catch(out_of_range&) {
 			throw InvalidObjectIdException(EXCEPTION_INFO, objId);
 		}
 
@@ -70,11 +72,11 @@ namespace br {
 		object->playAnimation(animation, loop);
 	}
 
-	void ModelRenderProcessor::stopAnimation(uint32_t objId, std::string animName) {
+	void ModelRenderProcessor::stopAnimation(uint32_t objId, string animName) {
 		View* object;
 		try {
 			object = &idToObject.at(objId);
-		} catch(std::out_of_range&) {
+		} catch(out_of_range&) {
 			throw InvalidObjectIdException(EXCEPTION_INFO, objId);
 		}
 
@@ -83,11 +85,11 @@ namespace br {
 		object->stopAnimation(animation);
 	}
 
-	void ModelRenderProcessor::transformObject(uint32_t objId, const glm::mat4& transform) {
+	void ModelRenderProcessor::transformObject(uint32_t objId, const mat4& transform) {
 		View* object;
 		try {
 			object = &idToObject.at(objId);
-		} catch(std::out_of_range&) {
+		} catch(out_of_range&) {
 			throw InvalidObjectIdException(EXCEPTION_INFO, objId);
 		}
 		object->setTransform(transform);
