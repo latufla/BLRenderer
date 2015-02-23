@@ -82,6 +82,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\assets\interfaces\IAssetLoader.h" />
+    <ClInclude Include="src\assets\interfaces\IModel3d.h" />
     <ClInclude Include="src\graphics\GlConnector.h" />
     <ClInclude Include="src\graphics\GlesConnector.h" />
     <ClInclude Include="src\graphics\interfaces\IGraphicsConnector.h" />

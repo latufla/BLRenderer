@@ -67,8 +67,8 @@ namespace br {
 			throw InvalidObjectIdException(EXCEPTION_INFO, objId);
 		}
 
-		Model3d& model = loader->getModelBy(object->getPath());
-		Animation3d& animation = model.getAnimationBy(animName);
+		auto model = loader->getModelBy(object->getPath());
+		Animation3d& animation = model->getAnimationBy(animName);
 		object->playAnimation(animation, loop);
 	}
 
@@ -80,8 +80,8 @@ namespace br {
 			throw InvalidObjectIdException(EXCEPTION_INFO, objId);
 		}
 
-		Model3d& model = loader->getModelBy(object->getPath());
-		Animation3d& animation = model.getAnimationBy(animName);
+		auto model = loader->getModelBy(object->getPath());
+		Animation3d& animation = model->getAnimationBy(animName);
 		object->stopAnimation(animation);
 	}
 
@@ -104,13 +104,13 @@ namespace br {
 			View& object = i.second;
 			mat4 mvpMatrix = stepData.perspectiveView * object.getTransform();
 
-			Model3d& model = loader->getModelBy(object.getPath());
-			vector<Mesh3d>& meshes = model.getMeshes();
+			auto model = loader->getModelBy(object.getPath());
+			vector<Mesh3d>& meshes = model->getMeshes();
 
 			object.doAnimationStep(stepData.stepMSec);
 			for(auto& s : meshes) {
 				auto bonesData = prepareAnimationStep(object, s);			
-				string meshName = model.getUniqueMeshName(s);
+				string meshName = model->getUniqueMeshName(s);
 				auto& buffer = meshToBuffer.at(meshName);
 				sGConnector->draw(buffer, program, mvpMatrix, bonesData);
 			}
@@ -129,7 +129,7 @@ namespace br {
 			res.emplace(i.first, bData);
 		}
 
-		Model3d& model = loader->getModelBy(object.getPath());
+		auto model = loader->getModelBy(object.getPath());
 		boneTransformer.transform(object, model, res);
 		return res;
 	}
@@ -142,14 +142,14 @@ namespace br {
 	}
 
 	void ModelRenderProcessor::loadModelToGpu(string modelPath) {
-		Model3d& model = loader->getModelBy(modelPath);
-		vector<Mesh3d>& meshes = model.getMeshes();
+		auto model = loader->getModelBy(modelPath);
+		vector<Mesh3d>& meshes = model->getMeshes();
 		for(auto& s : meshes) {
-			string meshName = model.getUniqueMeshName(s);
+			string meshName = model->getUniqueMeshName(s);
 
 			loadGeometryToGpu(meshName, s.getRawVertices(), s.getIndices());
 
-			Texture2d& texture = model.getTextureBy(s);
+			Texture2d& texture = model->getTextureBy(s);
 			loadTextureToGpu(texture);
 
 			auto& buffer = meshToBuffer.at(meshName);
@@ -158,15 +158,15 @@ namespace br {
 	}
 
 	void ModelRenderProcessor::deleteModelFromGpu(string modelPath) {
-		Model3d& model = loader->getModelBy(modelPath);
-		vector<Mesh3d>& meshes = model.getMeshes();
+		auto model = loader->getModelBy(modelPath);
+		vector<Mesh3d>& meshes = model->getMeshes();
 
 		unordered_map<uint32_t, string> texturesToRemove;
 		for(auto& s : meshes) {
-			string mName = model.getUniqueMeshName(s);
+			string mName = model->getUniqueMeshName(s);
 			deleteGeometryFromGpu(mName);
 			
-			Texture2d& texture = model.getTextureBy(s);
+			Texture2d& texture = model->getTextureBy(s);
 			texturesToRemove.emplace(s.getMaterialId(), texture.getPath());
 		}
 

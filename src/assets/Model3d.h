@@ -1,41 +1,31 @@
 #pragma once
-#include <vector>
-#include "Mesh3d.h"
-#include "../utils/bones/BNode.h"
-#include "Animation3d.h"
-#include "../utils/bones/BoneNodeData.h"
-#include <unordered_map>
-#include "Material3d.h"
-#include <memory>
+#include "interfaces/IModel3d.h"
 
 namespace br {
-	class Model3d {
+	class Model3d : public IModel3d {
 	public:
 		Model3d(std::string path,
-			const std::vector<Mesh3d>& meshes,
-			const std::vector<Material3d>& materials, 
-			const BNode<BoneNodeData>& boneTree,
-			const Animation3d& defaultAnimation);
+			std::vector<Mesh3d> const& meshes,
+			std::vector<Material3d> const& materials,
+			BNode<BoneNodeData> const& boneTree,
+			Animation3d const& defaultAnimation);
 
-		std::string getPath() const { return path; }
-		std::vector<Mesh3d>& getMeshes() { return meshes; }
-		std::vector<Material3d>& getMaterials() { return materials; }
-	
-		Material3d& getMaterialBy(Mesh3d&);
-		Texture2d& getTextureBy(Mesh3d&);
+		virtual std::string getPath() const override;
 
-		Animation3d& getAnimationBy(std::string name = Animation3d::DEFAULT_ANIMATION_NAME);
-		void addAnimation(Animation3d&);
-	
-		std::shared_ptr<Mesh3d> getHitMesh() { return hitMesh; }
+		virtual std::vector<Mesh3d>& getMeshes() override;
+		virtual std::shared_ptr<Mesh3d> getHitMesh() override;
+
+		virtual std::vector<Material3d>& getMaterials() override;
+
+		virtual BNode<BoneNodeData>& getBoneTree() override;
+
+		virtual Material3d& getMaterialBy(Mesh3d const&) override;
+		virtual Texture2d& getTextureBy(Mesh3d const&) override;
+
+		virtual void addAnimation(Animation3d const&) override;
+		virtual Animation3d& getAnimationBy(std::string name) override;
 		
-		BNode<BoneNodeData>& getBoneTree() { return boneTree; }
-		
-		std::string getUniqueMeshName(const Mesh3d&);
-	
-		glm::mat4& getGlobalInverseTransform() { return globalInverseTransform; }
-		void setGlobalInverseTransform(glm::mat4& val) { globalInverseTransform = val; }
-	
+		virtual std::string getUniqueMeshName(const Mesh3d&) override;
 	private:
 		void initHitMesh(std::vector<Mesh3d>&);
 
@@ -49,8 +39,6 @@ namespace br {
 		BNode<BoneNodeData> boneTree;
 	
 		std::unordered_map<std::string, Animation3d> nameToAnimation;
-	
-		glm::mat4 globalInverseTransform;
 	};
 }
 

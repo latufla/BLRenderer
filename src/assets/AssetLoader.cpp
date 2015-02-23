@@ -1,10 +1,13 @@
 #include "AssetLoader.h"
 #include "../utils/Util.h"
 #include "../exceptions/Exception.h"
+#include "Model3d.h"
 
 using std::string;
 using std::to_string;
 using std::vector;
+using std::shared_ptr;
+using std::make_shared;
 using std::unordered_map;
 using std::out_of_range;
 
@@ -50,13 +53,11 @@ namespace br {
 		aiNode* rootAi = modelAi->mRootNode;
 		auto glTrans = Util::assimpToGlm(rootAi->mTransformation);
 		
-		Model3d model{pathAsKey, meshes, materials, bones, defaultAnimation};
-		model.setGlobalInverseTransform(glTrans);
-
+		auto model = make_shared<Model3d>(pathAsKey, meshes, materials, bones, defaultAnimation);
 		pathToModel.emplace(pathAsKey, model);
 	}
 
-	Model3d& AssetLoader::getModelBy(string path) {
+	shared_ptr<IModel3d> AssetLoader::getModelBy(string path) {
 		try {
 			return pathToModel.at(path);
 		} catch(out_of_range&) {
@@ -70,9 +71,9 @@ namespace br {
 		if (!animationAi)
 			throw AssetException(EXCEPTION_INFO, withPath, "invalid collada model");
 
-		Model3d& model = getModelBy(toModel);
-		Animation3d animation = collectAnimation(animationAi, model.getBoneTree(), byNameAsKey, toModel);
-		model.addAnimation(animation);
+		auto model = getModelBy(toModel);
+		Animation3d animation = collectAnimation(animationAi, model->getBoneTree(), byNameAsKey, toModel);
+		model->addAnimation(animation);
 	}
 	
 

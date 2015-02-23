@@ -12,32 +12,32 @@ namespace br{
 
 		GlesConnector(const IWindowVendor::Rect& size);
 		
-		void setViewport(const IWindowVendor::Rect& size) override;
-		void clear() override;
+		virtual void setViewport(const IWindowVendor::Rect& size) override;
+		virtual void clear() override;
 
-		void swapBuffers() override;
+		virtual void swapBuffers() override;
 
-		IWindowVendor::Rect getWindowSize() const override;
-		float getAspectRatio() const override;
+		virtual IWindowVendor::Rect getWindowSize() const override;
+		virtual float getAspectRatio() const override;
 
-		glm::vec2 getMousePosition() const override;
+		virtual glm::vec2 getMousePosition() const override;
 
-		bool doStep() override;
+		virtual bool doStep() override;
 
-		ProgramContext createProgram(std::pair<std::string, std::string> shaders) override;
-		void deleteProgram(ProgramContext&) override;
+		virtual ProgramContext createProgram(std::pair<std::string, std::string> shaders) override;
+		virtual void deleteProgram(ProgramContext&) override;
 		
-		uint32_t loadTextureToGpu(Texture2d&) override;
-		void deleteTextureFromGpu(uint32_t) override;
+		virtual uint32_t loadTextureToGpu(Texture2d&) override;
+		virtual void deleteTextureFromGpu(uint32_t) override;
 
-		GpuBufferData loadGeometryToGpu(std::vector<float>& vertices, std::vector<uint16_t>& indices) override;
-		void deleteGeometryFromGpu(GpuBufferData&) override;
+		virtual GpuBufferData loadGeometryToGpu(std::vector<float>& vertices, std::vector<uint16_t>& indices) override;
+		virtual void deleteGeometryFromGpu(GpuBufferData&) override;
 
-		void setBlending(bool) override;
+		virtual void setBlending(bool) override;
 
-		void draw(GpuBufferData& buffer, ProgramContext& program, glm::mat4& mvp) override;
-		void draw(TextField& image, GpuBufferData& buffer, ProgramContext program, glm::mat4 mvp) override;
-		void draw(GpuBufferData& buffer, ProgramContext& program, glm::mat4& mvp, BoneTransformer::BonesDataMap& bonesData) override;
+		virtual void draw(GpuBufferData& buffer, ProgramContext& program, glm::mat4& mvp) override;
+		virtual void draw(TextField& image, GpuBufferData& buffer, ProgramContext program, glm::mat4 mvp) override;
+		virtual void draw(GpuBufferData& buffer, ProgramContext& program, glm::mat4& mvp, BoneTransformer::BonesDataMap& bonesData) override;
 
 	private:
 		std::shared_ptr<IWindowVendor> window;

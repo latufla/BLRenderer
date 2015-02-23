@@ -17,7 +17,7 @@ namespace br {
 		virtual ~AssetLoader();
 	
 		virtual void loadModel(std::string pathAsKey, std::string textureDirectory) override;
-		virtual Model3d& getModelBy(std::string pathAsKey) override;
+		virtual std::shared_ptr<IModel3d> getModelBy(std::string pathAsKey) override;
 
 		virtual void loadAnimation(std::string toModel, std::string byNameAsKey, std::string withPath) override;
 
@@ -28,7 +28,7 @@ namespace br {
 		virtual Font& getFontBy(std::string name, uint8_t size) override;
 
 	private:
-		std::unordered_map<std::string, Model3d> pathToModel;
+		std::unordered_map<std::string, std::shared_ptr<IModel3d>> pathToModel;
 		std::unordered_map<std::string, Texture2d> pathToTexture;
 
 		FontLoader fontLoader;

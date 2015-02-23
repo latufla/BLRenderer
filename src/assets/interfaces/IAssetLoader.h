@@ -1,13 +1,13 @@
 #pragma once
 #include "../../utils/SharedHeaders.h"
-#include "../Model3d.h"
 #include "../../processors/text/Font.h"
+#include "IModel3d.h"
 
 namespace br {
 	class IAssetLoader {
 	public:
 		virtual void loadModel(std::string pathAsKey, std::string textureDirectory) = 0;
-		virtual Model3d& getModelBy(std::string path) = 0;
+		virtual std::shared_ptr<IModel3d> getModelBy(std::string path) = 0;
 
 		virtual void loadAnimation(std::string toModel, std::string byNameAsKey, std::string withPath) = 0;
 
