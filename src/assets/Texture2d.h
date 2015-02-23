@@ -6,9 +6,9 @@ namespace br {
 	class Texture2d {
 	public:
 		Texture2d() = delete;
-		Texture2d(std::string path, std::vector<uint8_t>& data, uint32_t width, uint32_t height);
+		Texture2d(std::string path, std::vector<uint8_t> const& data, uint32_t width, uint32_t height);
 		
-		~Texture2d() = default;
+		virtual ~Texture2d();
 	
 		std::string getPath() const { return path; }
 		

@@ -6,18 +6,28 @@ namespace br {
 	class Material3d {
 	public:
 		Material3d() = delete;
-		Material3d(const Texture2d& texture,
-			const glm::vec4& emission,
-			const glm::vec4& ambient,
-			const glm::vec4& diffuse,
-			const glm::vec4& specular,
+		Material3d(Texture2d const& texture,
+			glm::vec4 const& emission,
+			glm::vec4 const& ambient,
+			glm::vec4 const& diffuse,
+			glm::vec4 const& specular,
 			float shininess,
 			float indexOfRefraction,
 			bool doubleSided);
 
-		~Material3d() = default;
+		virtual ~Material3d();
 	
-		Texture2d& getTexture(){ return texture; }
+		Texture2d& getTexture();
+
+		glm::vec4 const& getEmission() const;
+		glm::vec4 const& getAmbient() const;
+		glm::vec4 const& getDiffuse() const;
+		glm::vec4 const& getSpecular() const;
+
+		float getShininess() const;
+		float getIndexOfRefraction() const;
+
+		bool getDoubleSided() const;
 	
 	private:
 		Texture2d texture;
@@ -29,7 +39,7 @@ namespace br {
 	
 		float shininess;
 		float indexOfRefraction;
-		
+	
 		bool doubleSided;
 	};
 }
