@@ -8,6 +8,7 @@
 #include "WindowVendorWin.h"
 
 using std::weak_ptr;
+using std::vector;
 using std::make_shared;
 using glm::mat4;
 
@@ -250,28 +251,22 @@ namespace br {
 		}
 	}
 
-	void GlConnector::draw(TextField& object, GpuBufferData& buffer, ProgramContext program, mat4 mvp) {
-		glUseProgram(program.id);
-		glUniform4fv(program.color, 1, &object.getColor()[0]);
-		draw(buffer, program, mvp);
-	}
-
-	void GlConnector::draw(GpuBufferData& buffer, ProgramContext& program, mat4& mvp) {
+	void GlConnector::draw(GpuBufferData& buffer, ProgramContext program, vector<ProgramParam> params) {
 		BoneTransformer::BonesDataMap bonesData;
-		draw(buffer, program, mvp, bonesData);
+		draw(buffer, program, params, bonesData);
 	}
 
-	void GlConnector::draw(GpuBufferData& buffer, ProgramContext& program, glm::mat4& mvp, BoneTransformer::BonesDataMap& bonesData) {
+	void GlConnector::draw(GpuBufferData& buffer, ProgramContext& program, std::vector<ProgramParam> params, BoneTransformer::BonesDataMap& bonesData) {
 		glUseProgram(program.id);
 
-		glUniformMatrix4fv(program.mvp, 1, GL_FALSE, &mvp[0][0]);
-
+		loadProgramParams(program, params);
+		
 		if(program.bones != -1) {
 			for(auto& i : bonesData) {
 				glUniformMatrix4fv(program.bones + i.first, 1, GL_FALSE, &(i.second.finalTransform[0][0]));
 			}
 		}
-
+		
 		glBindBuffer(GL_ARRAY_BUFFER, buffer.vBuffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.iBuffer);
 
@@ -339,4 +334,16 @@ namespace br {
 		glUseProgram(0);
 	}
 
+	void GlConnector::loadProgramParams(ProgramContext& program, std::vector<ProgramParam> params) {
+		for(auto& i : params) {
+			if(i.vec4) {
+				glm::vec4& v = *(i.vec4.get());
+				glUniform4fv(i.id, 1, &v[0]);
+			}
+			if(i.mat4) {
+				glm::mat4& m = *(i.mat4.get());
+				glUniformMatrix4fv(i.id, 1, GL_FALSE, &m[0][0]);
+			}
+		}
+	}
 }

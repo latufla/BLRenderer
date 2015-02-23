@@ -10,6 +10,7 @@
 #include "WindowVendorWin.h"
 
 using std::weak_ptr;
+using std::vector;
 using std::make_shared;
 using glm::mat4;
 
@@ -273,21 +274,24 @@ namespace br {
 		}
 	}
 
-	void GlesConnector::draw(TextField& object, GpuBufferData& buffer, ProgramContext program, mat4 mvp) {
-		glUseProgram(program.id);
-		glUniform4fv(program.color, 1, &object.getColor()[0]);
-		draw(buffer, program, mvp);
-	}
-	
-	void GlesConnector::draw(GpuBufferData& buffer, ProgramContext& program, mat4& mvp) {
+	void GlesConnector::draw(GpuBufferData& buffer, ProgramContext program, vector<ProgramParam> params) {
 		BoneTransformer::BonesDataMap bonesData;
-		draw(buffer, program, mvp, bonesData);
+		draw(buffer, program, params, bonesData);
 	}
 
-	void GlesConnector::draw(GpuBufferData& buffer, ProgramContext& program, glm::mat4& mvp, BoneTransformer::BonesDataMap& bonesData) {
+	void GlesConnector::draw(GpuBufferData& buffer, ProgramContext& program, std::vector<ProgramParam> params, BoneTransformer::BonesDataMap& bonesData) {
 		glUseProgram(program.id);
 
-		glUniformMatrix4fv(program.mvp, 1, GL_FALSE, &mvp[0][0]);
+		for(auto& i : params) {
+			if(i.vec4) {
+				glm::vec4& v = *(i.vec4.get());
+				glUniform4fv(i.id, 1, &v[0]);
+			}
+			if(i.mat4) {
+				glm::mat4& m = *(i.mat4.get());
+				glUniformMatrix4fv(i.id, 1, GL_FALSE, &m[0][0]);
+			}
+		}
 
 		if(program.bones != -1) {
 			for(auto& i : bonesData) {
@@ -309,7 +313,7 @@ namespace br {
 				(void*)offset);
 		}
 
-		offset += Mesh3d::GetRawVertexPosition() * sizeof(float);
+		offset += Mesh3d::GetRawVertexPosition() * Mesh3d::GetRawVertexPositionSize();
 
 		if(program.uv != -1) {
 			glEnableVertexAttribArray(program.uv);
@@ -320,7 +324,7 @@ namespace br {
 				Mesh3d::GetRawVertexStride(), (void*)offset);
 		}
 
-		offset += Mesh3d::GetRawVertexTexture() * sizeof(float);
+		offset += Mesh3d::GetRawVertexTexture() * Mesh3d::GetRawVertexTextureSize();
 		if(program.boneIds != -1) {
 			glEnableVertexAttribArray(program.boneIds);
 			glVertexAttribPointer(program.boneIds,
@@ -331,7 +335,7 @@ namespace br {
 				(void*)offset);
 		}
 
-		offset += Mesh3d::GetRawVertexBoneIds() * sizeof(float);
+		offset += Mesh3d::GetRawVertexBoneIds() * Mesh3d::GetRawVertexBoneIdsSize();
 		if(program.weights != -1) {
 			glEnableVertexAttribArray(program.weights);
 			glVertexAttribPointer(program.weights,

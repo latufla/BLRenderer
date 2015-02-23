@@ -104,6 +104,12 @@ namespace br {
 			View& object = i.second;
 			mat4 mvpMatrix = stepData.perspectiveView * object.getTransform();
 
+			std::vector<IGraphicsConnector::ProgramParam> params;
+			IGraphicsConnector::ProgramParam mvp;
+			mvp.id = program.mvp;
+			mvp.mat4 = std::make_shared<glm::mat4>(mvpMatrix);
+			params.push_back(mvp);
+
 			auto model = loader->getModelBy(object.getPath());
 			vector<Mesh3d>& meshes = model->getMeshes();
 
@@ -112,7 +118,8 @@ namespace br {
 				auto bonesData = prepareAnimationStep(object, s);			
 				string meshName = model->getUniqueMeshName(s);
 				auto& buffer = meshToBuffer.at(meshName);
-				sGConnector->draw(buffer, program, mvpMatrix, bonesData);
+
+				sGConnector->draw(buffer, program, params, bonesData);
 			}
 		}
 

@@ -86,7 +86,7 @@ namespace br {
 			mat4 mvp = translation * stepData.ortho;
 
 			auto& buffer = meshToBuffer.at(object.getPath());
-			sGConnector->draw(buffer, program, mvp);
+		//	sGConnector->draw(buffer, program, mvp);
 		}
 
 		sGConnector->setBlending(false);

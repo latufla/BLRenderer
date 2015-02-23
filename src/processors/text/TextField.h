@@ -16,6 +16,7 @@ namespace br {
 		uint8_t getFontSize() const { return fontSize; }
 
 		std::vector<Vertex3d> getVertices() const { return vertices; }
+		std::vector<float>& getRawVertices() { return rawVertices; }
 		std::vector<uint16_t> getIndices() const { return indices; }
 
 		glm::vec4& getColor() { return color; }
@@ -35,5 +36,8 @@ namespace br {
 	
 		std::vector<Vertex3d> vertices;
 		std::vector<uint16_t> indices;
+
+		std::vector<float> rawVertices;
+
 	};
 }

@@ -89,12 +89,22 @@ namespace br {
 
 		for(auto& i : idToTextField) {
 			TextField& object = i.second;
+			
+			std::vector<IGraphicsConnector::ProgramParam> params;
 
+			IGraphicsConnector::ProgramParam color;
+			color.id = program.color;
+			color.vec4 = std::make_shared<glm::vec4>(object.getColor());
+			params.push_back(color);
+
+			IGraphicsConnector::ProgramParam mvp;
+			mvp.id = program.mvp;
 			mat4 translation = translate(mat4(), vec3(object.getPosition(), 0.0f));
-			mat4 mvp = translation * stepData.ortho;
-
+			mvp.mat4 = std::make_shared<glm::mat4>(translation * stepData.ortho);
+			params.push_back(mvp);
+			
 			auto& buffer = meshToBuffer.at(object.getUniqueName());
-			sGConnector->draw(object, buffer, program, mvp);
+			sGConnector->draw(buffer, program, params);
 		}
 
 		sGConnector->setBlending(false);		
@@ -102,7 +112,7 @@ namespace br {
 
 
 	void TextRenderProcessor::loadTextFieldToGpu(TextField& field) {
-		//loadGeometryToGpu(field.getUniqueName(), field.getVertices(), field.getIndices());
+		loadGeometryToGpu(field.getUniqueName(), field.getRawVertices(), field.getIndices());
 
 		Font& font = loader->getFontBy(field.getFontName(), field.getFontSize());
 		Texture2d& atlas = font.getAtlas();

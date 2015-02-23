@@ -34,9 +34,8 @@ namespace br {
 
 		virtual void setBlending(bool) override;
 
-		virtual void draw(GpuBufferData& buffer, ProgramContext& program, glm::mat4& mvp) override;
-		virtual void draw(TextField& image, GpuBufferData& buffer, ProgramContext program, glm::mat4 mvp) override;
-		virtual void draw(GpuBufferData& buffer, ProgramContext& program, glm::mat4& mvp, BoneTransformer::BonesDataMap& bonesData) override;
+		virtual void draw(GpuBufferData& buffer, ProgramContext program, std::vector<ProgramParam> params) override;
+		virtual void draw(GpuBufferData& buffer, ProgramContext& program, std::vector<ProgramParam> params, BoneTransformer::BonesDataMap& bonesData) override;
 
 	private:
 		std::shared_ptr<IWindowVendor> window;
@@ -44,7 +43,7 @@ namespace br {
 		void initWgl();
 
 		uint32_t createShader(uint32_t type, const char* source);
-
+		void loadProgramParams(ProgramContext& program, std::vector<ProgramParam> params);
 	};
 }
 

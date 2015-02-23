@@ -58,6 +58,23 @@ namespace br {
 			});
 		}
 
+		for(auto& i : vertices) {
+			rawVertices.push_back(i.x);
+			rawVertices.push_back(i.y);
+			rawVertices.push_back(i.z);
+			rawVertices.push_back(i.s);
+			rawVertices.push_back(i.t);
+
+			rawVertices.push_back(0.0f);
+			rawVertices.push_back(0.0f);
+			rawVertices.push_back(0.0f);
+			rawVertices.push_back(0.0f);
+		
+			rawVertices.push_back(0.0f);
+			rawVertices.push_back(0.0f);
+			rawVertices.push_back(0.0f);
+			rawVertices.push_back(0.0f);
+		}
 	}
 
 	string TextField::getUniqueName() {

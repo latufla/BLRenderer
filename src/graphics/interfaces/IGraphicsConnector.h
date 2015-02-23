@@ -35,6 +35,14 @@ namespace br {
 			int32_t color = -1;
 		};
 
+
+		struct ProgramParam {
+			int32_t id;
+			std::shared_ptr<glm::mat4> mat4;
+			std::shared_ptr<glm::vec4> vec4;
+		};
+
+
 		virtual void setViewport(const IWindowVendor::Rect& size) = 0;
 		virtual void clear() = 0;
 
@@ -58,9 +66,8 @@ namespace br {
 
 		virtual void setBlending(bool) = 0;
 
-		virtual void draw(GpuBufferData& buffer, ProgramContext& program, glm::mat4& mvp) = 0;
-		virtual void draw(TextField& image, GpuBufferData& buffer, ProgramContext program, glm::mat4 mvp) = 0;
-		virtual void draw(GpuBufferData& buffer, ProgramContext& program, glm::mat4& mvp, BoneTransformer::BonesDataMap& bonesData) = 0;
+		virtual void draw(GpuBufferData& buffer, ProgramContext program, std::vector<ProgramParam> params) = 0;
+		virtual void draw(GpuBufferData& buffer, ProgramContext& program, std::vector<ProgramParam> params, BoneTransformer::BonesDataMap& bonesData) = 0;
 	};
 }
 
