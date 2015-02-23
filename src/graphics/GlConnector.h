@@ -29,7 +29,7 @@ namespace br {
 		uint32_t loadTextureToGpu(Texture2d&) override;
 		void deleteTextureFromGpu(uint32_t) override;
 
-		GpuBufferData loadGeometryToGpu(std::vector<Vertex3d>& vertices, std::vector<uint16_t>& indices) override;
+		GpuBufferData loadGeometryToGpu(std::vector<float>& vertices, std::vector<uint16_t>& indices) override;
 		void deleteGeometryFromGpu(GpuBufferData&) override;
 
 		void setBlending(bool) override;

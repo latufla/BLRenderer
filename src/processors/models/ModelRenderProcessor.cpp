@@ -146,7 +146,8 @@ namespace br {
 		vector<Mesh3d>& meshes = model.getMeshes();
 		for(auto& s : meshes) {
 			string meshName = model.getUniqueMeshName(s);
-			loadGeometryToGpu(meshName, s.getVertices(), s.getIndices());
+
+			loadGeometryToGpu(meshName, s.getRawVertices(), s.getIndices());
 
 			Texture2d& texture = model.getTextureBy(s);
 			loadTextureToGpu(texture);

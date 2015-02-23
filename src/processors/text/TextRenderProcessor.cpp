@@ -102,7 +102,7 @@ namespace br {
 
 
 	void TextRenderProcessor::loadTextFieldToGpu(TextField& field) {
-		loadGeometryToGpu(field.getUniqueName(), field.getVertices(), field.getIndices());
+		//loadGeometryToGpu(field.getUniqueName(), field.getVertices(), field.getIndices());
 
 		Font& font = loader->getFontBy(field.getFontName(), field.getFontSize());
 		Texture2d& atlas = font.getAtlas();

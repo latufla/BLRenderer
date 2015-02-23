@@ -38,7 +38,7 @@ namespace br {
 
 
 		std::unordered_map<std::string, IGraphicsConnector::GpuBufferData> meshToBuffer;
-		void loadGeometryToGpu(std::string key, std::vector<Vertex3d>& vertices, std::vector<uint16_t>& indices);
+		void loadGeometryToGpu(std::string key, std::vector<float>& vertices, std::vector<uint16_t>& indices);
 		void deleteGeometryFromGpu(std::string key);
 
 		std::unordered_map<std::string, uint32_t> textureToId;

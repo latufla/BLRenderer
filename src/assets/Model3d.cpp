@@ -54,25 +54,6 @@ namespace br {
 			throw AssetException(EXCEPTION_INFO, name, "has same animation");
 	}
 
-	Model3d::operator string() const {
-		string res = "";
-		res += "{ path : " + path + "\nmeshes: {\n";
-		for(auto& i : meshes) {
-			res += i;
-			res += "\n";
-		}
-		res += "}";
-
-		res += "\ntextures: {\n";
-		for(auto& j : materials) {
-			//res += j.getTexture().getName();
-			res += "\n";
-		}
-		res += "}}";
-		return res;
-	}
-
-
 	void Model3d::initHitMesh(std::vector<Mesh3d>& meshes) {
 		auto it = find_if(begin(meshes), end(meshes), [](Mesh3d& mesh) {
 			return mesh.getName() == "HitMesh";

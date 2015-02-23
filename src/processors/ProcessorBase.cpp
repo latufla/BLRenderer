@@ -113,7 +113,7 @@ namespace br {
 		}
 	}
 
-	void ProcessorBase::loadGeometryToGpu(string key, vector<Vertex3d>& vertices, vector<uint16_t>& indices) {
+	void ProcessorBase::loadGeometryToGpu(string key, vector<float>& vertices, vector<uint16_t>& indices) {
 		auto sGConnector = graphics.lock();
 		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);

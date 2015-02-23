@@ -30,9 +30,7 @@ namespace br {
 		std::shared_ptr<Mesh3d> getHitMesh() { return hitMesh; }
 		
 		BNode<BoneNodeData>& getBoneTree() { return boneTree; }
-	
-		operator std::string() const;
-	
+		
 		std::string getUniqueMeshName(const Mesh3d&);
 	
 		glm::mat4& getGlobalInverseTransform() { return globalInverseTransform; }

@@ -196,12 +196,12 @@ namespace br {
 		glDeleteProgram(program.id);
 	}
 
-	IGraphicsConnector::GpuBufferData GlConnector::loadGeometryToGpu(std::vector<Vertex3d>& vertices, std::vector<uint16_t>& indices) {
+	IGraphicsConnector::GpuBufferData GlConnector::loadGeometryToGpu(std::vector<float>& vertices, std::vector<uint16_t>& indices) {
 		uint32_t vBuffer;
 		glGenBuffers(1, &vBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, vBuffer);
 
-		GLint szInBytes = sizeof(Vertex3d) * vertices.size();
+		GLint szInBytes = sizeof(float) * vertices.size();
 		glBufferData(GL_ARRAY_BUFFER, szInBytes, &vertices[0], GL_STATIC_DRAW);
 
 		GLint loadedBytes = 0;
@@ -278,26 +278,45 @@ namespace br {
 		uint8_t offset = 0;
 		if(program.position != -1) {
 			glEnableVertexAttribArray(program.position);
-			glVertexAttribPointer(program.position, Mesh3d::VERTEX3D_POSITION, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
+			glVertexAttribPointer(program.position, 
+				Mesh3d::GetRawVertexPosition(), 
+				GL_FLOAT, 
+				GL_FALSE, 
+				Mesh3d::GetRawVertexStride(), 
+				(void*)offset);
 		}
 
-		offset += Mesh3d::VERTEX3D_POSITION * sizeof(float);
+		offset += Mesh3d::GetRawVertexPosition() * Mesh3d::GetRawVertexPositionSize();
 
 		if(program.uv != -1) {
 			glEnableVertexAttribArray(program.uv);
-			glVertexAttribPointer(program.uv, Mesh3d::VERTEX3D_TEXTURE, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
+			glVertexAttribPointer(program.uv,
+				Mesh3d::GetRawVertexTexture(),
+				GL_FLOAT, 
+				GL_FALSE, 
+				Mesh3d::GetRawVertexStride(), (void*)offset);
 		}
 
-		offset += Mesh3d::VERTEX3D_TEXTURE * sizeof(float);
+		offset += Mesh3d::GetRawVertexTexture() * Mesh3d::GetRawVertexTextureSize();
 		if(program.boneIds != -1) {
 			glEnableVertexAttribArray(program.boneIds);
-			glVertexAttribPointer(program.boneIds, Mesh3d::VERTEX3D_BONEIDS, GL_UNSIGNED_SHORT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
+			glVertexAttribPointer(program.boneIds, 
+				Mesh3d::GetRawVertexBoneIds(), 
+				GL_FLOAT, 
+				GL_FALSE, 
+				Mesh3d::GetRawVertexStride(),
+				(void*)offset);
 		}
 
-		offset += Mesh3d::VERTEX3D_BONEIDS * sizeof(uint16_t);
+		offset += Mesh3d::GetRawVertexBoneIds() * Mesh3d::GetRawVertexBoneIdsSize();
 		if(program.weights != -1) {
 			glEnableVertexAttribArray(program.weights);
-			glVertexAttribPointer(program.weights, Mesh3d::VERTEX3D_WEIGHTS, GL_FLOAT, GL_FALSE, Mesh3d::VERTEX3D_STRIDE, (void*)offset);
+			glVertexAttribPointer(program.weights,
+				Mesh3d::GetRawVertexWeights(),
+				GL_FLOAT, 
+				GL_FALSE, 
+				Mesh3d::GetRawVertexStride(),
+				(void*)offset);
 		}
 
 		if(program.sampler != -1) {

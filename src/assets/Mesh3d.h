@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
+#include <map>
 #include <glm.hpp>
 
 
@@ -9,12 +10,11 @@ namespace br {
 		float x;
 		float y;
 		float z;
-	
+
 		float s;
 		float t;
-	
-		uint16_t boneIds[4];
-		float weigths[4];
+
+		std::map<uint32_t, float> boneToWeight;
 	};
 	
 	class Mesh3d {
@@ -22,31 +22,37 @@ namespace br {
 		Mesh3d() = delete;
 		Mesh3d(std::string name, const std::vector<Vertex3d>& vertices, const std::vector<uint16_t>& indices, uint32_t materialId);
 	
-		~Mesh3d() = default;
+		virtual ~Mesh3d();
 	
-		std::string getName() const { return name; }
+		std::string getName() const;
 	
-		std::vector<Vertex3d>& getVertices() { return vertices; }
-		std::vector<uint16_t>& getIndices() { return indices; }
+		std::vector<Vertex3d>& getVertices();
+		std::vector<uint16_t>& getIndices();
 	
-		uint32_t getMaterialId() const { return materialId; }
+		uint32_t getMaterialId() const;
 	
-		operator std::string() const;
+		void setBoneWeight(uint32_t vertexId, uint32_t boneId, float weight);
+		void setBoneOffset(uint32_t boneId, glm::mat4 offset);
+	
+		std::unordered_map<uint32_t, glm::mat4>& getBoneIdToOffset();
+	
+		void buildRawVertices();
+		std::vector<float>& getRawVertices();
 		
-		void setVertexBoneInfo(uint32_t vertexId, uint32_t boneId, float weight);
-		void setBoneOffset(uint32_t boneId, glm::mat4 val);
-	
-		std::unordered_map<uint32_t, glm::mat4>& getBoneIdToOffset() { return boneIdToOffset; }
-	
-		static const uint8_t VERTEX3D_POSITION = 3;
-		static const uint8_t VERTEX3D_TEXTURE = 2;
-		static const uint8_t VERTEX3D_BONEIDS = 4;
-		static const uint8_t VERTEX3D_WEIGHTS = 4;
-		static const uint8_t VERTEX3D_STRIDE = VERTEX3D_POSITION * sizeof(float) 
-			+ VERTEX3D_TEXTURE * sizeof(float) 
-			+ VERTEX3D_BONEIDS * sizeof(uint16_t) 
-			+ VERTEX3D_WEIGHTS * sizeof(float);
-	
+		static uint8_t GetRawVertexPosition() { return 3; }
+		static uint8_t GetRawVertexPositionSize() { return sizeof(float); }
+
+		static uint8_t GetRawVertexTexture() { return 2; }
+		static uint8_t GetRawVertexTextureSize() { return sizeof(float); }
+
+		static uint8_t GetRawVertexBoneIds() { return 4; }
+		static uint8_t GetRawVertexBoneIdsSize() { return sizeof(float); }
+
+		static uint8_t GetRawVertexWeights() { return GetRawVertexBoneIds(); }
+		static uint8_t GetRawVertexWeightsSize() { return sizeof(float); }
+
+		static uint8_t GetRawVertexStride();
+
 	private:
 		std::string name;	
 		
@@ -56,6 +62,8 @@ namespace br {
 		uint32_t materialId;
 	
 		std::unordered_map<uint32_t, glm::mat4> boneIdToOffset;
+	
+		std::vector<float> rawVertices;
 	};
 }
 

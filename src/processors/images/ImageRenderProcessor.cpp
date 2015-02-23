@@ -112,7 +112,7 @@ namespace br {
 		}
 
 		string pathAsKey = image.getPath();		
-		loadGeometryToGpu(pathAsKey, vertices, indices);
+		//loadGeometryToGpu(pathAsKey, vertices, indices);
 
 		Texture2d& texture = loader->getTextureBy(pathAsKey);
 		loadTextureToGpu(texture);		

@@ -41,6 +41,9 @@ namespace br {
 		BNode<BoneNodeData> bones = collectBones(bonesRoot, pathAsKey);
 		collectBoneWeightsAndOffsets(modelAi, bones, meshes);
 	
+		for(auto& i : meshes) {
+			i.buildRawVertices();
+		}
 		
 		Animation3d defaultAnimation = collectAnimation(modelAi, bones, Animation3d::DEFAULT_ANIMATION_NAME, pathAsKey);
 		
@@ -124,9 +127,7 @@ namespace br {
 				aiVector3D& t = textureCoordsAi ? textureCoordsAi[j] : defaultTexCoords;
 				Vertex3d vertex{
 					v.x, v.y, v.z,
-					t.x, t.y,
-					{0, 0, 0, 0},
-					{0.0, 0.0, 0.0, 0.0}
+					t.x, t.y
 				};
 				vertices.push_back(vertex);
 			}
@@ -306,7 +307,7 @@ namespace br {
 				uint32_t nNumWeightsAi = boneAi->mNumWeights;
 				for (uint32_t k = 0; k < nNumWeightsAi; ++k) {
 					aiVertexWeight& weightAi = boneAi->mWeights[k];
-					myMesh.setVertexBoneInfo(weightAi.mVertexId, myBoneId, weightAi.mWeight);
+					myMesh.setBoneWeight(weightAi.mVertexId, myBoneId, weightAi.mWeight);
 				}
 			}
 		}

@@ -41,72 +41,72 @@ namespace br {
 	}
 
 	void ModelMouseProcessor::doStep(const StepData& stepData) {
-		auto sGConnector = graphics.lock();
-		if(!sGConnector)
-			throw WeakPtrException(EXCEPTION_INFO);
-
-		auto wMousePos = sGConnector->getMousePosition();
-		auto wSize = sGConnector->getWindowSize();
-
-		vec2 mouseNDC = vec2{wMousePos.x, wMousePos.y} / vec2{wSize.w, wSize.h} * 2.0f - 1.0f;
-		mouseNDC.y = -mouseNDC.y;
-
-		mat4 toWorld = inverse(stepData.perspectiveView);
-
-		vec4 from = toWorld * vec4(mouseNDC.x, mouseNDC.y, -1.0f, 1.0f);
-		vec4 to = toWorld * vec4(mouseNDC.x, mouseNDC.y, 1.0f, 1.0f);
-		from /= from.w;
-		to /= to.w;
-		
-		vec3 start{from};
-		vec3 ray{to.x - from.x, to.y - from.y, to.z - from.z};
-		ray = normalize(ray);
-
-		pair<View*, float> minDistData{nullptr, MAX_DISTANCE};
-		auto objects = (unordered_map<uint32_t, View>*) stepData.extraData;
-		for(auto& i : *objects) {
-			View& object = i.second;
-
-			Model3d& model = loader->getModelBy(object.getPath());
-			auto& mesh = *model.getHitMesh();			
-			
-			BoneTransformer::BonesDataMap bonesData;
-			auto& boneIdToOffset = mesh.getBoneIdToOffset();
-			for(auto& i : boneIdToOffset) {
-				BoneTransformer::BoneData bData{i.second};
-				bonesData.emplace(i.first, bData);
-			}
-			boneTransformer.transform(object, model, bonesData);
-			
-			auto indices = mesh.getIndices();
-			auto vertices = mesh.getVertices();
-			uint32_t n = indices.size() - 3;
-			for(uint32_t i = 0; i <= n; i += 3) {
-				vector<vec3> vcs;
-				for(uint8_t j = 0; j < 3; j++) {
-					auto v = vertices.at(indices[i + j]);
-					mat4 boneTransform{0.0f};
-					for(uint8_t k = 0; k < 4; k++) {
-						auto boneId = v.boneIds[k];
-						auto bData = bonesData[boneId];
-						boneTransform += bData.finalTransform * v.weigths[k];
-					}
-					auto vx = object.getTransform() * boneTransform * vec4{v.x, v.y, v.z, 1.0f};
-					vx /= vx.w;
-					vcs.push_back({vx.x, vx.y, vx.z});
-				}
-
-				Triangle triangle{vcs[0], vcs[1], vcs[2]};
-	
-				float distance = calcDistance(start, ray, triangle);
-				if(distance < minDistData.second) {
-					minDistData.first = &object;
-					minDistData.second = distance;
-				}
-			}
-		}
-	
-		mouseOver = minDistData.second != MAX_DISTANCE ? minDistData.first->getId() : -1;
+// 		auto sGConnector = graphics.lock();
+// 		if(!sGConnector)
+// 			throw WeakPtrException(EXCEPTION_INFO);
+// 
+// 		auto wMousePos = sGConnector->getMousePosition();
+// 		auto wSize = sGConnector->getWindowSize();
+// 
+// 		vec2 mouseNDC = vec2{wMousePos.x, wMousePos.y} / vec2{wSize.w, wSize.h} * 2.0f - 1.0f;
+// 		mouseNDC.y = -mouseNDC.y;
+// 
+// 		mat4 toWorld = inverse(stepData.perspectiveView);
+// 
+// 		vec4 from = toWorld * vec4(mouseNDC.x, mouseNDC.y, -1.0f, 1.0f);
+// 		vec4 to = toWorld * vec4(mouseNDC.x, mouseNDC.y, 1.0f, 1.0f);
+// 		from /= from.w;
+// 		to /= to.w;
+// 		
+// 		vec3 start{from};
+// 		vec3 ray{to.x - from.x, to.y - from.y, to.z - from.z};
+// 		ray = normalize(ray);
+// 
+// 		pair<View*, float> minDistData{nullptr, MAX_DISTANCE};
+// 		auto objects = (unordered_map<uint32_t, View>*) stepData.extraData;
+// 		for(auto& i : *objects) {
+// 			View& object = i.second;
+// 
+// 			Model3d& model = loader->getModelBy(object.getPath());
+// 			auto& mesh = *model.getHitMesh();			
+// 			
+// 			BoneTransformer::BonesDataMap bonesData;
+// 			auto& boneIdToOffset = mesh.getBoneIdToOffset();
+// 			for(auto& i : boneIdToOffset) {
+// 				BoneTransformer::BoneData bData{i.second};
+// 				bonesData.emplace(i.first, bData);
+// 			}
+// 			boneTransformer.transform(object, model, bonesData);
+// 			
+// 			auto indices = mesh.getIndices();
+// 			auto vertices = mesh.getVertices();
+// 			uint32_t n = indices.size() - 3;
+// 			for(uint32_t i = 0; i <= n; i += 3) {
+// 				vector<vec3> vcs;
+// 				for(uint8_t j = 0; j < 3; j++) {
+// 					auto v = vertices.at(indices[i + j]);
+// 					mat4 boneTransform{0.0f};
+// 					for(uint8_t k = 0; k < 4; k++) {
+// 						uint32_t boneId = (uint32_t)v.boneIds[k];
+// 						auto bData = bonesData[boneId];
+// 						boneTransform += bData.finalTransform * v.weights[k];
+// 					}
+// 					auto vx = object.getTransform() * boneTransform * vec4{v.x, v.y, v.z, 1.0f};
+// 					vx /= vx.w;
+// 					vcs.push_back({vx.x, vx.y, vx.z});
+// 				}
+// 
+// 				Triangle triangle{vcs[0], vcs[1], vcs[2]};
+// 	
+// 				float distance = calcDistance(start, ray, triangle);
+// 				if(distance < minDistData.second) {
+// 					minDistData.first = &object;
+// 					minDistData.second = distance;
+// 				}
+// 			}
+// 		}
+// 	
+// 		mouseOver = minDistData.second != MAX_DISTANCE ? minDistData.first->getId() : -1;
 	}
 
 	float ModelMouseProcessor::calcDistance(vec3& start, vec3& dir, const Triangle& triangle) {

@@ -42,27 +42,19 @@ namespace br {
 
 			vertices.push_back({
 				x + w, y - h, 0,
-				nextCharTexX, nextCharTexY,
-				{0, 0, 0, 0},
-				{0, 0, 0, 0}
+				nextCharTexX, nextCharTexY
 			});
 			vertices.push_back({
 				x + w, y, 0,
-				nextCharTexX, 0,
-				{0, 0, 0, 0},
-				{0, 0, 0, 0}
+				nextCharTexX, 0
 			});
 			vertices.push_back({
 				x, y, 0,
-				ch.texOffsetX, 0,
-				{0, 0, 0, 0},
-				{0, 0, 0, 0}
+				ch.texOffsetX, 0
 			});
 			vertices.push_back({
 				x, y - h, 0,
-				ch.texOffsetX, nextCharTexY,
-				{0, 0, 0, 0},
-				{0, 0, 0, 0}
+				ch.texOffsetX, nextCharTexY
 			});
 		}
 

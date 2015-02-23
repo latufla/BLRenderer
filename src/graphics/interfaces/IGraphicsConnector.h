@@ -53,7 +53,7 @@ namespace br {
 		virtual uint32_t loadTextureToGpu(Texture2d&) = 0;
 		virtual void deleteTextureFromGpu(uint32_t) = 0;
 
-		virtual GpuBufferData loadGeometryToGpu(std::vector<Vertex3d>& vertices, std::vector<uint16_t>& indices) = 0;
+		virtual GpuBufferData loadGeometryToGpu(std::vector<float>& vertices, std::vector<uint16_t>& indices) = 0;
 		virtual void deleteGeometryFromGpu(GpuBufferData&) = 0;
 
 		virtual void setBlending(bool) = 0;
