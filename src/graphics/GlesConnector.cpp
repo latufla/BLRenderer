@@ -190,17 +190,16 @@ namespace br {
 		return program;
 	}
 
-	uint32_t GlesConnector::loadTextureToGpu(Texture2d& texture) {
+	uint32_t GlesConnector::loadTextureToGpu(vector<uint8_t> const& texture, uint32_t width, uint32_t height) {
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 		GLuint textureId;
 		glGenTextures(1, &textureId);
 		glBindTexture(GL_TEXTURE_2D, textureId);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.getWidth(), texture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, &texture.getData()[0]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &texture[0]);
 
-		auto error = glGetError();
-		if(error != GL_NO_ERROR)
-			throw GpuException(EXCEPTION_INFO, texture.getPath() + " can`t load texture");
+		if(glGetError() != GL_NO_ERROR)
+			throw GpuException(EXCEPTION_INFO, "can`t load texture"); // what texture?
 
 		glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -208,7 +207,7 @@ namespace br {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		glBindTexture(GL_TEXTURE_2D, 0);
-		
+
 		return textureId;
 	}
 

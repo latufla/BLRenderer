@@ -1,6 +1,7 @@
 #include "../utils/SharedHeaders.h"
 #include "ProcessorBase.h"
 #include "../exceptions/Exception.h"
+#include <algorithm>
 
 using std::pair;
 using std::string;
@@ -47,7 +48,8 @@ namespace br {
 		if(!sGConnector)
 			throw WeakPtrException(EXCEPTION_INFO);
 
-		uint32_t textureId = sGConnector->loadTextureToGpu(texture);
+		
+		uint32_t textureId = sGConnector->loadTextureToGpu(texture.getData(), texture.getWidth(), texture.getHeight());
 		textureToId.emplace(texture.getPath(), textureId);
 	}
 

@@ -168,16 +168,16 @@ namespace br {
 		return program;
 	}
 
-	uint32_t GlConnector::loadTextureToGpu(Texture2d& texture) {
+	uint32_t GlConnector::loadTextureToGpu(vector<uint8_t> const& texture, uint32_t width, uint32_t height) {
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 		GLuint textureId;
 		glGenTextures(1, &textureId);
 		glBindTexture(GL_TEXTURE_2D, textureId);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.getWidth(), texture.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, &texture.getData()[0]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, &texture[0]);
 
 		if(glGetError() != GL_NO_ERROR)
-			throw GpuException(EXCEPTION_INFO, texture.getPath() + " can`t load texture");
+			throw GpuException(EXCEPTION_INFO, "can`t load texture"); // what texture?
 
 		glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -209,7 +209,7 @@ namespace br {
 		glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &loadedBytes);
 		if(szInBytes != loadedBytes) {
 			glDeleteBuffers(1, &vBuffer);
-			throw GpuException(EXCEPTION_INFO, "can`t load vertices");
+			throw GpuException(EXCEPTION_INFO, "can`t load vertices"); // what model?
 		}
 
 
@@ -224,7 +224,7 @@ namespace br {
 		glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &loadedBytes);
 		if(szInBytes != loadedBytes) {
 			glDeleteBuffers(1, &iBuffer);
-			throw GpuException(EXCEPTION_INFO, "can`t load indices");
+			throw GpuException(EXCEPTION_INFO, "can`t load indices"); // what model?
 		}
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);

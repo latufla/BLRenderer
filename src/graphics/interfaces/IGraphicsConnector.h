@@ -3,9 +3,6 @@
 #include <glm.hpp>
 #include "IWindowVendor.h"
 #include <utility>
-#include "../../assets/Texture2d.h"
-#include "../../assets/Mesh3d.h"
-#include "../../processors/text/TextField.h"
 #include "../../utils/bones/BoneTransformer.h"
 
 namespace br {
@@ -58,7 +55,7 @@ namespace br {
 		virtual ProgramContext createProgram(std::pair<std::string, std::string> shaders) = 0;
 		virtual void deleteProgram(ProgramContext&) = 0;
 
-		virtual uint32_t loadTextureToGpu(Texture2d&) = 0;
+		virtual uint32_t loadTextureToGpu(std::vector<uint8_t> const& texture, uint32_t width, uint32_t height) = 0;
 		virtual void deleteTextureFromGpu(uint32_t) = 0;
 
 		virtual GpuBufferData loadGeometryToGpu(std::vector<float>& vertices, std::vector<uint16_t>& indices) = 0;

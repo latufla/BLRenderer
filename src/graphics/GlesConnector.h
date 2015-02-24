@@ -27,7 +27,7 @@ namespace br{
 		virtual ProgramContext createProgram(std::pair<std::string, std::string> shaders) override;
 		virtual void deleteProgram(ProgramContext&) override;
 		
-		virtual uint32_t loadTextureToGpu(Texture2d&) override;
+		virtual uint32_t loadTextureToGpu(std::vector<uint8_t> const& texture, uint32_t width, uint32_t height) override;
 		virtual void deleteTextureFromGpu(uint32_t) override;
 
 		virtual GpuBufferData loadGeometryToGpu(std::vector<float>& vertices, std::vector<uint16_t>& indices) override;

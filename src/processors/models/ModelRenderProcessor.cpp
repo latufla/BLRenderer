@@ -11,7 +11,6 @@
 using std::shared_ptr;
 using std::pair;
 using std::vector;
-using std::array;
 using std::unordered_map;
 using std::string;
 using std::out_of_range;
