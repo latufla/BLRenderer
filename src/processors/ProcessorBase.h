@@ -47,6 +47,11 @@ namespace br {
 		void deleteTextureFromGpu(std::string pathAsKey);
 		bool hasTextureInGpu(std::string pathAsKey);
 
+		std::unordered_map<std::string, IGraphicsConnector::ProgramContext> nameToProgramContext;
+		void loadProgramToGpu(std::string key, std::string vertexShader, std::string fragmentShader);
+		void deleteProgramFromGpu(std::string key);
+		bool hasProgramInGpu(std::string key);
+
 		friend class Renderer;
 	};
 }

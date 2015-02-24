@@ -28,7 +28,10 @@ namespace br {
 		float getIndexOfRefraction() const;
 
 		bool getDoubleSided() const;
-	
+
+		std::string getProgramName() const;
+		void setProgramName(std::string val);
+
 	private:
 		Texture2d texture;
 		
@@ -41,6 +44,8 @@ namespace br {
 		float indexOfRefraction;
 	
 		bool doubleSided;
+	
+		std::string programName;
 	};
 }
 

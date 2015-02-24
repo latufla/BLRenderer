@@ -75,7 +75,7 @@ namespace br {
 			for(uint32_t i = 0; i < n; ++i) {
 				float id = 0.0f;
 				if(it != s.boneToWeight.cend()) {
-					id = it->first;
+					id = (float)it->first;
 					it++;
 				}
 				rawVertices.push_back(id);

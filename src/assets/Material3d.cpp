@@ -58,4 +58,12 @@ namespace br {
 		return doubleSided;
 	}
 
+	std::string Material3d::getProgramName() const {
+		return programName;
+	}
+
+	void Material3d::setProgramName(std::string val) {
+		programName = val;
+	}
+
 }

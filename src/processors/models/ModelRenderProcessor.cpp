@@ -9,6 +9,7 @@
 #include "../../assets/AssetLoader.h"
 
 using std::shared_ptr;
+using std::weak_ptr;
 using std::pair;
 using std::vector;
 using std::unordered_map;
@@ -21,7 +22,6 @@ using glm::make_mat4;
 namespace br {
 	ModelRenderProcessor::ModelRenderProcessor(shared_ptr<IAssetLoader>loader) 
 		: ProcessorBase(loader){
-		shaders = loader->getProgramBy(AssetLoader::MODEL_PROGRAM);
 	}
 	
 	ModelRenderProcessor::~ModelRenderProcessor() {
@@ -38,7 +38,7 @@ namespace br {
 
 		if(!hasObjectWithModel(modelPath)) // first in
 			loadModelToGpu(modelPath);
-
+		
 		View object{id, modelPath};
 		idToObject.emplace(id, object);	
 
@@ -103,24 +103,28 @@ namespace br {
 
 		for(auto& i : idToObject) {
 			View& object = i.second;
-			mat4 mvpMatrix = stepData.perspectiveView * object.getTransform();
+			object.doAnimationStep(stepData.stepMSec);
 
-			std::vector<IGraphicsConnector::ProgramParam> params;
-			IGraphicsConnector::ProgramParam mvp;
-			mvp.id = program.mvp;
-			mvp.mat4 = std::make_shared<glm::mat4>(mvpMatrix);
-			params.push_back(mvp);
+			mat4 mvpMatrix = stepData.perspectiveView * object.getTransform();
 
 			auto model = loader->getModelBy(object.getPath());
 			vector<Mesh3d>& meshes = model->getMeshes();
-
-			object.doAnimationStep(stepData.stepMSec);
 			for(auto& s : meshes) {
+				auto material = model->getMaterialBy(s);
+				auto programName = material.getProgramName();
+				auto programContext = nameToProgramContext.at(programName);
+
+				std::vector<IGraphicsConnector::ProgramParam> params;
+				IGraphicsConnector::ProgramParam mvp;
+				mvp.id = programContext.mvp;
+				mvp.mat4 = std::make_shared<glm::mat4>(mvpMatrix);
+				params.push_back(mvp);
+
 				auto bonesData = prepareAnimationStep(object, s);			
 				string meshName = model->getUniqueMeshName(s);
 				auto& buffer = meshToBuffer.at(meshName);
 
-				sGConnector->draw(buffer, program, params, bonesData);
+				sGConnector->draw(buffer, programContext, params, bonesData);
 			}
 		}
 
@@ -151,6 +155,14 @@ namespace br {
 
 	void ModelRenderProcessor::loadModelToGpu(string modelPath) {
 		auto model = loader->getModelBy(modelPath);
+		auto materials = model->getMaterials();
+		for(auto& i : materials) {
+			auto program = loader->getProgramBy(i.getProgramName());
+			auto programName = program->getName();
+			if(!hasMaterialWithProgram(programName))
+				loadProgramToGpu(programName, program->getVertexShader(), program->getFragmentShader());
+		}
+
 		vector<Mesh3d>& meshes = model->getMeshes();
 		for(auto& s : meshes) {
 			string meshName = model->getUniqueMeshName(s);
@@ -167,8 +179,16 @@ namespace br {
 
 	void ModelRenderProcessor::deleteModelFromGpu(string modelPath) {
 		auto model = loader->getModelBy(modelPath);
-		vector<Mesh3d>& meshes = model->getMeshes();
+		auto materials = model->getMaterials();
+		for(auto& i : materials) {
+			auto program = loader->getProgramBy(i.getProgramName());
+			auto programName = program->getName();
+			
+			if(!hasMaterialWithProgram(programName))
+				deleteProgramFromGpu(programName);
+		}
 
+		vector<Mesh3d>& meshes = model->getMeshes();
 		unordered_map<uint32_t, string> texturesToRemove;
 		for(auto& s : meshes) {
 			string mName = model->getUniqueMeshName(s);
@@ -181,5 +201,18 @@ namespace br {
 		for(auto& s : texturesToRemove) {
 			deleteTextureFromGpu(s.second);
 		}
+	}
+
+	bool ModelRenderProcessor::hasMaterialWithProgram(std::string name) {
+		for(auto& i : idToObject) {
+			View& object = i.second;
+			auto model = loader->getModelBy(object.getPath());
+			auto materials = model->getMaterials();
+			for(auto& j : materials) {
+				if(j.getProgramName() == name)
+					return true;
+			}
+		}
+		return false;
 	}
 }

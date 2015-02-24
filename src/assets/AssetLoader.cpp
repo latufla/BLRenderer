@@ -225,6 +225,7 @@ namespace br {
 				Util::assimpToGlm(specularAi),
 				shininess, indexOfRefraction, twoSided
 			};
+			mat.setProgramName(MODEL_PROGRAM); // TODO: default program
 			materials.push_back(mat);
 		}
 		return materials;

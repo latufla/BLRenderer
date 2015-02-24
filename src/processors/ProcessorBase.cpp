@@ -65,26 +65,12 @@ namespace br {
 	}
 
 	bool ProcessorBase::hasTextureInGpu(string pathAsKey) {
-		auto& it = find_if(cbegin(textureToId), cend(textureToId), [&pathAsKey](pair<string, uint32_t> i)->bool {
-			return i.first == pathAsKey;
-		});
-		return it != cend(textureToId);
+		return textureToId.find(pathAsKey) != textureToId.cend();
 	}
 
 	void ProcessorBase::start(weak_ptr<IGraphicsConnector> graphics) {
 		this->graphics = graphics;
 		enabled = true;
-
-		auto sGConnector = graphics.lock();
-		auto sShaders = shaders.lock();
-		if(!sGConnector || !sShaders)
-			throw WeakPtrException(EXCEPTION_INFO);
-
-		pair<string, string> shaderPair{
-			sShaders->getVertexShader(),
-			sShaders->getFragmentShader()
-		};
-		program = sGConnector->createProgram(shaderPair);
 
 		for(auto s : processors) {
 			s->start(graphics);
@@ -93,12 +79,6 @@ namespace br {
 
 	void ProcessorBase::stop() {
 		enabled = false;
-
-		auto sGConnector = graphics.lock();
-		if(!sGConnector)
-			throw WeakPtrException(EXCEPTION_INFO);
-
-		sGConnector->deleteProgram(program);
 
 		for(auto s : processors) {
 			s->stop();
@@ -140,4 +120,27 @@ namespace br {
 		meshToBuffer.erase(key);
 	}
 
+	void ProcessorBase::loadProgramToGpu(std::string key, std::string vertexShader, std::string fragmentShader) {
+		auto sGConnector = graphics.lock();
+		if(!sGConnector)
+			throw WeakPtrException(EXCEPTION_INFO);
+
+		std::pair <string, string> shaderPair{vertexShader, fragmentShader};
+		IGraphicsConnector::ProgramContext context = sGConnector->createProgram(shaderPair);
+		nameToProgramContext.emplace(key, context);
+	}
+
+	void ProcessorBase::deleteProgramFromGpu(std::string key) {
+		auto sGConnector = graphics.lock();
+		if(!sGConnector)
+			throw WeakPtrException(EXCEPTION_INFO);
+
+		auto context = nameToProgramContext.at(key);
+		sGConnector->deleteProgram(context);
+		nameToProgramContext.erase(key);
+	}
+
+	bool ProcessorBase::hasProgramInGpu(std::string key) {
+		return nameToProgramContext.find(key) != nameToProgramContext.cend();
+	}
 }
