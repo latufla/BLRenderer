@@ -4,6 +4,7 @@
 #include "../../exceptions/Exception.h"
 
 #include <gtc/matrix_transform.hpp>
+#include "../../assets/AssetLoader.h"
 
 using std::pair;
 using std::string;
@@ -17,8 +18,9 @@ using glm::vec2;
 using glm::translate;
 
 namespace br {
-	ImageRenderProcessor::ImageRenderProcessor(shared_ptr<IAssetLoader>loader, pair<string, string> shaders)
-		: ProcessorBase(loader, shaders) {
+	ImageRenderProcessor::ImageRenderProcessor(shared_ptr<IAssetLoader>loader)
+		: ProcessorBase(loader) {
+		shaders = loader->getProgramBy(AssetLoader::IMAGE_PROGRAM);
 	}
 
 	ImageRenderProcessor::~ImageRenderProcessor() {

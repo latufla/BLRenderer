@@ -81,6 +81,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\assets\interfaces\IProgram3d.h" />
+    <ClInclude Include="src\assets\Program3d.h" />
     <ClInclude Include="src\assets\interfaces\IAssetLoader.h" />
     <ClInclude Include="src\assets\interfaces\IModel3d.h" />
     <ClInclude Include="src\graphics\GlConnector.h" />
@@ -92,7 +94,6 @@
     <ClInclude Include="src\processors\ProcessorBase.h" />
     <ClInclude Include="src\processors\images\ImageRenderProcessor.h" />
     <ClInclude Include="src\processors\text\Font.h" />
-    <ClInclude Include="src\utils\Shaders.h" />
     <ClInclude Include="src\processors\images\Image.h" />
     <ClInclude Include="Model3dInfo.h" />
     <ClInclude Include="src\exceptions\Exception.h" />
@@ -116,6 +117,7 @@
     <ClInclude Include="src\processors\text\TextRenderProcessor.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\assets\Program3d.cpp" />
     <ClCompile Include="src\graphics\GlConnector.cpp" />
     <ClCompile Include="src\graphics\GlesConnector.cpp" />
     <ClCompile Include="src\processors\models\ModelMouseProcessor.cpp" />
@@ -123,7 +125,6 @@
     <ClCompile Include="src\processors\ProcessorBase.cpp" />
     <ClCompile Include="src\processors\images\ImageRenderProcessor.cpp" />
     <ClCompile Include="src\processors\text\Font.cpp" />
-    <ClCompile Include="src\utils\Shaders.cpp" />
     <ClCompile Include="src\processors\images\Image.cpp" />
     <ClCompile Include="Model3dInfo.cpp" />
     <ClCompile Include="src\assets\Material3d.cpp" />

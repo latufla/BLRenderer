@@ -6,7 +6,7 @@
 namespace br{
 	class ModelRenderProcessor : public ProcessorBase{
 	public:
-		ModelRenderProcessor(std::shared_ptr<IAssetLoader>loader, std::pair<std::string, std::string> shaiders);
+		ModelRenderProcessor(std::shared_ptr<IAssetLoader>loader);
 		~ModelRenderProcessor();
 	
 		void addObject(uint32_t id, std::string modelPath);

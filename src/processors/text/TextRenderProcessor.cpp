@@ -5,12 +5,14 @@
 
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
+#include "../../assets/AssetLoader.h"
 
 using std::string;
 using std::array;
 using std::pair;
 using std::out_of_range;
 using std::shared_ptr;
+using std::weak_ptr;
 
 using glm::mat4;
 using glm::vec4;
@@ -19,8 +21,9 @@ using glm::vec2;
 using glm::translate;
 
 namespace br {
-	TextRenderProcessor::TextRenderProcessor(shared_ptr<IAssetLoader>loader, pair<string, string> shaders)
-		: ProcessorBase(loader, shaders) {
+	TextRenderProcessor::TextRenderProcessor(shared_ptr<IAssetLoader>loader)
+		: ProcessorBase(loader) {
+		shaders = loader->getProgramBy(AssetLoader::TEXT_PROGRAM);
 	}
 
 	TextRenderProcessor::~TextRenderProcessor() {

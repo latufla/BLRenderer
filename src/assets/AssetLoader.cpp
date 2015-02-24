@@ -2,6 +2,8 @@
 #include "../utils/Util.h"
 #include "../exceptions/Exception.h"
 #include "Model3d.h"
+#include <memory>
+#include "Program3d.h"
 
 using std::string;
 using std::to_string;
@@ -12,12 +14,22 @@ using std::unordered_map;
 using std::out_of_range;
 
 namespace br {
+	const string AssetLoader::MODEL_PROGRAM = "modelProgram";
+	const string AssetLoader::MODEL_DEBUG_PROGRAM = "modelDebugProgram";
+	const string AssetLoader::TEXT_PROGRAM = "textProgram";
+	const string AssetLoader::IMAGE_PROGRAM = "imageProgram";
+
 	const uint8_t AssetLoader::TRIANGLE_FACE_TYPE = 3;
 	const string AssetLoader::BONES_ROOT_NODE = "Armature";
-	
+
+	AssetLoader::AssetLoader() {
+		initDefaultShaders();
+	}
+
 	AssetLoader::~AssetLoader() {
 
 	}
+
 
 	void AssetLoader::loadModel(string pathAsKey, string textureDirectory) {
 		if(pathToModel.find(pathAsKey) != pathToModel.cend())
@@ -90,6 +102,19 @@ namespace br {
 			return pathToTexture.at(path);
 		} catch(out_of_range&) {
 			throw AssetException(EXCEPTION_INFO, path, "can`t get texture");
+		}
+	}
+
+
+	void AssetLoader::loadProgram(string name, string vShaderPath, string fShaderPath) {
+		// TODO: tmp stub
+	}
+
+	shared_ptr<IProgram3d>& AssetLoader::getProgramBy(string name) {
+		try {
+			return nameToProgram.at(name);
+		} catch(std::out_of_range&) {
+			throw AssetException(EXCEPTION_INFO, name, "can`t get shader");
 		}
 	}
 
@@ -312,5 +337,86 @@ namespace br {
 				}
 			}
 		}
+	}
+
+	void AssetLoader::initDefaultShaders() {
+		string modelVS =
+			"uniform mat4 mvpMatrix;		\n"
+			"uniform mat4 bones[25];		\n"
+			"attribute vec4 aPosition;		\n"
+
+			"attribute vec2 aTexCoord;		\n"
+
+			"attribute vec4 boneIds;		\n"
+			"attribute vec4 weights;		\n"
+
+			"varying vec2 vTexCoord;		\n"
+			"void main(){					\n"
+			"	mat4 boneTransform = bones[int(boneIds.x)] * weights.x;		\n"
+			"	boneTransform += bones[int(boneIds.y)] * weights.y;			\n"
+			"	boneTransform += bones[int(boneIds.z)] * weights.z;			\n"
+			"	boneTransform += bones[int(boneIds.w)] * weights.w;			\n"
+			"   gl_Position = mvpMatrix * boneTransform * aPosition;								\n"
+			"   vTexCoord = aTexCoord;										\n"
+			"}";
+
+		string modelFS =
+			"precision mediump float;                           \n"
+			"varying vec2 vTexCoord;                            \n"
+			"uniform sampler2D sTexture;                        \n"
+			"void main(){										\n"
+			"  gl_FragColor = texture2D( sTexture, vTexCoord ); \n"
+			"}";
+
+		auto program = std::make_shared<Program3d>(MODEL_PROGRAM, modelVS, modelFS);
+		nameToProgram.emplace(program->getName(), program);
+
+		string modelDebugFS =
+			"precision mediump float;                           \n"
+			"varying vec2 vTexCoord;                            \n"
+			"uniform sampler2D sTexture;                        \n"
+			"void main(){										\n"
+			"  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); \n"
+			"}";
+
+		program = std::make_shared<Program3d>(MODEL_DEBUG_PROGRAM, modelVS, modelDebugFS);
+		nameToProgram.emplace(program->getName(), program);
+
+
+		string imageVS =
+			"uniform mat4 mvpMatrix;		\n"
+			"attribute vec4 aPosition;		\n"
+
+			"attribute vec2 aTexCoord;		\n"
+
+			"varying vec2 vTexCoord;		\n"
+			"void main(){					\n"
+			"   gl_Position = mvpMatrix * aPosition;						\n"
+			"   vTexCoord = aTexCoord;										\n"
+			"}";
+
+		string imageFS =
+			"precision mediump float;                           \n"
+			"varying vec2 vTexCoord;                            \n"
+			"uniform sampler2D sTexture;                        \n"
+			"void main(){										\n"
+			"  gl_FragColor = texture2D( sTexture, vTexCoord ); \n"
+			"}";
+
+		program = std::make_shared<Program3d>(IMAGE_PROGRAM, imageVS, imageFS);
+		nameToProgram.emplace(program->getName(), program);
+
+
+		string textFS =
+			"precision mediump float;                           \n"
+			"varying vec2 vTexCoord;                            \n"
+			"uniform sampler2D sTexture;                        \n"
+			"uniform vec4 color;"
+			"void main(){										\n"
+			"  gl_FragColor = texture2D( sTexture, vTexCoord ) * color; \n"
+			"}";
+
+		program = std::make_shared<Program3d>(TEXT_PROGRAM, imageVS, imageFS);
+		nameToProgram.emplace(program->getName(), program);
 	}
 }

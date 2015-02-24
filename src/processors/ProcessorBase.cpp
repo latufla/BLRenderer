@@ -9,8 +9,8 @@ using std::shared_ptr;
 using std::weak_ptr;
 
 namespace br {
-	ProcessorBase::ProcessorBase(shared_ptr<IAssetLoader> loader, pair<string, string> shaders)
-		: loader(loader), shaders(shaders) {
+	ProcessorBase::ProcessorBase(shared_ptr<IAssetLoader> loader)
+		: loader(loader){
 	}
 
 	ProcessorBase::~ProcessorBase() {
@@ -74,10 +74,15 @@ namespace br {
 		enabled = true;
 
 		auto sGConnector = graphics.lock();
-		if(!sGConnector)
+		auto sShaders = shaders.lock();
+		if(!sGConnector || !sShaders)
 			throw WeakPtrException(EXCEPTION_INFO);
 
-		program = sGConnector->createProgram(shaders);
+		pair<string, string> shaderPair{
+			sShaders->getVertexShader(),
+			sShaders->getFragmentShader()
+		};
+		program = sGConnector->createProgram(shaderPair);
 
 		for(auto s : processors) {
 			s->start(graphics);

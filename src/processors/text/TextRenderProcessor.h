@@ -6,7 +6,7 @@
 namespace br {
 	class TextRenderProcessor : public ProcessorBase {
 	public:
-		TextRenderProcessor(std::shared_ptr<IAssetLoader>loader, std::pair<std::string, std::string> shaiders);
+		TextRenderProcessor(std::shared_ptr<IAssetLoader>loader);
 		~TextRenderProcessor();
 
 		void addTextField(uint32_t id,

@@ -13,7 +13,12 @@
 namespace br {
 	class AssetLoader : public IAssetLoader {
 	public:
-		AssetLoader() = default;
+		static const std::string MODEL_PROGRAM;
+		static const std::string MODEL_DEBUG_PROGRAM;
+		static const std::string TEXT_PROGRAM;
+		static const std::string IMAGE_PROGRAM;
+
+		AssetLoader();
 		virtual ~AssetLoader();
 	
 		virtual void loadModel(std::string pathAsKey, std::string textureDirectory) override;
@@ -24,12 +29,18 @@ namespace br {
 		virtual void loadTexture(std::string pathAsKey) override;
 		virtual Texture2d& getTextureBy(std::string pathAsKey) override;
 
+		virtual void loadProgram(std::string name, std::string vShaderPath, std::string fShaderPath) override;
+		virtual std::shared_ptr<IProgram3d>& getProgramBy(std::string name) override;
+
 		virtual void loadFont(std::string path, std::string name, uint8_t size) override;
 		virtual Font& getFontBy(std::string name, uint8_t size) override;
 
-	private:
+	protected:
+		void initDefaultShaders();
+
 		std::unordered_map<std::string, std::shared_ptr<IModel3d>> pathToModel;
 		std::unordered_map<std::string, Texture2d> pathToTexture;
+		std::unordered_map<std::string, std::shared_ptr<IProgram3d>> nameToProgram;
 
 		FontLoader fontLoader;
 

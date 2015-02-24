@@ -6,6 +6,7 @@
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 #include "../../exceptions/Exception.h"
+#include "../../assets/AssetLoader.h"
 
 using std::shared_ptr;
 using std::pair;
@@ -19,8 +20,9 @@ using glm::mat4;
 using glm::make_mat4;
 
 namespace br {
-	ModelRenderProcessor::ModelRenderProcessor(shared_ptr<IAssetLoader>loader, pair<string, string> shaders) 
-		: ProcessorBase(loader, shaders){
+	ModelRenderProcessor::ModelRenderProcessor(shared_ptr<IAssetLoader>loader) 
+		: ProcessorBase(loader){
+		shaders = loader->getProgramBy(AssetLoader::MODEL_PROGRAM);
 	}
 	
 	ModelRenderProcessor::~ModelRenderProcessor() {

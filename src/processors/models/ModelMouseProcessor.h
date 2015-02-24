@@ -5,7 +5,7 @@
 namespace br {
 	class ModelMouseProcessor : public ProcessorBase{
 	public:
-		ModelMouseProcessor(std::shared_ptr<IAssetLoader>loader, std::pair<std::string, std::string> shaders);
+		ModelMouseProcessor(std::shared_ptr<IAssetLoader>loader);
 		~ModelMouseProcessor();
 	
 		int32_t getMouseOver() const { return mouseOver; }

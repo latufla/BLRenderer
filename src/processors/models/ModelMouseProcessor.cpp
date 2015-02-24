@@ -23,8 +23,8 @@ using glm::normalize;
 namespace br {
 	const float ModelMouseProcessor::MAX_DISTANCE = numeric_limits<float>::max();
 
-	ModelMouseProcessor::ModelMouseProcessor(shared_ptr<IAssetLoader>loader, pair<string, string> shaders) 
-		: ProcessorBase(loader, shaders){	
+	ModelMouseProcessor::ModelMouseProcessor(shared_ptr<IAssetLoader>loader) 
+		: ProcessorBase(loader){	
 	}
 	
 	ModelMouseProcessor::~ModelMouseProcessor() {

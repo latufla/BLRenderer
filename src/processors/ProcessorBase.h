@@ -6,7 +6,7 @@
 namespace br {
 	class ProcessorBase {
 	public:
-		ProcessorBase(std::shared_ptr<IAssetLoader> loader, std::pair<std::string, std::string> shaders);
+		ProcessorBase(std::shared_ptr<IAssetLoader> loader);
 		virtual ~ProcessorBase();
 
 		void addProcessor(std::shared_ptr<ProcessorBase>);
@@ -14,7 +14,7 @@ namespace br {
 
 	protected:
 		std::shared_ptr<IAssetLoader> loader;
-		std::pair<std::string, std::string> shaders;
+		std::weak_ptr<IProgram3d> shaders;
 
 		std::vector<std::shared_ptr<ProcessorBase>> processors;
 

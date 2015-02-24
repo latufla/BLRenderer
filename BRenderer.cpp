@@ -11,7 +11,6 @@
 #include "src/exceptions/Exception.h"
 #include <chrono>
 #include "src/processors/images/ImageRenderProcessor.h"
-#include "src/utils/Shaders.h"
 #include "src/processors/text/TextRenderProcessor.h"
 #include "src/processors/models/ModelRenderProcessor.h"
 #include "src/utils/Util.h"
@@ -128,9 +127,7 @@ void runModels(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) 
 
 	renderer.setCamera(FRONT_VIEW);
 
-	br::Shaders shaders;
-	auto program = shaders.getProgram(br::Shaders::MODEL_PROGRAM);
-	auto modelRenderer = std::make_shared<br::ModelRenderProcessor>(loader, program);
+	auto modelRenderer = std::make_shared<br::ModelRenderProcessor>(loader);
 // 	auto mouseProcessor = std::make_shared<br::ModelMouseProcessor>(loader, program);
 // 	modelRenderer->addProcessor(mouseProcessor);
 	renderer.addProcessor(modelRenderer);
@@ -147,9 +144,7 @@ void runModels(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) 
 void runImages(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) {
 	loader->loadTexture("models/cat.png");
 
-	br::Shaders shaders;
-	auto program = shaders.getProgram(br::Shaders::IMAGE_PROGRAM);
-	auto imageRenderer = std::make_shared<br::ImageRenderProcessor>(loader, program);
+	auto imageRenderer = std::make_shared<br::ImageRenderProcessor>(loader);
 	renderer.addProcessor(imageRenderer);
 
 	imageRenderer->addImage(0, "models/cat.png", {-1.0f, 0.0f});
@@ -165,9 +160,7 @@ void runTextFields(std::shared_ptr<br::AssetLoader> loader, br::Renderer& render
 	const glm::vec4 color{0.0f, 0.0f, 1.0f, 1.0f};
 	const glm::vec2 pos{0.5f, 0.0f};
 
-	br::Shaders shaders;
-	auto program = shaders.getProgram(br::Shaders::TEXT_PROGRAM);
-	auto textRenderer = std::make_shared<br::TextRenderProcessor>(loader, program);
+	auto textRenderer = std::make_shared<br::TextRenderProcessor>(loader);
 	renderer.addProcessor(textRenderer);
 
 	textRenderer->addTextField(0, "+20 -150 Decrease Def", "arial", 20, color, pos);
