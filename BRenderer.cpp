@@ -36,7 +36,6 @@ std::vector<ObjectBase> objects;
 void run();
 long long getElapsedTimeMSec();
 void handleExceptions();
-void sleep(long long interval);
 
 void runModels(std::shared_ptr<br::AssetLoader>, br::Renderer&);
 void runImages(std::shared_ptr<br::AssetLoader>, br::Renderer&);
@@ -61,18 +60,13 @@ void run() {
 	br::Renderer renderer(loader, graphcics);
 	
 	runTarget(loader, renderer);
-	
-	const uint32_t step = 1000 / 60;
-	long long lastStepTime = getElapsedTimeMSec();
+
+	long long step = 1000 / 60;
 	bool running = true;
 	while(running) {
-		long long elapsedTime = getElapsedTimeMSec() - lastStepTime;
-		if(elapsedTime >= step) {
-			running = renderer.doStep(step);
-			lastStepTime = getElapsedTimeMSec() - (elapsedTime - step);
-		} else {
-			sleep(step - elapsedTime);
-		}
+		long long startTime = getElapsedTimeMSec();
+		running = renderer.doStep(step);
+ 		step = getElapsedTimeMSec() - startTime;
 	}
 }
 
@@ -100,11 +94,6 @@ void handleExceptions() {
 		std::exit(1);
 	}
 }
-
-void sleep(long long interval) {
-	std::this_thread::sleep_for(std::chrono::milliseconds(interval));
-}
-
 
 void runModels(std::shared_ptr<br::AssetLoader> loader, br::Renderer& renderer) {
 	ObjectBase obj{42, GAME_OBJECT};
