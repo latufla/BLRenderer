@@ -27,8 +27,7 @@ namespace br {
 
 	private:
 		void* nativeWindow;
-		Rect initialSize;
+		void* deviceContext;
 	};
-
 }
 

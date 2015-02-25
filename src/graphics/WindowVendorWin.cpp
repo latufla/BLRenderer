@@ -12,8 +12,7 @@ using std::pair;
 namespace br {
 	LRESULT CALLBACK processMessages(HWND, UINT, WPARAM, LPARAM);
 	
-	WindowVendorWin::WindowVendorWin(const IWindowVendor::Rect& size)
-		: initialSize(size) {
+	WindowVendorWin::WindowVendorWin(const IWindowVendor::Rect& size){
 		HINSTANCE hInstance = GetModuleHandle(nullptr);
 	
 		WNDCLASSEX wClass;
@@ -52,7 +51,8 @@ namespace br {
 			throw br::NativeWindowException(EXCEPTION_INFO, "can`t create window");
 
 		nativeWindow = hWnd;
-	
+		deviceContext = GetDC((HWND)nativeWindow);
+
 		ShowWindow(hWnd, true);
 		UpdateWindow(hWnd);
 	}
@@ -63,8 +63,7 @@ namespace br {
 
 
 	void WindowVendorWin::swapBuffers() {
-		HDC device = GetDC((HWND)nativeWindow);
-		SwapBuffers(device);
+		SwapBuffers((HDC)deviceContext);
 	}
 
 	IWindowVendor::Rect WindowVendorWin::getSize() const
