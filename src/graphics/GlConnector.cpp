@@ -6,6 +6,7 @@
 
 #include "../exceptions/Exception.h"
 #include "WindowVendorWin.h"
+#include "ProgramContext.h"
 
 using std::weak_ptr;
 using std::vector;
@@ -125,7 +126,9 @@ namespace br {
 		return shader;
 	}
 
-	IGraphicsConnector::ProgramContext GlConnector::createProgram(std::pair<std::string, std::string> shaders) {
+	std::shared_ptr<IProgramContext> GlConnector::createProgram(std::pair<std::string, std::string> shaders,
+		std::unordered_map<std::string, std::string> attributeBindings,
+		std::unordered_map<std::string, std::string> uniformBindings) {
 		GLuint vShader = createShader(GL_VERTEX_SHADER, shaders.first.c_str());
 		GLuint fShader = createShader(GL_FRAGMENT_SHADER, shaders.second.c_str());
 
@@ -150,21 +153,13 @@ namespace br {
 		glDetachShader(pObject, fShader);
 		glDeleteShader(fShader);
 
-		ProgramContext program;
-		program.id = pObject;
-
-		program.position = glGetAttribLocation(pObject, "aPosition");
-		program.uv = glGetAttribLocation(pObject, "aTexCoord");
-
-		program.bones = glGetUniformLocation(pObject, "bones");
-		program.boneIds = glGetAttribLocation(pObject, "boneIds");
-		program.weights = glGetAttribLocation(pObject, "weights");
-
-		program.sampler = glGetUniformLocation(pObject, "sTexture");
-		program.mvp = glGetUniformLocation(pObject, "mvpMatrix");
-
-		program.color = glGetUniformLocation(pObject, "color");
-
+		auto program = std::make_shared<ProgramContext>(pObject);
+		for(auto& i : attributeBindings) {
+			program->setLoc(i.first, glGetAttribLocation(pObject, i.second.c_str()));
+		}
+		for(auto& i : uniformBindings) {
+			program->setLoc(i.first, glGetUniformLocation(pObject, i.second.c_str()));
+		}
 		return program;
 	}
 
@@ -193,8 +188,8 @@ namespace br {
 		glDeleteTextures(1, &texture);
 	}
 
-	void GlConnector::deleteProgram(ProgramContext& program) {
-		glDeleteProgram(program.id);
+	void GlConnector::deleteProgram(std::shared_ptr<IProgramContext> program) {
+		glDeleteProgram(program->getId());
 	}
 
 	IGraphicsConnector::GpuBufferData GlConnector::loadGeometryToGpu(std::vector<float>& vertices, std::vector<uint16_t>& indices) {
@@ -251,19 +246,20 @@ namespace br {
 		}
 	}
 
-	void GlConnector::draw(GpuBufferData& buffer, ProgramContext program, vector<ProgramParam> params) {
+	void GlConnector::draw(GpuBufferData& buffer, std::shared_ptr<IProgramContext> programContext, vector<ProgramParam> params) {
 		BoneTransformer::BonesDataMap bonesData;
-		draw(buffer, program, params, bonesData);
+		draw(buffer, programContext, params, bonesData);
 	}
 
-	void GlConnector::draw(GpuBufferData& buffer, ProgramContext& program, std::vector<ProgramParam> params, BoneTransformer::BonesDataMap& bonesData) {
-		glUseProgram(program.id);
+	void GlConnector::draw(GpuBufferData& buffer, std::shared_ptr<IProgramContext> programContext, std::vector<ProgramParam> params, BoneTransformer::BonesDataMap& bonesData) {
+		glUseProgram(programContext->getId());
 
-		loadProgramParams(program, params);
+		loadProgramParams(params);
 		
-		if(program.bones != -1) {
+		int32_t bonesLoc = programContext->getLoc(programContext->getBonesBinding());
+		if(bonesLoc != -1) {
 			for(auto& i : bonesData) {
-				glUniformMatrix4fv(program.bones + i.first, 1, GL_FALSE, &(i.second.finalTransform[0][0]));
+				glUniformMatrix4fv(bonesLoc + i.first, 1, GL_FALSE, &(i.second.finalTransform[0][0]));
 			}
 		}
 		
@@ -271,9 +267,10 @@ namespace br {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.iBuffer);
 
 		uint8_t offset = 0;
-		if(program.position != -1) {
-			glEnableVertexAttribArray(program.position);
-			glVertexAttribPointer(program.position, 
+		int32_t positionLoc = programContext->getLoc(programContext->getPositionBinding());
+		if(positionLoc != -1) {
+			glEnableVertexAttribArray(positionLoc);
+			glVertexAttribPointer(positionLoc,
 				Mesh3d::GetRawVertexPosition(), 
 				GL_FLOAT, 
 				GL_FALSE, 
@@ -283,9 +280,10 @@ namespace br {
 
 		offset += Mesh3d::GetRawVertexPosition() * Mesh3d::GetRawVertexPositionSize();
 
-		if(program.uv != -1) {
-			glEnableVertexAttribArray(program.uv);
-			glVertexAttribPointer(program.uv,
+		int32_t uvLoc = programContext->getLoc(programContext->getUvBinding());
+		if(uvLoc != -1) {
+			glEnableVertexAttribArray(uvLoc);
+			glVertexAttribPointer(uvLoc,
 				Mesh3d::GetRawVertexTexture(),
 				GL_FLOAT, 
 				GL_FALSE, 
@@ -293,9 +291,11 @@ namespace br {
 		}
 
 		offset += Mesh3d::GetRawVertexTexture() * Mesh3d::GetRawVertexTextureSize();
-		if(program.boneIds != -1) {
-			glEnableVertexAttribArray(program.boneIds);
-			glVertexAttribPointer(program.boneIds, 
+
+		int32_t boneIdsLoc = programContext->getLoc(programContext->getBoneIdsBinding());
+		if(boneIdsLoc != -1) {
+			glEnableVertexAttribArray(boneIdsLoc);
+			glVertexAttribPointer(boneIdsLoc,
 				Mesh3d::GetRawVertexBoneIds(), 
 				GL_FLOAT, 
 				GL_FALSE, 
@@ -304,9 +304,11 @@ namespace br {
 		}
 
 		offset += Mesh3d::GetRawVertexBoneIds() * Mesh3d::GetRawVertexBoneIdsSize();
-		if(program.weights != -1) {
-			glEnableVertexAttribArray(program.weights);
-			glVertexAttribPointer(program.weights,
+		
+		int32_t boneWeightsLoc = programContext->getLoc(programContext->getBoneWeightsBinding());
+		if(boneWeightsLoc != -1) {
+			glEnableVertexAttribArray(boneWeightsLoc);
+			glVertexAttribPointer(boneWeightsLoc,
 				Mesh3d::GetRawVertexWeights(),
 				GL_FLOAT, 
 				GL_FALSE, 
@@ -314,11 +316,12 @@ namespace br {
 				(void*)offset);
 		}
 
-		if(program.sampler != -1) {
+		int32_t samplerLoc = programContext->getLoc(programContext->getSamplerBinding());
+		if(samplerLoc != -1) {
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, buffer.texture);
 
-			glUniform1i(program.sampler, 0);
+			glUniform1i(samplerLoc, 0);
 		}
 
 		glDrawElements(GL_TRIANGLES, buffer.iBufferLenght, GL_UNSIGNED_SHORT, (void*)0);
@@ -326,15 +329,15 @@ namespace br {
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-		glDisableVertexAttribArray(program.position);
-		glDisableVertexAttribArray(program.uv);
-		glDisableVertexAttribArray(program.boneIds);
-		glDisableVertexAttribArray(program.weights);
+		glDisableVertexAttribArray(positionLoc);
+		glDisableVertexAttribArray(uvLoc);
+		glDisableVertexAttribArray(boneIdsLoc);
+		glDisableVertexAttribArray(boneWeightsLoc);
 
 		glUseProgram(0);
 	}
 
-	void GlConnector::loadProgramParams(ProgramContext& program, std::vector<ProgramParam> params) {
+	void GlConnector::loadProgramParams(std::vector<ProgramParam> params) {
 		for(auto& i : params) {
 			if(i.vec4) {
 				glm::vec4& v = *(i.vec4.get());

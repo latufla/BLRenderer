@@ -14,11 +14,11 @@ namespace br {
 		virtual std::string getVertexShader() const override;
 		virtual std::string getFragmentShader() const override;
 
-		virtual void setAttribute(std::string name) override;
-		virtual void setUniform(std::string name) override;
+		virtual void bindAttribute(std::string name, std::string bindTo) override;
+		virtual void bindUniform(std::string name, std::string bindTo) override;
 
-		virtual std::vector<std::string>& getAttributes() override;
-		virtual std::vector<std::string>& getUniforms() override;
+		virtual std::unordered_map<std::string, std::string>& getAttributes() override;
+		virtual std::unordered_map<std::string, std::string>& getUniforms() override;
 
 	private:
 		std::string name;
@@ -26,8 +26,8 @@ namespace br {
 		std::string vertexShader;
 		std::string fragmentShader;
 	
-		std::vector<std::string> attributes;
-		std::vector<std::string> uniforms;
+		std::unordered_map<std::string, std::string> attributes;
+		std::unordered_map<std::string, std::string> uniforms;
 	};
 }
 

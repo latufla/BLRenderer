@@ -4,6 +4,8 @@
 #include "IWindowVendor.h"
 #include <utility>
 #include "../../utils/bones/BoneTransformer.h"
+#include <unordered_map>
+#include "IProgramContext.h"
 
 namespace br {
 	class IGraphicsConnector {
@@ -15,23 +17,6 @@ namespace br {
 
 			uint32_t texture;
 		};
-
-		struct ProgramContext {
-			int32_t id = -1;
-
-			int32_t position = -1;
-			int32_t uv = -1;
-			int32_t sampler = -1;
-
-			int32_t bones = -1;
-			int32_t boneIds = -1;
-			int32_t weights = -1;
-
-			int32_t mvp = -1;
-
-			int32_t color = -1;
-		};
-
 
 		struct ProgramParam {
 			int32_t id;
@@ -52,8 +37,11 @@ namespace br {
 
 		virtual bool doStep() = 0;
 
-		virtual ProgramContext createProgram(std::pair<std::string, std::string> shaders) = 0;
-		virtual void deleteProgram(ProgramContext&) = 0;
+		virtual std::shared_ptr<IProgramContext> createProgram(std::pair<std::string, std::string> shaders,
+			std::unordered_map<std::string, std::string> attributeBindings,
+			std::unordered_map<std::string, std::string> uniformBindings) = 0;
+
+		virtual void deleteProgram(std::shared_ptr<IProgramContext>) = 0;
 
 		virtual uint32_t loadTextureToGpu(std::vector<uint8_t> const& texture, uint32_t width, uint32_t height) = 0;
 		virtual void deleteTextureFromGpu(uint32_t) = 0;
@@ -63,8 +51,8 @@ namespace br {
 
 		virtual void setBlending(bool) = 0;
 
-		virtual void draw(GpuBufferData& buffer, ProgramContext program, std::vector<ProgramParam> params) = 0;
-		virtual void draw(GpuBufferData& buffer, ProgramContext& program, std::vector<ProgramParam> params, BoneTransformer::BonesDataMap& bonesData) = 0;
+		virtual void draw(GpuBufferData& buffer, std::shared_ptr<IProgramContext> program, std::vector<ProgramParam> params) = 0;
+		virtual void draw(GpuBufferData& buffer, std::shared_ptr<IProgramContext> program, std::vector<ProgramParam> params, BoneTransformer::BonesDataMap& bonesData) = 0;
 	};
 }
 

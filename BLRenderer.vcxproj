@@ -81,12 +81,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\graphics\ProgramContext.h" />
     <ClInclude Include="src\assets\interfaces\IProgram3d.h" />
     <ClInclude Include="src\assets\Program3d.h" />
     <ClInclude Include="src\assets\interfaces\IAssetLoader.h" />
     <ClInclude Include="src\assets\interfaces\IModel3d.h" />
     <ClInclude Include="src\graphics\GlConnector.h" />
     <ClInclude Include="src\graphics\GlesConnector.h" />
+    <ClInclude Include="src\graphics\interfaces\IProgramContext.h" />
     <ClInclude Include="src\graphics\interfaces\IGraphicsConnector.h" />
     <ClInclude Include="src\graphics\interfaces\IWindowVendor.h" />
     <ClInclude Include="src\processors\models\ModelMouseProcessor.h" />
@@ -117,6 +119,7 @@
     <ClInclude Include="src\processors\text\TextRenderProcessor.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\ProgramContext.cpp" />
     <ClCompile Include="src\assets\Program3d.cpp" />
     <ClCompile Include="src\graphics\GlConnector.cpp" />
     <ClCompile Include="src\graphics\GlesConnector.cpp" />

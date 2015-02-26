@@ -13,7 +13,7 @@ namespace br {
 		
 		virtual void setViewport(const IWindowVendor::Rect& size) override;
 		virtual void clear() override;
-
+																			  
 		virtual void swapBuffers() override;
 
 		virtual IWindowVendor::Rect getWindowSize() const override;
@@ -23,8 +23,10 @@ namespace br {
 
 		virtual bool doStep() override;
 
-		virtual ProgramContext createProgram(std::pair<std::string, std::string> shaders) override;
-		virtual void deleteProgram(ProgramContext&) override;
+		virtual std::shared_ptr<IProgramContext> createProgram(std::pair<std::string, std::string> shaders,
+			std::unordered_map<std::string, std::string> attributeBindings,
+			std::unordered_map<std::string, std::string> uniformBindings) override;
+		virtual void deleteProgram(std::shared_ptr<IProgramContext>) override;
 
 		virtual uint32_t loadTextureToGpu(std::vector<uint8_t> const& texture, uint32_t width, uint32_t height) override;
 		virtual void deleteTextureFromGpu(uint32_t) override;
@@ -34,8 +36,8 @@ namespace br {
 
 		virtual void setBlending(bool) override;
 
-		virtual void draw(GpuBufferData& buffer, ProgramContext program, std::vector<ProgramParam> params) override;
-		virtual void draw(GpuBufferData& buffer, ProgramContext& program, std::vector<ProgramParam> params, BoneTransformer::BonesDataMap& bonesData) override;
+		virtual void draw(GpuBufferData& buffer, std::shared_ptr<IProgramContext> program, std::vector<ProgramParam> params) override;
+		virtual void draw(GpuBufferData& buffer, std::shared_ptr<IProgramContext> program, std::vector<ProgramParam> params, BoneTransformer::BonesDataMap& bonesData) override;
 
 	private:
 		std::shared_ptr<IWindowVendor> window;
@@ -43,7 +45,7 @@ namespace br {
 		void initWgl();
 
 		uint32_t createShader(uint32_t type, const char* source);
-		void loadProgramParams(ProgramContext& program, std::vector<ProgramParam> params);
+		void loadProgramParams(std::vector<ProgramParam> params);
 	};
 }
 

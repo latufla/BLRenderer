@@ -95,19 +95,19 @@ namespace br {
 			
 			std::vector<IGraphicsConnector::ProgramParam> params;
 
-			IGraphicsConnector::ProgramParam color;
-			color.id = program.color;
-			color.vec4 = std::make_shared<glm::vec4>(object.getColor());
-			params.push_back(color);
-
-			IGraphicsConnector::ProgramParam mvp;
-			mvp.id = program.mvp;
-			mat4 translation = translate(mat4(), vec3(object.getPosition(), 0.0f));
-			mvp.mat4 = std::make_shared<glm::mat4>(translation * stepData.ortho);
-			params.push_back(mvp);
-			
-			auto& buffer = meshToBuffer.at(object.getUniqueName());
-			sGConnector->draw(buffer, program, params);
+// 			IGraphicsConnector::ProgramParam color;
+// 			color.id = program.uniformNameToLoc.at("color");
+// 			color.vec4 = std::make_shared<glm::vec4>(object.getColor());
+// 			params.push_back(color);
+// 
+// 			IGraphicsConnector::ProgramParam mvp;
+// 			mvp.id = program.uniformNameToLoc.at("mvp");
+// 			mat4 translation = translate(mat4(), vec3(object.getPosition(), 0.0f));
+// 			mvp.mat4 = std::make_shared<glm::mat4>(translation * stepData.ortho);
+// 			params.push_back(mvp);
+// 			
+// 			auto& buffer = meshToBuffer.at(object.getUniqueName());
+// 			sGConnector->draw(buffer, program, params);
 		}
 
 		sGConnector->setBlending(false);		

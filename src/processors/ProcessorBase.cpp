@@ -120,13 +120,14 @@ namespace br {
 		meshToBuffer.erase(key);
 	}
 
-	void ProcessorBase::loadProgramToGpu(std::string key, std::string vertexShader, std::string fragmentShader) {
+	void ProcessorBase::loadProgramToGpu(string key, weak_ptr<IProgram3d> program) {
 		auto sGConnector = graphics.lock();
-		if(!sGConnector)
+		auto sProgram = program.lock();
+		if(!sProgram)
 			throw WeakPtrException(EXCEPTION_INFO);
 
-		std::pair <string, string> shaderPair{vertexShader, fragmentShader};
-		IGraphicsConnector::ProgramContext context = sGConnector->createProgram(shaderPair);
+		std::pair <string, string> shaderPair{sProgram->getVertexShader(), sProgram->getFragmentShader()};
+		auto context = sGConnector->createProgram(shaderPair, sProgram->getAttributes(), sProgram->getUniforms());
 		nameToProgramContext.emplace(key, context);
 	}
 

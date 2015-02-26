@@ -2,6 +2,8 @@
 #include <memory>
 #include "../assets/interfaces/IAssetLoader.h"
 #include "../graphics/interfaces/IGraphicsConnector.h"
+#include "../assets/interfaces/IProgram3d.h"
+#include "../graphics/interfaces/IProgramContext.h"
 
 namespace br {
 	class ProcessorBase {
@@ -34,7 +36,7 @@ namespace br {
 		virtual bool canDoStep();
 
 
-		IGraphicsConnector::ProgramContext program;
+//		IGraphicsConnector::ProgramContext program;
 
 
 		std::unordered_map<std::string, IGraphicsConnector::GpuBufferData> meshToBuffer;
@@ -47,8 +49,8 @@ namespace br {
 		void deleteTextureFromGpu(std::string pathAsKey);
 		bool hasTextureInGpu(std::string pathAsKey);
 
-		std::unordered_map<std::string, IGraphicsConnector::ProgramContext> nameToProgramContext;
-		void loadProgramToGpu(std::string key, std::string vertexShader, std::string fragmentShader);
+		std::unordered_map<std::string, std::shared_ptr<IProgramContext>> nameToProgramContext;
+		void loadProgramToGpu(std::string key, std::weak_ptr<IProgram3d> program);
 		void deleteProgramFromGpu(std::string key);
 		bool hasProgramInGpu(std::string key);
 

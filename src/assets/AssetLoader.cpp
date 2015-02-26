@@ -4,6 +4,7 @@
 #include "Model3d.h"
 #include <memory>
 #include "Program3d.h"
+#include "../graphics/ProgramContext.h"
 
 using std::string;
 using std::to_string;
@@ -342,35 +343,47 @@ namespace br {
 
 	void AssetLoader::initDefaultShaders() {
 		string modelVS =
-			"uniform mat4 mvpMatrix;		\n"
+			"uniform mat4 mvp;		\n"
 			"uniform mat4 bones[25];		\n"
 			"attribute vec4 aPosition;		\n"
 
-			"attribute vec2 aTexCoord;		\n"
+			"attribute vec2 aUV;			\n"
 
-			"attribute vec4 boneIds;		\n"
-			"attribute vec4 weights;		\n"
+			"attribute vec4 aBoneIds;		\n"
+			"attribute vec4 aBoneWeights;	\n"
 
-			"varying vec2 vTexCoord;		\n"
+			"varying vec2 vUV;		\n"
 			"void main(){					\n"
-			"	mat4 boneTransform = bones[int(boneIds.x)] * weights.x;		\n"
-			"	boneTransform += bones[int(boneIds.y)] * weights.y;			\n"
-			"	boneTransform += bones[int(boneIds.z)] * weights.z;			\n"
-			"	boneTransform += bones[int(boneIds.w)] * weights.w;			\n"
-			"   gl_Position = mvpMatrix * boneTransform * aPosition;								\n"
-			"   vTexCoord = aTexCoord;										\n"
+			"	mat4 boneTransform = bones[int(aBoneIds.x)] * aBoneWeights.x;		\n"
+			"	boneTransform += bones[int(aBoneIds.y)] * aBoneWeights.y;			\n"
+			"	boneTransform += bones[int(aBoneIds.z)] * aBoneWeights.z;			\n"
+			"	boneTransform += bones[int(aBoneIds.w)] * aBoneWeights.w;			\n"
+			"   gl_Position = mvp * boneTransform * aPosition;						\n"
+			"   vUV = aUV;															\n"
 			"}";
 
 		string modelFS =
-			"precision mediump float;                           \n"
-			"varying vec2 vTexCoord;                            \n"
-			"uniform sampler2D sTexture;                        \n"
-			"void main(){										\n"
-			"  gl_FragColor = texture2D( sTexture, vTexCoord ); \n"
+			"precision mediump float;                    \n"
+			"varying vec2 vUV;                           \n"
+			"uniform sampler2D sampler;                  \n"
+			"void main(){								 \n"
+			"  gl_FragColor = texture2D( sampler, vUV ); \n"
 			"}";
 
 		auto program = std::make_shared<Program3d>(MODEL_PROGRAM, modelVS, modelFS);
+		ProgramContext context(-1);
+		program->bindAttribute(context.getPositionBinding(), "aPosition");
+		program->bindAttribute(context.getUvBinding(), "aUV");
+
+		program->bindUniform(context.getMvpBinding(), "mvp");
+		program->bindUniform(context.getSamplerBinding(), "sampler");
+
+		program->bindAttribute(context.getBoneIdsBinding(), "aBoneIds");
+		program->bindAttribute(context.getBoneWeightsBinding(), "aBoneWeights");
+
+		program->bindUniform(context.getBonesBinding(), "bones");
 		nameToProgram.emplace(program->getName(), program);
+
 
 		string modelDebugFS =
 			"precision mediump float;                           \n"

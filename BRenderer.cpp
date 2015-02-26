@@ -44,11 +44,11 @@ void runTextFields(std::shared_ptr<br::AssetLoader>, br::Renderer&);
 auto runTarget = runModels;
 
 int _tmain(int argc, _TCHAR* argv[]) {
-	try {
+//	try {
 		run();
- 	} catch(...) {
- 		handleExceptions();
- 	}
+//  	} catch(...) {
+//  		handleExceptions();
+//  	}
 
 	return 0;
 }

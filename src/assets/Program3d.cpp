@@ -1,11 +1,11 @@
 #include "Program3d.h"
+#include "..\graphics\interfaces\IGraphicsConnector.h"
 
 using std::string;
 
 namespace br {
 	Program3d::Program3d(string name, string vertexShader, string fragmentShader) 
 		: name(name), vertexShader(vertexShader), fragmentShader(fragmentShader) {
-
 	}
 
 	Program3d::~Program3d() {
@@ -23,20 +23,20 @@ namespace br {
 		return fragmentShader;
 	}
 
-	std::vector<std::string>& Program3d::getAttributes() {
+	void Program3d::bindAttribute(std::string name, std::string bindTo) {
+		attributes.emplace(name, bindTo);
+	}
+
+	void Program3d::bindUniform(std::string name, std::string bindTo) {
+		uniforms.emplace(name, bindTo);
+	}
+
+	std::unordered_map<std::string, std::string>& Program3d::getAttributes() {
 		return attributes;
 	}
 
-	std::vector<std::string>& Program3d::getUniforms() {
+	std::unordered_map<std::string, std::string>& Program3d::getUniforms() {
 		return uniforms;
-	}
-
-	void Program3d::setAttribute(std::string name) {
-		attributes.push_back(name);
-	}
-
-	void Program3d::setUniform(std::string name) {
-		uniforms.push_back(name);
 	}
 
 }

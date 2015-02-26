@@ -116,7 +116,7 @@ namespace br {
 
 				std::vector<IGraphicsConnector::ProgramParam> params;
 				IGraphicsConnector::ProgramParam mvp;
-				mvp.id = programContext.mvp;
+				mvp.id = programContext->getLoc(programContext->getMvpBinding());
 				mvp.mat4 = std::make_shared<glm::mat4>(mvpMatrix);
 				params.push_back(mvp);
 
@@ -160,7 +160,7 @@ namespace br {
 			auto program = loader->getProgramBy(i.getProgramName());
 			auto programName = program->getName();
 			if(!hasMaterialWithProgram(programName))
-				loadProgramToGpu(programName, program->getVertexShader(), program->getFragmentShader());
+				loadProgramToGpu(programName, program);
 		}
 
 		vector<Mesh3d>& meshes = model->getMeshes();
