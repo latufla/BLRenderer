@@ -398,39 +398,50 @@ namespace br {
 
 
 		string imageVS =
-			"uniform mat4 mvpMatrix;		\n"
+			"uniform mat4 mvp;				\n"
 			"attribute vec4 aPosition;		\n"
 
-			"attribute vec2 aTexCoord;		\n"
+			"attribute vec2 aUV;			\n"
 
-			"varying vec2 vTexCoord;		\n"
+			"varying vec2 vUV;				\n"
 			"void main(){					\n"
-			"   gl_Position = mvpMatrix * aPosition;						\n"
-			"   vTexCoord = aTexCoord;										\n"
+			"   gl_Position = mvp * aPosition;					\n"
+			"   vUV = aUV;										\n"
 			"}";
 
 		string imageFS =
 			"precision mediump float;                           \n"
-			"varying vec2 vTexCoord;                            \n"
-			"uniform sampler2D sTexture;                        \n"
+			"varying vec2 vUV;		                            \n"
+			"uniform sampler2D sampler;	                        \n"
 			"void main(){										\n"
-			"  gl_FragColor = texture2D( sTexture, vTexCoord ); \n"
+			"  gl_FragColor = texture2D( sampler, vUV ); \n"
 			"}";
 
 		program = std::make_shared<Program3d>(IMAGE_PROGRAM, imageVS, imageFS);
-		nameToProgram.emplace(program->getName(), program);
+		program->bindAttribute(context.getPositionBinding(), "aPosition");
+		program->bindAttribute(context.getUvBinding(), "aUV");
 
+		program->bindUniform(context.getMvpBinding(), "mvp");
+		program->bindUniform(context.getSamplerBinding(), "sampler");
+		nameToProgram.emplace(program->getName(), program);
+		
 
 		string textFS =
 			"precision mediump float;                           \n"
-			"varying vec2 vTexCoord;                            \n"
-			"uniform sampler2D sTexture;                        \n"
+			"varying vec2 vUV;				                    \n"
+			"uniform sampler2D sampler;			                \n"
 			"uniform vec4 color;"
 			"void main(){										\n"
-			"  gl_FragColor = texture2D( sTexture, vTexCoord ) * color; \n"
+			"  gl_FragColor = texture2D( sampler, vUV ) * color; \n"
 			"}";
 
-		program = std::make_shared<Program3d>(TEXT_PROGRAM, imageVS, imageFS);
+		program = std::make_shared<Program3d>(TEXT_PROGRAM, imageVS, textFS);
+		program->bindAttribute(context.getPositionBinding(), "aPosition");
+		program->bindAttribute(context.getUvBinding(), "aUV");
+
+		program->bindUniform(context.getMvpBinding(), "mvp");
+		program->bindUniform(context.getSamplerBinding(), "sampler");
+		program->bindUniform("color", "color");
 		nameToProgram.emplace(program->getName(), program);
 	}
 }

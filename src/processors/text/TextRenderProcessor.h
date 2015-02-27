@@ -28,7 +28,7 @@ namespace br {
 		void deleteFontFromGpu(Font&);
 
 		void loadTextFieldToGpu(TextField&);
-		void deleteTextFieldFromGpu(TextField&);
+		void deleteTextFieldFromGpu(std::string nameAsKey);
 		bool hasTextFieldWithFont(Font&);
 	};
 }

@@ -23,7 +23,6 @@ using glm::translate;
 namespace br {
 	TextRenderProcessor::TextRenderProcessor(shared_ptr<IAssetLoader>loader)
 		: ProcessorBase(loader) {
-		shaders = loader->getProgramBy(AssetLoader::TEXT_PROGRAM);
 	}
 
 	TextRenderProcessor::~TextRenderProcessor() {
@@ -51,23 +50,27 @@ namespace br {
 
 		TextField field{font, text, color, position, scaleFactor};
 		loadTextFieldToGpu(field);
-		
+
 		idToTextField.emplace(id, field);
 	}
 
 	void TextRenderProcessor::removeTextField(uint32_t id) {
-		TextField* field;
+		std::string name = "";
+		uint32_t size = 0;
+		std::string nameAsKey = "";
 		try {
-			field = &idToTextField.at(id);
+			auto& field = idToTextField.at(id);
+			name = field.getFontName();
+			size = field.getFontSize();
+			nameAsKey = field.getUniqueName();
 		} catch(out_of_range&) {
 			throw InvalidObjectIdException(EXCEPTION_INFO, id);
 		}
-		 
-
-		Font& font = loader->getFontBy(field->getFontName(), field->getFontSize());
-		deleteTextFieldFromGpu(*field);
 		idToTextField.erase(id);
 
+		deleteTextFieldFromGpu(nameAsKey);
+		
+		Font& font = loader->getFontBy(name, size);
 		if(!hasTextFieldWithFont(font)) // last out
 			deleteFontFromGpu(font);
 	}
@@ -90,24 +93,25 @@ namespace br {
 
 		sGConnector->setBlending(true);
 
+		auto programContext = nameToProgramContext.at(AssetLoader::TEXT_PROGRAM);
 		for(auto& i : idToTextField) {
 			TextField& object = i.second;
 			
 			std::vector<IGraphicsConnector::ProgramParam> params;
 
-// 			IGraphicsConnector::ProgramParam color;
-// 			color.id = program.uniformNameToLoc.at("color");
-// 			color.vec4 = std::make_shared<glm::vec4>(object.getColor());
-// 			params.push_back(color);
-// 
-// 			IGraphicsConnector::ProgramParam mvp;
-// 			mvp.id = program.uniformNameToLoc.at("mvp");
-// 			mat4 translation = translate(mat4(), vec3(object.getPosition(), 0.0f));
-// 			mvp.mat4 = std::make_shared<glm::mat4>(translation * stepData.ortho);
-// 			params.push_back(mvp);
-// 			
-// 			auto& buffer = meshToBuffer.at(object.getUniqueName());
-// 			sGConnector->draw(buffer, program, params);
+ 			IGraphicsConnector::ProgramParam color;
+			color.id = programContext->getLoc("color");
+			color.vec4 = std::make_shared<glm::vec4>(object.getColor());
+ 			params.push_back(color);
+ 
+			IGraphicsConnector::ProgramParam mvp;
+			mvp.id = programContext->getLoc("mvp");
+			mat4 translation = translate(mat4(), vec3(object.getPosition(), 0.0f));
+			mvp.mat4 = std::make_shared<glm::mat4>(translation * stepData.ortho);
+			params.push_back(mvp);
+			
+			auto& buffer = meshToBuffer.at(object.getUniqueName());
+			sGConnector->draw(buffer, programContext, params);
 		}
 
 		sGConnector->setBlending(false);		
@@ -115,7 +119,13 @@ namespace br {
 
 
 	void TextRenderProcessor::loadTextFieldToGpu(TextField& field) {
-		loadGeometryToGpu(field.getUniqueName(), field.getRawVertices(), field.getIndices());
+		if(idToTextField.empty()) {
+			auto program = loader->getProgramBy(AssetLoader::TEXT_PROGRAM);
+			loadProgramToGpu(program->getName(), program);
+		}
+
+		auto mesh = field.getMesh();
+		loadGeometryToGpu(field.getUniqueName(), mesh->getRawVertices(), mesh->getIndices());
 
 		Font& font = loader->getFontBy(field.getFontName(), field.getFontSize());
 		Texture2d& atlas = font.getAtlas();
@@ -125,8 +135,11 @@ namespace br {
 		buffer.texture = textureId;
 	}
 
-	void TextRenderProcessor::deleteTextFieldFromGpu(TextField& field) {
-		deleteGeometryFromGpu(field.getUniqueName());
+	void TextRenderProcessor::deleteTextFieldFromGpu(std::string nameAsKey) {
+		if(idToTextField.empty())
+			deleteProgramFromGpu(AssetLoader::TEXT_PROGRAM);
+
+		deleteGeometryFromGpu(nameAsKey);
 	}
 
 

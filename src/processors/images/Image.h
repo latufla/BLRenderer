@@ -2,6 +2,7 @@
 #include <array>
 #include "../../assets/Mesh3d.h"
 #include "../../assets/Texture2d.h"
+#include <memory>
 
 namespace br {
 	class Image {
@@ -11,17 +12,15 @@ namespace br {
 		
 		~Image() = default;
 	
-		std::array<Vertex3d, 4>& getVertices() { return vertices; }
-		std::array<uint16_t, 6> getIndices() const { return indices; }
 		std::string getPath() { return path; }
 		glm::vec2& getPosition() { return position; }
+
+		std::shared_ptr<Mesh3d> getMesh() { return mesh; }
 
 	private:
 		std::string path;
 		glm::vec2 position;
 
-		std::array<Vertex3d, 4> vertices;
-		std::array<uint16_t, 6> indices;
+		std::shared_ptr<Mesh3d> mesh;
 	};
-	
 }

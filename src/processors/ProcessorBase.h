@@ -16,7 +16,6 @@ namespace br {
 
 	protected:
 		std::shared_ptr<IAssetLoader> loader;
-		std::weak_ptr<IProgram3d> shaders;
 
 		std::vector<std::shared_ptr<ProcessorBase>> processors;
 
@@ -34,9 +33,6 @@ namespace br {
 		void tryDoStep(StepData& stepData);
 		virtual void doStep(const StepData& stepData);
 		virtual bool canDoStep();
-
-
-//		IGraphicsConnector::ProgramContext program;
 
 
 		std::unordered_map<std::string, IGraphicsConnector::GpuBufferData> meshToBuffer;

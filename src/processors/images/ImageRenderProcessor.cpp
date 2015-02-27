@@ -20,7 +20,6 @@ using glm::translate;
 namespace br {
 	ImageRenderProcessor::ImageRenderProcessor(shared_ptr<IAssetLoader>loader)
 		: ProcessorBase(loader) {
-		shaders = loader->getProgramBy(AssetLoader::IMAGE_PROGRAM);
 	}
 
 	ImageRenderProcessor::~ImageRenderProcessor() {
@@ -81,14 +80,20 @@ namespace br {
 
 		sGConnector->setBlending(true);
 
+		auto programContext = nameToProgramContext.at(AssetLoader::IMAGE_PROGRAM);
 		for(auto& i : idToImage) {
 			Image& object = i.second;
 
+			std::vector<IGraphicsConnector::ProgramParam> params;
+
+			IGraphicsConnector::ProgramParam mvp;
+			mvp.id = programContext->getLoc("mvp");
 			mat4 translation = translate(mat4(), vec3(object.getPosition(), 0.0f));
-			mat4 mvp = translation * stepData.ortho;
+			mvp.mat4 = std::make_shared<glm::mat4>(translation * stepData.ortho);
+			params.push_back(mvp);
 
 			auto& buffer = meshToBuffer.at(object.getPath());
-		//	sGConnector->draw(buffer, program, mvp);
+			sGConnector->draw(buffer, programContext, params);
 		}
 
 		sGConnector->setBlending(false);
@@ -103,18 +108,14 @@ namespace br {
 	}
 
 	void ImageRenderProcessor::loadImageToGpu(Image& image) {
-		vector<Vertex3d> vertices;
-		for(auto& i : image.getVertices()) {
-			vertices.push_back(i);
-		}
-
-		vector<uint16_t> indices;
-		for(auto& i : image.getIndices()) {
-			indices.push_back(i);
+		if(idToImage.empty()) {
+			auto programContext = loader->getProgramBy(AssetLoader::IMAGE_PROGRAM);
+			loadProgramToGpu(programContext->getName(), programContext);
 		}
 
 		string pathAsKey = image.getPath();		
-		//loadGeometryToGpu(pathAsKey, vertices, indices);
+		auto mesh = image.getMesh();
+		loadGeometryToGpu(pathAsKey, mesh->getRawVertices(), mesh->getIndices());
 
 		Texture2d& texture = loader->getTextureBy(pathAsKey);
 		loadTextureToGpu(texture);		
@@ -124,6 +125,9 @@ namespace br {
 	}
 
 	void ImageRenderProcessor::deleteImageFromGpu(string pathAsKey) {
+		if(idToImage.empty())
+			deleteProgramFromGpu(AssetLoader::IMAGE_PROGRAM);
+	
 		deleteGeometryFromGpu(pathAsKey);
 		deleteTextureFromGpu(pathAsKey);
 	}

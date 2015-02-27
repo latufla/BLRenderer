@@ -7,28 +7,25 @@ namespace br{
 		float w = texture.getWidth() * sx;
 		float h = texture.getHeight() * sy;
 
-		vertices[0] = {
+		std::vector<Vertex3d> vertices;
+		vertices.push_back({
 			0, 0, 0,
 			0.0f, 1.0f
-		};
-		vertices[1] = {
+		});
+		vertices.push_back({
 			0, h, 0,
 			0.0f, 0.0f
-		};
-		vertices[2] = {
+		});
+		vertices.push_back({
 			w, h, 0,
 			1.0f, 0.0f
-		};
-		vertices[3] = {
+		});
+		vertices.push_back({
 			w, 0, 0,
 			1.0f, 1.0f
-		};
-
-		indices[0] = 0;
-		indices[1] = 1;
-		indices[2] = 2;
-		indices[3] = 3;
-		indices[4] = 0;
-		indices[5] = 2;
+		});
+		std::vector<uint16_t> indices{0, 1, 2, 3, 0, 2};
+		mesh = std::make_shared<Mesh3d>(texture.getPath(), vertices, indices, 0);
+		mesh->buildRawVertices();
 	}
 }

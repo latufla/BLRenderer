@@ -17,6 +17,8 @@ namespace br {
 		float sx = scaleFactor.x, sy = scaleFactor.y;
 		Texture2d& atlas = font.getAtlas();
 		uint32_t atlasW = atlas.getWidth(), atlasH = atlas.getHeight();
+		std::vector<Vertex3d> vertices;
+		std::vector<uint16_t> indices;
 		for(auto& i : text) {
 			auto ch = font.getCharacterBy(i);
 
@@ -57,24 +59,8 @@ namespace br {
 				ch.texOffsetX, nextCharTexY
 			});
 		}
-
-		for(auto& i : vertices) {
-			rawVertices.push_back(i.x);
-			rawVertices.push_back(i.y);
-			rawVertices.push_back(i.z);
-			rawVertices.push_back(i.s);
-			rawVertices.push_back(i.t);
-
-			rawVertices.push_back(0.0f);
-			rawVertices.push_back(0.0f);
-			rawVertices.push_back(0.0f);
-			rawVertices.push_back(0.0f);
-		
-			rawVertices.push_back(0.0f);
-			rawVertices.push_back(0.0f);
-			rawVertices.push_back(0.0f);
-			rawVertices.push_back(0.0f);
-		}
+		mesh = std::make_shared<Mesh3d>(getUniqueName(), vertices, indices, 0);
+		mesh->buildRawVertices();
 	}
 
 	string TextField::getUniqueName() {
